@@ -1,0 +1,74 @@
+/* First-party funnel analytics for agent-atlas.co.
+   No cookies, no third-party scripts, no PII. A random sessionId in localStorage
+   ties a visitor's events together so we can measure the funnel:
+     page_view -> cta_click -> checkout_start -> purchase
+   plus scroll depth (where the page loses people). Beacons to /track.
+   Drop-in: <script src="/analytics.js" defer></script> on every page. */
+(function () {
+  var ENDPOINT = '/.netlify/functions/track';
+
+  // Stable per-visitor id (random, not identifying).
+  var sid;
+  try {
+    sid = localStorage.getItem('aa_sid');
+    if (!sid) {
+      sid = (Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+      localStorage.setItem('aa_sid', sid);
+    }
+  } catch (e) { sid = 'nostore'; }
+
+  var path = location.pathname || '/';
+  var params = new URLSearchParams(location.search);
+
+  function send(type, sku, meta) {
+    var payload = JSON.stringify({ type: type, sku: sku || '', sessionId: sid, path: path, meta: meta || '' });
+    try {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(ENDPOINT, new Blob([payload], { type: 'application/json' }));
+        return;
+      }
+    } catch (e) {}
+    // Fallback for browsers without sendBeacon.
+    fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(function () {});
+  }
+
+  // 1) Page view on every load.
+  send('page_view');
+
+  // 2) Page-specific entry events.
+  if (/checkout\.html$/.test(path)) {
+    send('checkout_start', params.get('sku') || '');
+  } else if (/thank-you\.html$/.test(path)) {
+    // Client-side completion marker. Ground-truth purchases come from the orders
+    // store; this just closes the funnel for the visitor-side rates.
+    send('purchase', params.get('sku') || '');
+  } else if (/refund\.html$/.test(path)) {
+    send('refund_view');
+  }
+
+  // 3) CTA clicks — any link that heads to checkout, tagged with its sku.
+  document.addEventListener('click', function (ev) {
+    var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="checkout.html"]') : null;
+    if (!a) return;
+    var sku = '';
+    try { sku = new URL(a.href, location.origin).searchParams.get('sku') || ''; } catch (e) {}
+    send('cta_click', sku);
+  }, true);
+
+  // 4) Scroll depth — fire each threshold once per page load.
+  var marks = [25, 50, 75, 100];
+  var hit = {};
+  function onScroll() {
+    var doc = document.documentElement;
+    var scrollable = doc.scrollHeight - window.innerHeight;
+    if (scrollable <= 0) return;
+    var pct = Math.min(100, Math.round(((window.scrollY || doc.scrollTop) / scrollable) * 100));
+    for (var i = 0; i < marks.length; i++) {
+      var m = marks[i];
+      if (pct >= m && !hit[m]) { hit[m] = 1; send('scroll_depth', '', String(m)); }
+    }
+    if (hit[100]) window.removeEventListener('scroll', onScroll);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
