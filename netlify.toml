@@ -7,3 +7,31 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+
+# Clean channel short-links. Paste agent-atlas.co/go/<channel> anywhere; it sets
+# the utm_source so analytics.js attributes the visitor (and any purchase) to that
+# funnel. Keeps the pasted URL clean instead of a tracky ?utm_source= string.
+[[redirects]]
+  from = "/go/linkedin"
+  to = "/?utm_source=linkedin"
+  status = 302
+[[redirects]]
+  from = "/go/meta"
+  to = "/?utm_source=meta"
+  status = 302
+[[redirects]]
+  from = "/go/fbgroup"
+  to = "/?utm_source=fbgroup"
+  status = 302
+[[redirects]]
+  from = "/go/reddit"
+  to = "/?utm_source=reddit"
+  status = 302
+[[redirects]]
+  from = "/go/biggerpockets"
+  to = "/?utm_source=biggerpockets"
+  status = 302
+[[redirects]]
+  from = "/go/labcoat"
+  to = "/?utm_source=labcoat"
+  status = 302

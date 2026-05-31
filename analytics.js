@@ -20,8 +20,21 @@
   var path = location.pathname || '/';
   var params = new URLSearchParams(location.search);
 
+  // First-touch source attribution. The first utm_source we ever see for this
+  // visitor wins and is persisted; pure-direct visitors are "direct". This is
+  // what lets the funnel rollup split visits/checkouts/buyers by channel.
+  var SOURCE;
+  try {
+    var stored = localStorage.getItem('aa_src');
+    var utm = (params.get('utm_source') || '').toLowerCase().slice(0, 40);
+    if (!stored && utm) { localStorage.setItem('aa_src', utm); stored = utm; }
+    SOURCE = stored || utm || 'direct';
+  } catch (e) {
+    SOURCE = (params.get('utm_source') || 'direct').toLowerCase().slice(0, 40);
+  }
+
   function send(type, sku, meta) {
-    var payload = JSON.stringify({ type: type, sku: sku || '', sessionId: sid, path: path, meta: meta || '' });
+    var payload = JSON.stringify({ type: type, sku: sku || '', sessionId: sid, source: SOURCE, path: path, meta: meta || '' });
     try {
       if (navigator.sendBeacon) {
         navigator.sendBeacon(ENDPOINT, new Blob([payload], { type: 'application/json' }));

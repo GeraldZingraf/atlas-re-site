@@ -95,6 +95,7 @@ export default async (req) => {
     email: (contact.email || payer.email_address || '').trim(),
     name: (contact.name || payerName || '').trim(),
     website: (contact.website || '').trim(),
+    source: (body.source || 'direct').toString().toLowerCase().slice(0, 40), // channel that drove the sale
     itemName: pu.description || ITEM_NAME[sku] || '',
     status: 'pending',
     receivedAt: new Date().toISOString(),

@@ -1,8 +1,9 @@
 // First-party analytics — funnel telemetry for the validation signals.
 //
 // WRITE (public, no auth): the client analytics.js beacons page events here.
-//   POST /.netlify/functions/track  { type, sku, sessionId, path, meta }
-//   -> 204. Events land in the "events" blob store.
+//   POST /.netlify/functions/track  { type, sku, sessionId, source, path, meta }
+//   -> 204. Events land in the "events" blob store. `source` is the UTM-attributed
+//   channel (see SOURCE_TO_CHANNEL) and powers the per-channel `bySource` rollup.
 //
 // READ (token-guarded, same ORDERS_TOKEN as orders.mjs): the local engine /
 // Claude pulls the rolled-up funnel.
@@ -25,6 +26,21 @@ const ALLOWED = new Set([
 ]);
 
 const clip = (v, n) => (typeof v === 'string' ? v.slice(0, n) : '');
+
+// Maps utm_source tags to the channel names used in the funnel Dashboard sheet,
+// so the per-source rollup lines up 1:1 with that tab. Tag each channel's links:
+//   ?utm_source=linkedin | meta | fbgroup | reddit | biggerpockets | labcoat
+const SOURCE_TO_CHANNEL = {
+  linkedin: 'LinkedIn',
+  meta: 'Meta Ads',
+  fbgroup: 'Facebook Groups',
+  reddit: 'Reddit',
+  biggerpockets: 'BiggerPockets',
+  labcoat: 'Lab Coat Agents',
+  direct: 'Direct',
+  unknown: 'Unknown',
+};
+const channelOf = (s) => SOURCE_TO_CHANNEL[(s || 'direct').toLowerCase()] || (s || 'direct');
 
 // Walk every blob in a store, following the list cursor so we never miss events
 // once volume grows past a single page.
@@ -58,6 +74,7 @@ export default async (req) => {
       type,
       sku: clip(body?.sku, 20),
       sessionId: clip(body?.sessionId, 64),
+      source: clip(body?.source, 40) || 'direct',
       path: clip(body?.path, 200),
       meta: clip(typeof body?.meta === 'string' ? body.meta : JSON.stringify(body?.meta ?? ''), 200),
       ref: clip(req.headers.get('referer'), 200),
@@ -102,6 +119,40 @@ export default async (req) => {
     const purchases = orders.length; // every queued order is a completed payment
     const pct = (a, b) => (b ? +((a / b) * 100).toFixed(1) : 0);
 
+    // Per-channel funnel (UTM-attributed). Visits/CTA/checkouts from beacons,
+    // buyers/revenue ground-truthed from the order's stored source. Keyed by the
+    // Dashboard channel names so weekly numbers drop straight into that tab.
+    const srcAgg = {};
+    const ensure = (ch) => (srcAgg[ch] || (srcAgg[ch] = {
+      visitors: new Set(), ctaClicks: 0, checkoutSessions: new Set(), buyers: 0, revenue: 0,
+    }));
+    for (const e of events) {
+      const a = ensure(channelOf(e.source));
+      if (e.sessionId) a.visitors.add(e.sessionId);
+      if (e.type === 'cta_click') a.ctaClicks += 1;
+      if (e.type === 'checkout_start' && e.sessionId) a.checkoutSessions.add(e.sessionId);
+    }
+    for (const o of orders) {
+      const a = ensure(channelOf(o.source));
+      a.buyers += 1;
+      a.revenue += parseFloat(o.amount) || 0;
+    }
+    const bySource = {};
+    for (const ch of Object.keys(srcAgg)) {
+      const a = srcAgg[ch];
+      const visits = a.visitors.size;
+      const checkouts = a.checkoutSessions.size;
+      bySource[ch] = {
+        visits,
+        ctaClicks: a.ctaClicks,
+        checkouts,
+        buyers: a.buyers,
+        revenue: a.revenue,
+        visit_to_buyer_pct: pct(a.buyers, visits),
+        checkout_to_buyer_pct: pct(a.buyers, checkouts),
+      };
+    }
+
     const rollup = {
       generatedAt: new Date().toISOString(),
       totals: {
@@ -121,6 +172,7 @@ export default async (req) => {
       },
       ctaBySku,
       scrollDepth,
+      bySource,
       revenue: orders.reduce((s, o) => s + (parseFloat(o.amount) || 0), 0),
     };
 

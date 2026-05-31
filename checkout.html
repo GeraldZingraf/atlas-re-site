@@ -167,11 +167,16 @@
   async function onApprove(data) {
     const v = contactValid();
     show('Completing your payment…', 'busy');
+    // First-touch source that analytics.js attributed to this visitor, so the
+    // order is tagged with the channel that drove it (for the funnel Dashboard).
+    let source = 'direct';
+    try { source = localStorage.getItem('aa_src') || 'direct'; } catch (e) {}
     const r = await fetch('/.netlify/functions/capture-order', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         orderID: data.orderID,
         sandbox: SANDBOX,
+        source: source,
         contact: { name: v.name, email: v.email, website: v.website },
       }),
     });

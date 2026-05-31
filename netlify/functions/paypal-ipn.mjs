@@ -74,6 +74,7 @@ export default async (req) => {
     currency: p.get('mc_currency') || 'USD',
     email: p.get('payer_email') || '',
     name: `${p.get('first_name') || ''} ${p.get('last_name') || ''}`.trim(),
+    source: 'unknown', // IPN (off-domain PayPal) carries no channel attribution
     itemName: p.get('item_name') || '',
     status: 'pending',
     receivedAt: new Date().toISOString(),
