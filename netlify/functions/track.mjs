@@ -35,7 +35,7 @@ async function readAll(store) {
     const page = await store.list(cursor ? { cursor } : undefined);
     for (const b of page.blobs) {
       const o = await store.get(b.key, { type: 'json' });
-      if (o) out.push(o);
+      if (o) { o._key = b.key; out.push(o); }
     }
     cursor = page.cursor;
   } while (cursor);
@@ -128,6 +128,18 @@ export default async (req) => {
       return Response.json({ rollup, events });
     }
     return Response.json(rollup);
+  }
+
+  // ---- DELETE (token-guarded) — remove one event blob by key ------------------
+  if (req.method === 'DELETE') {
+    const token = req.headers.get('x-orders-token') || url.searchParams.get('token');
+    if (!token || token !== process.env.ORDERS_TOKEN) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+    const key = url.searchParams.get('key');
+    if (!key) return Response.json({ error: 'Missing key' }, { status: 400 });
+    await store.delete(key);
+    return Response.json({ ok: true, deleted: key });
   }
 
   return new Response('Method not allowed', { status: 405 });

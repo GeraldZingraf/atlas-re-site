@@ -33,7 +33,7 @@ async function readAll(store) {
     const page = await store.list(cursor ? { cursor } : undefined);
     for (const b of page.blobs) {
       const o = await store.get(b.key, { type: 'json' });
-      if (o) out.push(o);
+      if (o) { o._key = b.key; out.push(o); }
     }
     cursor = page.cursor;
   } while (cursor);
@@ -79,6 +79,7 @@ export default async (req) => {
         (o.email && o.email.toLowerCase() === email.toLowerCase())
       );
       if (match) {
+        delete match._key; // readAll attaches this; never persist it into the order
         match.refundRequested = true;
         match.refundReason = reason;
         match.refundRequestedAt = rec.receivedAt;
@@ -107,6 +108,18 @@ export default async (req) => {
       byReason,
       refunds: all,
     });
+  }
+
+  // ---- DELETE (token-guarded) — remove one refund blob by key -----------------
+  if (req.method === 'DELETE') {
+    const token = req.headers.get('x-orders-token') || url.searchParams.get('token');
+    if (!token || token !== process.env.ORDERS_TOKEN) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+    const key = url.searchParams.get('key');
+    if (!key) return Response.json({ error: 'Missing key' }, { status: 400 });
+    await store.delete(key);
+    return Response.json({ ok: true, deleted: key });
   }
 
   return new Response('Method not allowed', { status: 405 });
