@@ -20,7 +20,8 @@
   .brand{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
   h1{font-size:24px;margin:8px 0 2px}
   .price{font-size:34px;font-weight:700;margin:14px 0 2px}
-  .price small{display:block;font-size:13px;font-weight:400;color:var(--muted);margin-top:4px}
+  .price small{display:block;font-size:13px;font-weight:400;color:var(--muted);margin-top:8px;line-height:1.5}
+  .price small.warn{color:#ffce5a;font-weight:600;margin-top:10px}
   .divider{height:1px;background:var(--line);margin:22px 0}
   .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px}
   .contact input{width:100%;background:#0e0e16;border:1px solid var(--line);border-radius:10px;
@@ -133,7 +134,11 @@
   }
 
   document.getElementById('kit-name').textContent = cfg.item.label;
-  document.getElementById('kit-price').innerHTML = cfg.item.display + '<small>once. that is the whole product.</small>';
+  document.getElementById('kit-price').innerHTML = cfg.item.display
+    + '<small>A team of 23 AI specialists you drop into Claude Code (no need to be a programmer). '
+    + 'They get smarter, get promoted, and build new agents for you.</small>'
+    + '<small class="warn">Warning! You need to have Claude Code to use these agents. '
+    + 'Claude Code starts at $20/month.</small>';
   document.title = cfg.item.label + ' · Atlas for Real Estate';
 
   // 2) Load the PayPal SDK with the public client-id (buttons + card fields).
