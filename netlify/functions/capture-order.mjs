@@ -65,15 +65,20 @@ export default async (req) => {
   if (!txnId) return Response.json({ error: 'no_capture_id', detail: result }, { status: 502 });
 
   const sku = pu.custom_id || 'unknown';
-  const fullName = `${payer.name?.given_name || ''} ${payer.name?.surname || ''}`.trim();
+  const payerName = `${payer.name?.given_name || ''} ${payer.name?.surname || ''}`.trim();
 
+  // Buyer-entered details from the checkout form are authoritative for fulfillment.
+  // Card payers have no PayPal account, so payer.email_address is often empty —
+  // the form email is what the engine sends the kit to. Fall back to PayPal data.
+  const contact = body.contact || {};
   const order = {
     txnId,
     sku,
     amount: capture.amount?.value || '',
     currency: capture.amount?.currency_code || 'USD',
-    email: payer.email_address || '',
-    name: fullName,
+    email: (contact.email || payer.email_address || '').trim(),
+    name: (contact.name || payerName || '').trim(),
+    website: (contact.website || '').trim(),
     itemName: pu.description || '',
     status: 'pending',
     receivedAt: new Date().toISOString(),

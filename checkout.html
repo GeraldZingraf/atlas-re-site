@@ -22,6 +22,12 @@
   .price small{display:block;font-size:13px;font-weight:400;color:var(--muted);margin-top:4px}
   .divider{height:1px;background:var(--line);margin:22px 0}
   .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px}
+  .contact input{width:100%;background:#0e0e16;border:1px solid var(--line);border-radius:10px;
+    height:46px;padding:0 14px;margin-bottom:10px;color:var(--ink);font-size:16px;outline:none}
+  .contact input::placeholder{color:#6f7384}
+  .contact input:focus{border-color:var(--brand)}
+  .contact input.bad{border-color:#ff5a5a}
+  .contact input:last-child{margin-bottom:0}
   #paypal-buttons{min-height:46px}
   .or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;margin:20px 0}
   .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -54,6 +60,14 @@
     <div class="price" id="kit-price"></div>
     <div class="divider"></div>
 
+    <p class="label">Your details</p>
+    <div class="contact">
+      <input id="c-name" type="text" placeholder="Full name" autocomplete="name" />
+      <input id="c-email" type="email" inputmode="email" placeholder="Email (where your kit is sent)" autocomplete="email" />
+      <input id="c-website" type="url" inputmode="url" placeholder="Your realty website (https://...)" autocomplete="url" />
+    </div>
+    <div class="divider"></div>
+
     <p class="label">Pay with PayPal</p>
     <div id="paypal-buttons"></div>
 
@@ -82,6 +96,21 @@
   const sku = params.get('sku');
   const msg = document.getElementById('msg');
   const show = (text, kind) => { msg.textContent = text; msg.className = 'msg ' + kind; };
+
+  // Buyer details are REQUIRED — the fulfillment engine needs an email to send the
+  // kit to, a name to personalize it, and the realty website to research the buyer.
+  const contactValid = () => {
+    const f = id => document.getElementById(id);
+    const name = f('c-name').value.trim();
+    const email = f('c-email').value.trim();
+    const website = f('c-website').value.trim();
+    const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+    f('c-name').classList.toggle('bad', !name);
+    f('c-email').classList.toggle('bad', !emailOk);
+    f('c-website').classList.toggle('bad', !website);
+    return { ok: !!name && emailOk && !!website, name, email, website };
+  };
+  const DETAILS_MSG = 'Please add your name, email, and realty website before paying.';
 
   // 1) Pull public config (client-id + price) from our function.
   let cfg;
@@ -120,10 +149,14 @@
   }
 
   async function onApprove(data) {
+    const v = contactValid();
     show('Completing your payment…', 'busy');
     const r = await fetch('/.netlify/functions/capture-order', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderID: data.orderID }),
+      body: JSON.stringify({
+        orderID: data.orderID,
+        contact: { name: v.name, email: v.email, website: v.website },
+      }),
     });
     const d = await r.json();
     if (d.ok) {
@@ -138,8 +171,15 @@
   }
 
   // 3) PayPal button (handles PayPal-balance payers; opens PayPal in a popup).
-  window.paypal.Buttons({ createOrder, onApprove, onError })
-    .render('#paypal-buttons');
+  //    onClick gates the flow so we never take a payment without buyer details.
+  window.paypal.Buttons({
+    onClick: (data, actions) => {
+      const v = contactValid();
+      if (!v.ok) { show(DETAILS_MSG, 'err'); return actions.reject(); }
+      return actions.resolve();
+    },
+    createOrder, onApprove, onError,
+  }).render('#paypal-buttons');
 
   // 4) Embedded card fields — card payers stay on this page, no PayPal account.
   //    Only renders if your PayPal account is approved for Advanced Card Payments.
@@ -160,6 +200,7 @@
 
     const btn = document.getElementById('card-submit');
     btn.addEventListener('click', () => {
+      if (!contactValid().ok) { show(DETAILS_MSG, 'err'); return; }
       btn.disabled = true;
       show('Processing your card…', 'busy');
       cardFields.submit()
