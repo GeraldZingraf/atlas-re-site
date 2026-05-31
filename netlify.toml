@@ -1,0 +1,9 @@
+# Netlify config for agent-atlas.co
+# Static site at the root + serverless functions for the PayPal IPN pipeline.
+
+[build]
+  publish = "."
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"

@@ -1,0 +1,13 @@
+# Secrets and local-only files — never commit these
+.env
+.env.*
+
+# Dependencies / build artifacts
+node_modules/
+.netlify/
+npm-debug.log*
+
+# Generated kit zips and OS cruft
+*.zip
+.DS_Store
+Thumbs.db
