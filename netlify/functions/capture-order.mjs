@@ -75,7 +75,13 @@ export default async (req) => {
   const txnId = capture.id; // the capture id is our transaction id
   if (!txnId) return Response.json({ error: 'no_capture_id', detail: result }, { status: 502 });
 
-  const sku = pu.custom_id || 'unknown';
+  // Resolve SKU robustly. PayPal returns custom_id on the CAPTURE object (and not
+  // always on the purchase_unit), so check both, then fall back to the amount —
+  // mirrors the old IPN listener — so fulfillment always knows which kit to build.
+  const SKU_BY_AMOUNT = { '497.00': 'solo', '1997.00': 'broker' };
+  const ITEM_NAME = { solo: 'Atlas-RE Solo Kit', broker: 'Atlas-RE Broker Kit' };
+  const amountVal = capture.amount?.value || '';
+  const sku = capture.custom_id || pu.custom_id || SKU_BY_AMOUNT[amountVal] || 'unknown';
   const payerName = `${payer.name?.given_name || ''} ${payer.name?.surname || ''}`.trim();
 
   // Buyer-entered details from the checkout form are authoritative for fulfillment.
@@ -89,7 +95,7 @@ export default async (req) => {
     email: (contact.email || payer.email_address || '').trim(),
     name: (contact.name || payerName || '').trim(),
     website: (contact.website || '').trim(),
-    itemName: pu.description || '',
+    itemName: pu.description || ITEM_NAME[sku] || '',
     status: 'pending',
     receivedAt: new Date().toISOString(),
   };
