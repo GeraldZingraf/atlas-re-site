@@ -134,8 +134,9 @@
   }
 
   document.getElementById('kit-name').textContent = cfg.item.label;
+  const specialists = sku === 'broker' ? 21 : 23; // Solo: 6+7+10; Broker: 4 oversight+7+10
   document.getElementById('kit-price').innerHTML = cfg.item.display
-    + '<small>A team of 23 AI specialists you drop into Claude Code (no need to be a programmer). '
+    + '<small>A team of ' + specialists + ' AI specialists you drop into Claude Code (no need to be a programmer). '
     + 'They get smarter, get promoted, and build new agents for you.</small>'
     + '<small class="warn">Warning! You need to have Claude Code to use these agents. '
     + 'Claude Code starts at $20/month.</small>';
