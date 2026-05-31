@@ -25,11 +25,13 @@
   #paypal-buttons{min-height:46px}
   .or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;margin:20px 0}
   .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
-  .field{background:#0e0e16;border:1px solid var(--line);border-radius:10px;padding:2px 12px;margin-bottom:10px;height:44px}
+  .field{background:#fff;border:1px solid var(--line);border-radius:10px;padding:0 12px;margin-bottom:10px;
+    height:48px;overflow:hidden;display:flex;align-items:center}
+  .field iframe{width:100%;height:46px;border:0}
   .row{display:flex;gap:10px}
   .row .field{flex:1}
-  #card-submit{width:100%;border:0;border-radius:10px;padding:13px;font-size:15px;font-weight:600;
-    color:#fff;background:var(--accent-grad);cursor:pointer;margin-top:4px}
+  #card-submit{width:100%;border:0;border-radius:10px;padding:14px;font-size:15px;font-weight:600;
+    color:#fff;background:var(--accent-grad);cursor:pointer;margin-top:16px}
   #card-submit:disabled{opacity:.5;cursor:default}
   .note{font-size:12px;color:var(--muted);margin-top:18px;line-height:1.5}
   .msg{font-size:14px;margin-top:14px;padding:11px 13px;border-radius:10px;display:none}
@@ -135,7 +137,14 @@
 
   // 4) Embedded card fields — card payers stay on this page, no PayPal account.
   //    Only renders if your PayPal account is approved for Advanced Card Payments.
-  const cardFields = window.paypal.CardFields({ createOrder, onApprove, onError });
+  const cardFields = window.paypal.CardFields({
+    createOrder, onApprove, onError,
+    style: {
+      input: { 'font-size': '16px', 'font-family': 'sans-serif', color: '#15151f' },
+      '::placeholder': { color: '#9aa0aa' },
+      '.invalid': { color: '#d4334b' },
+    },
+  });
   if (cardFields.isEligible()) {
     document.getElementById('card-or').style.display = 'flex';
     document.getElementById('card-wrap').style.display = 'block';
