@@ -58,12 +58,17 @@ export default async (req) => {
       return Response.json({ error: 'Pick a reason.' }, { status: 400 });
     }
 
+    // status: 'refunded' when Gerald logs an already-processed refund; 'open' for a
+    // buyer-submitted form awaiting his action. source distinguishes who logged it.
+    const status = clip(body?.status, 20) === 'refunded' ? 'refunded' : 'open';
+    const source = clip(body?.source, 20) === 'gerald' ? 'gerald' : 'buyer_form';
     const rec = {
       email,
       txnId: clip(body?.txnId, 64),
       reason,
       notes: clip(body?.notes, 2000),
-      status: 'open', // open -> refunded (Gerald closes it after issuing in PayPal)
+      source,
+      status,
       receivedAt: new Date().toISOString(),
     };
 
@@ -80,9 +85,14 @@ export default async (req) => {
       );
       if (match) {
         delete match._key; // readAll attaches this; never persist it into the order
-        match.refundRequested = true;
         match.refundReason = reason;
-        match.refundRequestedAt = rec.receivedAt;
+        if (status === 'refunded') {
+          match.refunded = true;
+          match.refundedAt = rec.receivedAt;
+        } else {
+          match.refundRequested = true;
+          match.refundRequestedAt = rec.receivedAt;
+        }
         await orders.setJSON(match.txnId, match);
       }
     } catch (e) { /* non-fatal: the refund record is already saved */ }
