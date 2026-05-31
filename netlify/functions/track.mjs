@@ -7,8 +7,9 @@
 //
 // READ (token-guarded, same ORDERS_TOKEN as orders.mjs): the local engine /
 // Claude pulls the rolled-up funnel.
-//   GET /.netlify/functions/track?token=...           -> funnel rollup
-//   GET /.netlify/functions/track?token=...&raw=1     -> rollup + raw events
+//   GET /.netlify/functions/track?token=...                  -> funnel rollup (all-time)
+//   GET /.netlify/functions/track?token=...&since=&until=    -> rollup for a window
+//   GET /.netlify/functions/track?token=...&raw=1            -> rollup + raw events
 //
 // No third-party analytics. No cookies. sessionId is a random id in localStorage,
 // not PII. This matches the site's no-SaaS, first-party-data posture.
@@ -93,11 +94,18 @@ export default async (req) => {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const events = await readAll(store);
+    // Optional time window so the weekly sync can pull just one week's numbers.
+    //   ?since=2026-06-01            (inclusive, ISO date or datetime)
+    //   ?until=2026-06-08            (exclusive). Omit both for all-time.
+    const since = url.searchParams.get('since');
+    const until = url.searchParams.get('until');
+    const inWindow = (ts) => (!since || (ts && ts >= since)) && (!until || (ts && ts < until));
+
+    const events = (await readAll(store)).filter((e) => inWindow(e.ts));
 
     // Ground-truth purchases come from the orders store, not client beacons.
     const ordersStore = getStore('orders');
-    const orders = await readAll(ordersStore);
+    const orders = (await readAll(ordersStore)).filter((o) => inWindow(o.receivedAt));
 
     const byType = {};
     const ctaBySku = {};
