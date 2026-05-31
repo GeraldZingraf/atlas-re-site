@@ -64,7 +64,7 @@
     <div class="contact">
       <input id="c-name" type="text" placeholder="Full name" autocomplete="name" />
       <input id="c-email" type="email" inputmode="email" placeholder="Email (where your kit is sent)" autocomplete="email" />
-      <input id="c-website" type="url" inputmode="url" placeholder="Your realty website (https://...)" autocomplete="url" />
+      <input id="c-website" type="url" inputmode="url" placeholder="Your website (optional)" autocomplete="url" />
     </div>
     <div class="divider"></div>
 
@@ -97,8 +97,8 @@
   const msg = document.getElementById('msg');
   const show = (text, kind) => { msg.textContent = text; msg.className = 'msg ' + kind; };
 
-  // Buyer details are REQUIRED — the fulfillment engine needs an email to send the
-  // kit to, a name to personalize it, and the realty website to research the buyer.
+  // Name + email are REQUIRED (the engine needs an email to send the kit to and a
+  // name to personalize it). Website is OPTIONAL — the researcher uses it if present.
   const contactValid = () => {
     const f = id => document.getElementById(id);
     const name = f('c-name').value.trim();
@@ -107,10 +107,9 @@
     const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
     f('c-name').classList.toggle('bad', !name);
     f('c-email').classList.toggle('bad', !emailOk);
-    f('c-website').classList.toggle('bad', !website);
-    return { ok: !!name && emailOk && !!website, name, email, website };
+    return { ok: !!name && emailOk, name, email, website };
   };
-  const DETAILS_MSG = 'Please add your name, email, and realty website before paying.';
+  const DETAILS_MSG = 'Please add your name and email before paying.';
 
   // 1) Pull public config (client-id + price) from our function.
   let cfg;
