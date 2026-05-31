@@ -39,6 +39,12 @@
   .msg.busy{display:block;background:rgba(124,92,255,.12);color:#c9bcff;border:1px solid rgba(124,92,255,.3)}
   a.back{color:var(--muted);font-size:13px;text-decoration:none}
   a.back:hover{color:var(--ink)}
+  /* Small phones: trim outer + card padding so the card fields get more width */
+  @media (max-width:480px){
+    body{padding:14px}
+    .card{padding:26px 18px;border-radius:16px}
+    .row{gap:8px}
+  }
 </style>
 </head>
 <body>
