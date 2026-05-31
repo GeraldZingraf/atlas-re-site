@@ -13,20 +13,6 @@ import { getStore } from '@netlify/blobs';
 export default async (req) => {
   const url = new URL(req.url);
   const token = req.headers.get('x-orders-token') || url.searchParams.get('token');
-
-  // TEMP DIAGNOSTIC — remove after debugging.
-  if (url.searchParams.get('debug') === '1') {
-    const env = process.env.ORDERS_TOKEN || '';
-    return Response.json({
-      hasEnv: !!process.env.ORDERS_TOKEN,
-      envLen: env.length,
-      sentLen: (token || '').length,
-      match: token === process.env.ORDERS_TOKEN,
-      envHead: env.slice(0, 4),
-      envTail: env.slice(-4),
-    });
-  }
-
   if (!token || token !== process.env.ORDERS_TOKEN) {
     return new Response('Unauthorized', { status: 401 });
   }
