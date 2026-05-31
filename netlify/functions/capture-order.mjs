@@ -1,26 +1,34 @@
-// Capture an approved PayPal order and drop it into the SAME orders queue the
-// IPN pipeline already uses, so the local fulfillment engine + download-kit
-// work unchanged. This is the on-domain replacement for the NCP/IPN front door.
+// Capture an approved PayPal order and drop it into the orders queue the local
+// fulfillment engine drains. On-domain replacement for the NCP/IPN front door.
 //
-// POST /.netlify/functions/capture-order  { orderID: "<paypal-order-id>" }
-//   -> { ok: true, txnId, sku }   (also { status: "queued" })
+// POST /.netlify/functions/capture-order  { orderID, contact?, sandbox? }
+//   -> { ok: true, txnId, sku }
 //
-// Order record shape MATCHES paypal-ipn.mjs exactly:
-//   { txnId, sku, amount, currency, email, name, itemName, status, receivedAt }
+// Order record shape MATCHES paypal-ipn.mjs, plus a `website` field:
+//   { txnId, sku, amount, currency, email, name, website, status, receivedAt }
 //
-// Env: PAYPAL_CLIENT_ID, PAYPAL_SECRET, PAYPAL_ENV (see create-order.mjs)
+// When { sandbox: true }: uses PAYPAL_SANDBOX_* creds + sandbox API, and writes
+// to the SEPARATE "orders-test" store so the live engine never sees test orders.
 
 import { getStore } from '@netlify/blobs';
 
-const API_BASE = (process.env.PAYPAL_ENV === 'sandbox')
-  ? 'https://api-m.sandbox.paypal.com'
-  : 'https://api-m.paypal.com';
+function creds(sandbox) {
+  return sandbox
+    ? {
+        base: 'https://api-m.sandbox.paypal.com',
+        id: process.env.PAYPAL_SANDBOX_CLIENT_ID,
+        secret: process.env.PAYPAL_SANDBOX_SECRET,
+      }
+    : {
+        base: 'https://api-m.paypal.com',
+        id: process.env.PAYPAL_CLIENT_ID,
+        secret: process.env.PAYPAL_SECRET,
+      };
+}
 
-async function getAccessToken() {
-  const auth = Buffer.from(
-    `${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET}`
-  ).toString('base64');
-  const res = await fetch(`${API_BASE}/v1/oauth2/token`, {
+async function getAccessToken(c) {
+  const auth = Buffer.from(`${c.id}:${c.secret}`).toString('base64');
+  const res = await fetch(`${c.base}/v1/oauth2/token`, {
     method: 'POST',
     headers: {
       Authorization: `Basic ${auth}`,
@@ -40,11 +48,15 @@ export default async (req) => {
   const orderID = body?.orderID;
   if (!orderID) return Response.json({ error: 'Missing orderID' }, { status: 400 });
 
+  const sandbox = !!body.sandbox;
+  const c = creds(sandbox);
+  if (!c.id || !c.secret) return Response.json({ error: 'paypal_not_configured' }, { status: 502 });
+
   let accessToken;
-  try { accessToken = await getAccessToken(); }
+  try { accessToken = await getAccessToken(c); }
   catch { return Response.json({ error: 'auth_failed' }, { status: 502 }); }
 
-  const capRes = await fetch(`${API_BASE}/v2/checkout/orders/${orderID}/capture`, {
+  const capRes = await fetch(`${c.base}/v2/checkout/orders/${orderID}/capture`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -57,7 +69,6 @@ export default async (req) => {
     return Response.json({ error: 'capture_failed', detail: result }, { status: 502 });
   }
 
-  // Pull the fields the fulfillment pipeline expects out of the capture response.
   const pu = result.purchase_units?.[0] || {};
   const capture = pu.payments?.captures?.[0] || {};
   const payer = result.payer || {};
@@ -68,8 +79,7 @@ export default async (req) => {
   const payerName = `${payer.name?.given_name || ''} ${payer.name?.surname || ''}`.trim();
 
   // Buyer-entered details from the checkout form are authoritative for fulfillment.
-  // Card payers have no PayPal account, so payer.email_address is often empty —
-  // the form email is what the engine sends the kit to. Fall back to PayPal data.
+  // Card payers have no PayPal account, so payer.email_address is often empty.
   const contact = body.contact || {};
   const order = {
     txnId,
@@ -84,11 +94,12 @@ export default async (req) => {
     receivedAt: new Date().toISOString(),
   };
 
-  const store = getStore('orders');
+  // Sandbox test orders go to a SEPARATE store so the live engine never sees them.
+  const store = getStore(sandbox ? 'orders-test' : 'orders');
 
   // Idempotency — capture can be retried; never queue the same txn twice.
   const existing = await store.get(txnId);
   if (!existing) await store.setJSON(txnId, order);
 
-  return Response.json({ ok: true, status: 'queued', txnId, sku, email: order.email });
+  return Response.json({ ok: true, status: 'queued', txnId, sku, email: order.email, sandbox });
 };

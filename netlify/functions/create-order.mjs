@@ -3,13 +3,12 @@
 // The browser only sends a SKU ("solo" | "broker"). The price is looked up
 // here, on the server, so a buyer can never tamper with the amount in JS.
 //
-// POST /.netlify/functions/create-order  { sku: "solo" | "broker" }
+// POST /.netlify/functions/create-order  { sku, sandbox? }
 //   -> { id: "<paypal-order-id>" }
 //
-// Env (set in Netlify site settings):
-//   PAYPAL_CLIENT_ID  - REST app client id (live or sandbox to match PAYPAL_ENV)
-//   PAYPAL_SECRET     - REST app secret
-//   PAYPAL_ENV        - "live" (default) or "sandbox"
+// When { sandbox: true } it uses the PAYPAL_SANDBOX_* credentials against the
+// PayPal sandbox API, so test purchases never touch live money. Live mode uses
+// PAYPAL_CLIENT_ID / PAYPAL_SECRET as before.
 
 // Single source of truth for what each SKU costs and is called.
 const CATALOG = {
@@ -17,15 +16,23 @@ const CATALOG = {
   broker: { amount: '1997.00', name: 'Atlas-RE Broker Kit' },
 };
 
-const API_BASE = (process.env.PAYPAL_ENV === 'sandbox')
-  ? 'https://api-m.sandbox.paypal.com'
-  : 'https://api-m.paypal.com';
+function creds(sandbox) {
+  return sandbox
+    ? {
+        base: 'https://api-m.sandbox.paypal.com',
+        id: process.env.PAYPAL_SANDBOX_CLIENT_ID,
+        secret: process.env.PAYPAL_SANDBOX_SECRET,
+      }
+    : {
+        base: 'https://api-m.paypal.com',
+        id: process.env.PAYPAL_CLIENT_ID,
+        secret: process.env.PAYPAL_SECRET,
+      };
+}
 
-async function getAccessToken() {
-  const auth = Buffer.from(
-    `${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET}`
-  ).toString('base64');
-  const res = await fetch(`${API_BASE}/v1/oauth2/token`, {
+async function getAccessToken(c) {
+  const auth = Buffer.from(`${c.id}:${c.secret}`).toString('base64');
+  const res = await fetch(`${c.base}/v1/oauth2/token`, {
     method: 'POST',
     headers: {
       Authorization: `Basic ${auth}`,
@@ -34,8 +41,7 @@ async function getAccessToken() {
     body: 'grant_type=client_credentials',
   });
   if (!res.ok) throw new Error(`token ${res.status}: ${await res.text()}`);
-  const json = await res.json();
-  return json.access_token;
+  return (await res.json()).access_token;
 }
 
 export default async (req) => {
@@ -49,11 +55,14 @@ export default async (req) => {
   const item = CATALOG[body?.sku];
   if (!item) return Response.json({ error: 'Unknown SKU' }, { status: 400 });
 
+  const c = creds(!!body.sandbox);
+  if (!c.id || !c.secret) return Response.json({ error: 'paypal_not_configured' }, { status: 502 });
+
   let accessToken;
-  try { accessToken = await getAccessToken(); }
+  try { accessToken = await getAccessToken(c); }
   catch (e) { return Response.json({ error: 'auth_failed' }, { status: 502 }); }
 
-  const orderRes = await fetch(`${API_BASE}/v2/checkout/orders`, {
+  const orderRes = await fetch(`${c.base}/v2/checkout/orders`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,

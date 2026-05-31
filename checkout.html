@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Checkout &middot; Atlas for Real Estate</title>
 <link rel="icon" href="/favicon.png">
+<script src="/analytics.js" defer></script>
 <style>
   :root{
     --bg:#0c0c14; --panel:#15151f; --ink:#f3f3f8; --muted:#a7a7b8;
@@ -94,6 +95,7 @@
 (async function () {
   const params = new URLSearchParams(location.search);
   const sku = params.get('sku');
+  const SANDBOX = params.get('sandbox') === '1'; // hidden test flag — uses PayPal sandbox, no real money
   const msg = document.getElementById('msg');
   const show = (text, kind) => { msg.textContent = text; msg.className = 'msg ' + kind; };
 
@@ -114,12 +116,21 @@
   // 1) Pull public config (client-id + price) from our function.
   let cfg;
   try {
-    const r = await fetch('/.netlify/functions/pp-config?sku=' + encodeURIComponent(sku || ''));
+    const r = await fetch('/.netlify/functions/pp-config?sku=' + encodeURIComponent(sku || '') + (SANDBOX ? '&sandbox=1' : ''));
     cfg = await r.json();
   } catch (e) { show('Could not load checkout. Refresh to try again.', 'err'); return; }
 
   if (!cfg.item) { show('Unknown product. Please return to the Atlas page and pick a kit.', 'err'); return; }
   if (!cfg.clientId) { show('Checkout is not configured yet. (Missing PayPal client id.)', 'err'); return; }
+
+  if (SANDBOX) {
+    const b = document.createElement('div');
+    b.textContent = 'SANDBOX TEST MODE — no real money is charged';
+    b.style.cssText = 'background:#3a2d00;color:#ffd76a;border:1px solid #6a5200;border-radius:8px;'
+      + 'padding:9px 12px;font-size:12px;font-weight:700;letter-spacing:.04em;text-align:center;margin-bottom:16px';
+    const card = document.querySelector('.card');
+    card.insertBefore(b, card.firstChild);
+  }
 
   document.getElementById('kit-name').textContent = cfg.item.label;
   document.getElementById('kit-price').innerHTML = cfg.item.display + '<small>once. that is the whole product.</small>';
@@ -140,7 +151,7 @@
   async function createOrder() {
     const r = await fetch('/.netlify/functions/create-order', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sku }),
+      body: JSON.stringify({ sku, sandbox: SANDBOX }),
     });
     const d = await r.json();
     if (!d.id) throw new Error('create failed');
@@ -154,6 +165,7 @@
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         orderID: data.orderID,
+        sandbox: SANDBOX,
         contact: { name: v.name, email: v.email, website: v.website },
       }),
     });
