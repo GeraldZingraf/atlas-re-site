@@ -7,7 +7,7 @@
    this no-ops so nothing breaks. A pixel ID is public (it ships in page source on
    every site that uses Meta), so it is safe to commit. */
 (function () {
-  var META_PIXEL_ID = 'PASTE_META_PIXEL_ID'; // <-- from Events Manager (e.g. 1234567890)
+  var META_PIXEL_ID = '1425933262885676'; // Atlas RE dataset, Events Manager
 
   if (!META_PIXEL_ID || META_PIXEL_ID === 'PASTE_META_PIXEL_ID') return; // not configured yet
 
