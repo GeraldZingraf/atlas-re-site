@@ -29,15 +29,22 @@
 
   var valueFor = function (sku) { return sku === 'broker' ? 1997 : 497; }; // solo default
 
-  if (/checkout\.html$/.test(path)) {
+  // Normalize the path so this works whether the host serves explicit files
+  // (/checkout.html) or "pretty" URLs (/checkout). Netlify strips .html by
+  // default, so the live funnel pages are /checkout and /thank-you with no
+  // extension -- the old /checkout\.html$/ test never matched them, which is
+  // why InitiateCheckout and Purchase silently never fired.
+  var route = path.replace(/\.html$/, '').replace(/\/index$/, '/');
+
+  if (route === '/checkout') {
     var sku = params.get('sku') || '';
     fbq('track', 'InitiateCheckout', { value: valueFor(sku), currency: 'USD', content_name: sku || 'unknown' });
-  } else if (/thank-you\.html$/.test(path)) {
+  } else if (route === '/thank-you') {
     if (!isTest) {
       var psku = params.get('sku') || '';
       fbq('track', 'Purchase', { value: valueFor(psku), currency: 'USD', content_name: psku || 'unknown' });
     }
-  } else if (path === '/' || /index\.html$/.test(path)) {
+  } else if (route === '/' || route === '') {
     fbq('track', 'ViewContent');
   }
 })();
