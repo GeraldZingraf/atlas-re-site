@@ -30,14 +30,19 @@ const clip = (v, n) => (typeof v === 'string' ? v.slice(0, n) : '');
 
 // Maps utm_source tags to the channel names used in the funnel Dashboard sheet,
 // so the per-source rollup lines up 1:1 with that tab. Tag each channel's links:
-//   ?utm_source=linkedin | meta | fbgroup | reddit | biggerpockets | labcoat
+//   ?utm_source=linkedin | meta | google | fbgroup | reddit | biggerpockets |
+//               labcoat | activerain | youtube | tiktok
 const SOURCE_TO_CHANNEL = {
   linkedin: 'LinkedIn',
   meta: 'Meta Ads',
+  google: 'Google Search Ads',
   fbgroup: 'Facebook Groups',
   reddit: 'Reddit',
   biggerpockets: 'BiggerPockets',
   labcoat: 'Lab Coat Agents',
+  activerain: 'Active Rain',
+  youtube: 'YouTube',
+  tiktok: 'TikTok',
   direct: 'Direct',
   unknown: 'Unknown',
 };

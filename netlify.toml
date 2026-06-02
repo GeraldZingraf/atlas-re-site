@@ -35,3 +35,19 @@
   from = "/go/labcoat"
   to = "/?utm_source=labcoat"
   status = 302
+[[redirects]]
+  from = "/go/google"
+  to = "/?utm_source=google"
+  status = 302
+[[redirects]]
+  from = "/go/activerain"
+  to = "/?utm_source=activerain"
+  status = 302
+[[redirects]]
+  from = "/go/youtube"
+  to = "/?utm_source=youtube"
+  status = 302
+[[redirects]]
+  from = "/go/tiktok"
+  to = "/?utm_source=tiktok"
+  status = 302
