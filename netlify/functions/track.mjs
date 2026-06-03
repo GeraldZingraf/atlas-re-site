@@ -36,9 +36,11 @@ const ALLOWED = new Set([
   'page_view',
   'scroll_depth',
   'cta_click',
+  'lead_capture',   // C4 — mid-funnel signal (visit -> lead). No PII in the event.
   'checkout_start',
   'purchase',
   'refund_view',
+  'viewed_guide',   // install-guide page view (activation funnel step)
 ]);
 
 const clip = (v, n) => (typeof v === 'string' ? v.slice(0, n) : '');
@@ -96,7 +98,7 @@ async function readAll(store) {
 
 // ---- incremental rollup cache helpers --------------------------------------
 const DEPTHS = [25, 50, 75, 100];
-const freshSrc = () => ({ visitors: [], ctaClicks: 0, checkoutSessions: [] });
+const freshSrc = () => ({ visitors: [], ctaClicks: 0, leadSessions: [], checkoutSessions: [] });
 const freshDay = () => ({
   events: 0,
   pageViews: 0,
@@ -104,7 +106,9 @@ const freshDay = () => ({
   ctaBySku: {},
   scrollDepth: { 25: 0, 50: 0, 75: 0, 100: 0 },
   sessions: [],
+  leadSessions: [],      // C4 — unique sessions that submitted the capture form
   checkoutSessions: [],
+  guideSessions: [],     // unique sessions that viewed the install guide
   bySource: {},
 });
 const pushUniq = (arr, v) => { if (v && !arr.includes(v)) arr.push(v); };
@@ -127,16 +131,23 @@ function foldEvent(state, e) {
     s.ctaClicks += 1;
   }
   if (e.type === 'scroll_depth' && d.scrollDepth[e.meta] !== undefined) d.scrollDepth[e.meta] += 1;
+  if (e.type === 'lead_capture' && sid) {
+    pushUniq(d.leadSessions, sid);
+    pushUniq(s.leadSessions, sid);
+  }
   if (e.type === 'checkout_start' && sid) {
     pushUniq(d.checkoutSessions, sid);
     pushUniq(s.checkoutSessions, sid);
   }
+  if (e.type === 'viewed_guide' && sid) pushUniq(d.guideSessions, sid);
 }
 
 // Aggregate selected day buckets into the response-shaped numbers.
 function aggregate(state, days) {
   const sessions = new Set();
+  const leadSessions = new Set();
   const checkoutSessions = new Set();
+  const guideSessions = new Set();
   const ctaBySku = {};
   const scrollDepth = { 25: 0, 50: 0, 75: 0, 100: 0 };
   const src = {};
@@ -149,17 +160,20 @@ function aggregate(state, days) {
     pageViews += d.pageViews;
     ctaClicks += d.ctaClicks;
     for (const sid of d.sessions) sessions.add(sid);
+    for (const sid of (d.leadSessions || [])) leadSessions.add(sid);
     for (const sid of d.checkoutSessions) checkoutSessions.add(sid);
+    for (const sid of (d.guideSessions || [])) guideSessions.add(sid);
     for (const k in d.ctaBySku) ctaBySku[k] = (ctaBySku[k] || 0) + d.ctaBySku[k];
     for (const k of DEPTHS) scrollDepth[k] += d.scrollDepth[k] || 0;
     for (const ch in d.bySource) {
-      const a = src[ch] || (src[ch] = { visitors: new Set(), ctaClicks: 0, checkoutSessions: new Set() });
+      const a = src[ch] || (src[ch] = { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), checkoutSessions: new Set() });
       for (const sid of d.bySource[ch].visitors) a.visitors.add(sid);
       a.ctaClicks += d.bySource[ch].ctaClicks;
+      for (const sid of (d.bySource[ch].leadSessions || [])) a.leadSessions.add(sid);
       for (const sid of d.bySource[ch].checkoutSessions) a.checkoutSessions.add(sid);
     }
   }
-  return { sessions, checkoutSessions, ctaBySku, scrollDepth, src, events, pageViews, ctaClicks };
+  return { sessions, leadSessions, checkoutSessions, guideSessions, ctaBySku, scrollDepth, src, events, pageViews, ctaClicks };
 }
 
 export default async (req) => {
@@ -219,7 +233,10 @@ export default async (req) => {
     //    single small blob — negligible.
     const rollupStore = getStore({ name: 'analytics_rollup', consistency: 'strong' });
     let state = await rollupStore.get('state', { type: 'json', consistency: 'strong' });
-    if (!state || state.version !== 2) state = { version: 2, lastKey: '', days: {} };
+    // v3 adds lead/guide session tracking (C4). Bumping the version triggers a
+    // clean re-backfill from the events log so older day buckets gain the new
+    // fields instead of being read as undefined.
+    if (!state || state.version !== 3) state = { version: 3, lastKey: '', days: {} };
 
     // 2. List event keys (cheap — keys only, no values fetched).
     const allKeys = [];
@@ -255,25 +272,31 @@ export default async (req) => {
     const bySource = {};
     const channels = new Set([...Object.keys(agg.src), ...orders.map((o) => channelOf(o.source))]);
     for (const ch of channels) {
-      const a = agg.src[ch] || { visitors: new Set(), ctaClicks: 0, checkoutSessions: new Set() };
+      const a = agg.src[ch] || { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), checkoutSessions: new Set() };
       const chOrders = orders.filter((o) => channelOf(o.source) === ch);
       const buyers = chOrders.length;
       const revenue = chOrders.reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
       const visits = a.visitors.size;
+      const leads = a.leadSessions.size;
       const checkouts = a.checkoutSessions.size;
       bySource[ch] = {
         visits,
         ctaClicks: a.ctaClicks,
+        leads,
         checkouts,
         buyers,
         revenue,
+        visit_to_lead_pct: pct(leads, visits),
+        lead_to_buyer_pct: pct(buyers, leads),
         visit_to_buyer_pct: pct(buyers, visits),
         checkout_to_buyer_pct: pct(buyers, checkouts),
       };
     }
 
     const uniqueVisitors = agg.sessions.size;
+    const leads = agg.leadSessions.size;
     const checkoutStarts = agg.checkoutSessions.size;
+    const guideViews = agg.guideSessions.size;
     const purchases = orders.length;
     const revenue = orders.reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
 
@@ -284,11 +307,15 @@ export default async (req) => {
         uniqueVisitors,
         pageViews: agg.pageViews,
         ctaClicks: agg.ctaClicks,
+        leads,
         checkoutStarts,
+        guideViews,
         purchases,
       },
       funnel: {
         visitor_to_cta_pct: pct(agg.ctaClicks, uniqueVisitors),
+        visit_to_lead_pct: pct(leads, uniqueVisitors),
+        lead_to_buyer_pct: pct(purchases, leads),
         cta_to_checkout_pct: pct(checkoutStarts, agg.ctaClicks),
         checkout_to_purchase_pct: pct(purchases, checkoutStarts),
         visitor_to_purchase_pct: pct(purchases, uniqueVisitors),

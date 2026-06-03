@@ -45,6 +45,12 @@
     fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true }).catch(function () {});
   }
 
+  // Expose a tiny tracker so page scripts can emit funnel events through the same
+  // pipeline (e.g. the capture form fires lead_capture after the email POST
+  // succeeds — C4). No PII ever passes through here; email goes only to the
+  // subscribe/leads function.
+  try { window.aaTrack = send; } catch (e) {}
+
   // 1) Page view on every load.
   send('page_view');
 
@@ -57,6 +63,10 @@
     send('purchase', params.get('sku') || '');
   } else if (/refund\.html$/.test(path)) {
     send('refund_view');
+  } else if (/install-guide(\.html)?$/.test(path)) {
+    // Activation funnel step — did the buyer actually open the install guide?
+    // Tolerant of the pretty URL (/install-guide) and explicit /install-guide.html.
+    send('viewed_guide');
   }
 
   // 3) CTA clicks — any link that heads to checkout, tagged with its sku.

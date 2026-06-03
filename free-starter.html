@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>First 3 AI hires free | Atlas for Real Estate</title>
+<meta name="description" content="Hire your first 3 AI teammates free. A chief of staff, a listing and marketing writer, and a lead first-touch drafter, trained on your voice. No card, no call." />
+<link rel="icon" type="image/png" href="favicon.png" />
+<script src="/pixel.js"></script>
+<script src="/analytics.js" defer></script>
+<script src="/google-ads.js" defer></script>
+<style>
+  :root{
+    --bg:#0d0f16;--panel:#171b27;--panel-2:#1d2230;--line:#2a3040;
+    --ink:#eef1f7;--muted:#a6adbd;--faint:#7d8597;
+    --brand:#7c5cff;--brand-2:#2bb6b0;
+    --accent-grad:linear-gradient(100deg,#7c5cff 0%,#2bb6b0 100%);
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:var(--bg);color:var(--ink);padding:28px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6;-webkit-font-smoothing:antialiased;
+  }
+  .card{
+    max-width:600px;width:100%;background:linear-gradient(180deg,var(--panel-2),var(--panel));
+    border:1px solid var(--line);border-radius:20px;padding:44px 40px;
+  }
+  .logo{width:60px;height:60px;margin:0 0 22px;display:block}
+  .eyebrow{
+    text-transform:uppercase;letter-spacing:.22em;font-size:.74rem;font-weight:700;
+    color:var(--brand-2);margin:0 0 14px
+  }
+  h1{
+    font-size:clamp(1.8rem,4vw,2.5rem);line-height:1.12;margin:0 0 16px;font-weight:800;
+    letter-spacing:-.02em
+  }
+  .grad{background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  p{margin:0 0 16px;color:var(--muted)}
+  .lead{font-size:1.1rem;color:var(--ink)}
+  ul.hires{list-style:none;padding:0;margin:18px 0 24px}
+  ul.hires li{
+    padding:12px 0 12px 30px;position:relative;color:var(--ink);border-bottom:1px solid var(--line)
+  }
+  ul.hires li:last-child{border-bottom:0}
+  ul.hires li::before{content:"";position:absolute;left:4px;top:18px;width:10px;height:10px;border-radius:50%;background:var(--accent-grad)}
+  ul.hires li span{display:block;color:var(--faint);font-size:.92rem}
+  form{margin:6px 0 0}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  input[type=email]{
+    flex:1 1 260px;min-width:0;background:var(--bg);border:1px solid var(--line);
+    border-radius:var(--radius);padding:15px 16px;color:var(--ink);font-size:1rem
+  }
+  input[type=email]:focus{outline:none;border-color:var(--brand-2)}
+  button{
+    flex:0 0 auto;border:0;border-radius:var(--radius);padding:15px 24px;font-size:1rem;font-weight:700;
+    color:#0d0f16;background:var(--accent-grad);cursor:pointer
+  }
+  button:disabled{opacity:.6;cursor:default}
+  .privacy{color:var(--faint);font-size:.86rem;margin-top:14px}
+  .status{margin-top:16px;font-size:.96rem;min-height:1.2em}
+  .status.err{color:#ff8f8f}
+  .ok-panel{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px;margin-top:22px;display:none
+  }
+  .ok-panel b{color:var(--ink)}
+  .ok-panel a{color:var(--brand-2)}
+  .lic{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);font-weight:700;letter-spacing:.04em}
+  .home{display:inline-block;margin-top:22px;color:var(--faint);text-decoration:none;font-size:.9rem}
+  .home:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+  <div class="card">
+    <img class="logo" src="favicon.png" alt="Atlas" />
+    <p class="eyebrow">Free starter</p>
+    <h1>Hire your first <span class="grad">3 AI teammates</span>, free.</h1>
+    <p class="lead">Not software you have to learn. A small team you put to work by hand, trained on your voice, yours to keep.</p>
+
+    <ul class="hires">
+      <li>Atlas, your chief of staff
+        <span>Ask it anything about your day, your deals, your market.</span></li>
+      <li>A listing and marketing writer
+        <span>Paste the property, get the listing copy and the social pack.</span></li>
+      <li>A lead first-touch drafter
+        <span>Paste a new lead, get the first message in your voice.</span></li>
+    </ul>
+
+    <form id="capture" novalidate>
+      <div class="row">
+        <input id="email" type="email" name="email" inputmode="email" autocomplete="email"
+               placeholder="you@yourbrokerage.com" required aria-label="Your email" />
+        <button id="submit" type="submit">Get my team</button>
+      </div>
+      <p class="privacy">No card. No call. We email your starter and a 4-minute setup guide. We use your email only to send your kit and support it. Unsubscribe anytime.</p>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </form>
+
+    <div class="ok-panel" id="ok">
+      <p style="margin-bottom:10px"><b>You are in.</b> Your starter is on its way to your inbox.</p>
+      <p style="margin-bottom:10px">Your license number is <span class="lic" id="lic"></span>. Keep it. It is how your team upgrades and stays trained on you later.</p>
+      <p style="margin:0">Want a head start? <a href="/install-guide.html">Open the 4-minute setup guide</a> while you wait.</p>
+    </div>
+
+    <a class="home" href="/">Back to agent-atlas.co</a>
+  </div>
+
+<script>
+(function () {
+  var form = document.getElementById('capture');
+  var emailEl = document.getElementById('email');
+  var btn = document.getElementById('submit');
+  var statusEl = document.getElementById('status');
+  var okPanel = document.getElementById('ok');
+
+  // First-touch channel attribution, set by analytics.js (localStorage aa_src).
+  // Email never rides in a URL or to analytics; it goes only to /subscribe.
+  function source() {
+    try { return (localStorage.getItem('aa_src') || 'direct'); } catch (e) { return 'direct'; }
+  }
+
+  function setStatus(msg, isErr) {
+    statusEl.textContent = msg || '';
+    statusEl.className = 'status' + (isErr ? ' err' : '');
+  }
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var email = (emailEl.value || '').trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setStatus('Please enter a valid email address.', true);
+      emailEl.focus();
+      return;
+    }
+    btn.disabled = true;
+    setStatus('Setting up your team...');
+
+    fetch('/.netlify/functions/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, source: source() })
+    })
+    .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+    .then(function (res) {
+      if (!res.ok || !res.body || res.body.ok === false) {
+        throw new Error((res.body && res.body.error) || 'failed');
+      }
+      // Fire the funnel events only AFTER the lead is safely stored (C4).
+      try { if (window.aaTrack) window.aaTrack('lead_capture'); } catch (e) {}
+      try { if (window.fbq) window.fbq('track', 'Lead'); } catch (e) {} // Meta optimization event
+
+      document.getElementById('lic').textContent = res.body.license || '';
+      form.style.display = 'none';
+      okPanel.style.display = 'block';
+      setStatus('');
+    })
+    .catch(function () {
+      btn.disabled = false;
+      setStatus('Something went wrong. Please try again, or email atlas@agent-atlas.co.', true);
+    });
+  });
+})();
+</script>
+</body>
+</html>
