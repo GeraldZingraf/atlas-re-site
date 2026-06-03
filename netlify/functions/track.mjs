@@ -83,7 +83,7 @@ async function readAll(store, keyTimeWindow) {
         return true;
       });
     }
-    const got = await mapLimit(blobs, 50, async (b) => {
+    const got = await mapLimit(blobs, 250, async (b) => {
       try {
         const o = await store.get(b.key, { type: 'json' });
         if (o) o._key = b.key;
