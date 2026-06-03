@@ -48,17 +48,51 @@ const SOURCE_TO_CHANNEL = {
 };
 const channelOf = (s) => SOURCE_TO_CHANNEL[(s || 'direct').toLowerCase()] || (s || 'direct');
 
+// Resolve an array of async tasks with a bounded concurrency so a large store
+// doesn't fire thousands of simultaneous subrequests (which Netlify caps).
+async function mapLimit(items, limit, fn) {
+  const out = [];
+  for (let i = 0; i < items.length; i += limit) {
+    out.push(...(await Promise.all(items.slice(i, i + limit).map(fn))));
+  }
+  return out;
+}
+
 // Walk every blob in a store, following the list cursor so we never miss events
-// once volume grows past a single page.
-async function readAll(store) {
+// once volume grows past a single page. Blobs in a page are fetched in parallel
+// (bounded) rather than one-at-a-time — the old serial loop timed out the function
+// once the events log grew, which is what 502'd the read path.
+//
+// `keyTimeWindow` (optional) skips blobs whose key falls outside the window WITHOUT
+// fetching them. Event keys are `${Date.now()}-<rand>`, so the numeric prefix is the
+// write time in ms — this keeps windowed reads (the weekly sync) cheap as the log grows.
+// A single unreadable blob is skipped, never fatal.
+async function readAll(store, keyTimeWindow) {
   const out = [];
   let cursor;
   do {
     const page = await store.list(cursor ? { cursor } : undefined);
-    for (const b of page.blobs) {
-      const o = await store.get(b.key, { type: 'json' });
-      if (o) { o._key = b.key; out.push(o); }
+    let blobs = page.blobs;
+    if (keyTimeWindow) {
+      const { sinceMs, untilMs } = keyTimeWindow;
+      blobs = blobs.filter((b) => {
+        const ms = parseInt(b.key, 10);
+        if (!Number.isFinite(ms)) return true; // unknown key shape -> keep, filter later
+        if (sinceMs != null && ms < sinceMs) return false;
+        if (untilMs != null && ms >= untilMs) return false;
+        return true;
+      });
     }
+    const got = await mapLimit(blobs, 50, async (b) => {
+      try {
+        const o = await store.get(b.key, { type: 'json' });
+        if (o) o._key = b.key;
+        return o;
+      } catch {
+        return null; // one bad blob must not 502 the whole rollup
+      }
+    });
+    for (const o of got) if (o) out.push(o);
     cursor = page.cursor;
   } while (cursor);
   return out;
@@ -106,9 +140,17 @@ export default async (req) => {
     const until = url.searchParams.get('until');
     const inWindow = (ts) => (!since || (ts && ts >= since)) && (!until || (ts && ts < until));
 
-    const events = (await readAll(store)).filter((e) => inWindow(e.ts));
+    // Timestamp-prefixed event keys let us skip out-of-window blobs before fetching.
+    const sinceMs = since ? Date.parse(since) : NaN;
+    const untilMs = until ? Date.parse(until) : NaN;
+    const keyWin = (since || until)
+      ? { sinceMs: Number.isFinite(sinceMs) ? sinceMs : null, untilMs: Number.isFinite(untilMs) ? untilMs : null }
+      : undefined;
 
-    // Ground-truth purchases come from the orders store, not client beacons.
+    const events = (await readAll(store, keyWin)).filter((e) => inWindow(e.ts));
+
+    // Ground-truth purchases come from the orders store, not client beacons. Orders
+    // are keyed by txnId (not timestamp), so they're filtered by receivedAt after read.
     const ordersStore = getStore('orders');
     const orders = (await readAll(ordersStore)).filter((o) => inWindow(o.receivedAt));
 
