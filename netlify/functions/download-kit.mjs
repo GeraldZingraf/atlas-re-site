@@ -3,9 +3,11 @@
 // expires the link 24h after that first download (also deletes the blob).
 //
 // When the kit record carries a `license` (Delivery opt-in via upload-kit), each
-// pull is metered against the per-license download cap (C5: free 2). A shared
-// link / exhausted token then gets a clear "limit reached" response instead of
-// the bytes. Kits without a license keep the legacy 24h-expiry-only behavior.
+// served pull is metered against the per-license download cap (C5). Free licenses
+// are refused past 2 pulls (so a shared link / exhausted token gets a clear
+// "limit reached" instead of the bytes); paid licenses are counted but not
+// download-capped (paid is gated by the 2-activation flow, not downloads, per C2).
+// Kits without a license keep the legacy 24h-expiry-only behavior.
 //
 // GET /.netlify/functions/download-kit?t=<dlToken>
 
@@ -23,11 +25,21 @@ export default async (req) => {
   const rec = await store.get(t, { type: 'json' });
   if (!rec || !rec.b64) return new Response('This download link has expired or is invalid.', { status: 404 });
 
-  // Per-license download cap (C5). Only meters when Delivery stamped a license on
-  // the kit. Re-downloads of the SAME link within the 24h window don't re-meter —
-  // the cap counts distinct pulls of a token, so we only meter on the first hit
-  // of this link (before downloadedAt is set).
-  if (rec.license && !rec.downloadedAt) {
+  // Expire 24h after the first download. Delete the blob and refuse the link.
+  // (Checked before metering so an expired-link hit never burns a download pull.)
+  if (rec.downloadedAt) {
+    const age = Date.now() - new Date(rec.downloadedAt).getTime();
+    if (age > EXPIRY_MS) {
+      try { await store.delete(t); } catch (_) {}
+      return new Response('This download link has expired. Reply to your kit email for a fresh link.', { status: 410 });
+    }
+  }
+
+  // Per-license download cap (C5). Meters EVERY served pull when Delivery stamped
+  // a license on the kit, so a shared link exhausts the free 2-pull cap and then
+  // returns "limit reached". Paid is counted but never refused here (activation is
+  // the paid gate). Kits with no license skip this entirely.
+  if (rec.license) {
     const metered = await meterDownload(rec.license);
     if (!metered.ok) {
       const msg = metered.reason === 'download_limit'
@@ -37,15 +49,8 @@ export default async (req) => {
     }
   }
 
-  // Expire 24h after the first download. Delete the blob and refuse the link.
-  if (rec.downloadedAt) {
-    const age = Date.now() - new Date(rec.downloadedAt).getTime();
-    if (age > EXPIRY_MS) {
-      try { await store.delete(t); } catch (_) {}
-      return new Response('This download link has expired. Reply to your kit email for a fresh link.', { status: 410 });
-    }
-  } else {
-    // First download — start the 24h clock.
+  // First download — start the 24h link-lifetime clock.
+  if (!rec.downloadedAt) {
     rec.downloadedAt = new Date().toISOString();
     try { await store.setJSON(t, rec); } catch (_) {}
   }

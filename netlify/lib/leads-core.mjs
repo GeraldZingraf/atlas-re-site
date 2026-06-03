@@ -121,18 +121,21 @@ export async function markFulfilled({ license, which }) {
 }
 
 // --- download cap (C5) -------------------------------------------------------
-// Meter a pull against the per-tier cap. Returns {ok, downloads, cap} or
-// {ok:false, reason:'download_limit'}. download-kit.mjs calls this only when the
-// kit record carries a license (Delivery opt-in); legacy kits are unaffected.
+// Meter a pull. Free licenses are refused past FREE_DOWNLOAD_CAP (C2: 2 pulls),
+// so a shared/exhausted link returns download_limit. Paid licenses are counted
+// for traceability but never refused here — paid is gated by the 2-activation
+// flow, not a download cap (C2). download-kit.mjs calls this only when the kit
+// record carries a license (Delivery opt-in); legacy kits are unaffected.
 export async function meterDownload(license) {
   const rec = await getByLicense(license);
   if (!rec) return { ok: false, reason: 'unknown_license' };
-  const cap = rec.tier === 'paid' ? PAID_ACTIVATION_CAP : FREE_DOWNLOAD_CAP;
   const current = rec.downloads || 0;
-  if (current >= cap) return { ok: false, reason: 'download_limit', cap, downloads: current };
+  if (rec.tier !== 'paid' && current >= FREE_DOWNLOAD_CAP) {
+    return { ok: false, reason: 'download_limit', cap: FREE_DOWNLOAD_CAP, downloads: current };
+  }
   rec.downloads = current + 1;
   await saveLead(rec);
-  return { ok: true, downloads: rec.downloads, cap };
+  return { ok: true, downloads: rec.downloads, tier: rec.tier };
 }
 
 // --- activation (C5) ---------------------------------------------------------
