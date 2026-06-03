@@ -9,7 +9,22 @@
 // Claude pulls the rolled-up funnel.
 //   GET /.netlify/functions/track?token=...                  -> funnel rollup (all-time)
 //   GET /.netlify/functions/track?token=...&since=&until=    -> rollup for a window
-//   GET /.netlify/functions/track?token=...&raw=1            -> rollup + raw events
+//   GET /.netlify/functions/track?token=...&raw=1            -> rollup + cache state
+//
+// READ ARCHITECTURE — incremental rollup cache (why this exists):
+//   The naive read scanned every event blob on each request (one get() per event).
+//   That timed out, then crashed, the function once Meta-ad traffic grew the log —
+//   blob get latency * event count is unbounded. Instead we keep a small cached
+//   rollup (per-day aggregates) in the "analytics_rollup" store. Each read:
+//     1. list() event keys — cheap, returns KEYS only, never fetches values.
+//     2. fold only events whose key is beyond the cache highwater (lastKey), in a
+//        bounded batch. Event keys are `${Date.now()}-<rand>`, so string-sorting
+//        keys == chronological order, and "> lastKey" == "not yet folded".
+//     3. persist the advanced cache; serve all-time or windowed totals from it.
+//   The first read after deploy backfills in batches (no mass-fetch cliff); pass
+//   ?batch=/?conc= to tune. Steady-state reads fold ~zero new events. The PUBLIC
+//   WRITE PATH is untouched — a bug here can only affect the token-guarded read,
+//   never beacon ingestion.
 //
 // No third-party analytics. No cookies. sessionId is a random id in localStorage,
 // not PII. This matches the site's no-SaaS, first-party-data posture.
@@ -48,8 +63,8 @@ const SOURCE_TO_CHANNEL = {
 };
 const channelOf = (s) => SOURCE_TO_CHANNEL[(s || 'direct').toLowerCase()] || (s || 'direct');
 
-// Resolve an array of async tasks with a bounded concurrency so a large store
-// doesn't fire thousands of simultaneous subrequests (which Netlify caps).
+// Resolve async tasks with a bounded concurrency. Kept low on purpose: firing a
+// large fan-out of blob gets at once overwhelmed the function (fast 502s).
 async function mapLimit(items, limit, fn) {
   const out = [];
   for (let i = 0; i < items.length; i += limit) {
@@ -58,38 +73,19 @@ async function mapLimit(items, limit, fn) {
   return out;
 }
 
-// Walk every blob in a store, following the list cursor so we never miss events
-// once volume grows past a single page. Blobs in a page are fetched in parallel
-// (bounded) rather than one-at-a-time — the old serial loop timed out the function
-// once the events log grew, which is what 502'd the read path.
-//
-// `keyTimeWindow` (optional) skips blobs whose key falls outside the window WITHOUT
-// fetching them. Event keys are `${Date.now()}-<rand>`, so the numeric prefix is the
-// write time in ms — this keeps windowed reads (the weekly sync) cheap as the log grows.
-// A single unreadable blob is skipped, never fatal.
-async function readAll(store, keyTimeWindow) {
+// Walk every blob in a store (small stores only — used for orders, not events).
+async function readAll(store) {
   const out = [];
   let cursor;
   do {
     const page = await store.list(cursor ? { cursor } : undefined);
-    let blobs = page.blobs;
-    if (keyTimeWindow) {
-      const { sinceMs, untilMs } = keyTimeWindow;
-      blobs = blobs.filter((b) => {
-        const ms = parseInt(b.key, 10);
-        if (!Number.isFinite(ms)) return true; // unknown key shape -> keep, filter later
-        if (sinceMs != null && ms < sinceMs) return false;
-        if (untilMs != null && ms >= untilMs) return false;
-        return true;
-      });
-    }
-    const got = await mapLimit(blobs, 250, async (b) => {
+    const got = await mapLimit(page.blobs, 8, async (b) => {
       try {
         const o = await store.get(b.key, { type: 'json' });
         if (o) o._key = b.key;
         return o;
       } catch {
-        return null; // one bad blob must not 502 the whole rollup
+        return null;
       }
     });
     for (const o of got) if (o) out.push(o);
@@ -98,11 +94,79 @@ async function readAll(store, keyTimeWindow) {
   return out;
 }
 
+// ---- incremental rollup cache helpers --------------------------------------
+const DEPTHS = [25, 50, 75, 100];
+const freshSrc = () => ({ visitors: [], ctaClicks: 0, checkoutSessions: [] });
+const freshDay = () => ({
+  events: 0,
+  pageViews: 0,
+  ctaClicks: 0,
+  ctaBySku: {},
+  scrollDepth: { 25: 0, 50: 0, 75: 0, 100: 0 },
+  sessions: [],
+  checkoutSessions: [],
+  bySource: {},
+});
+const pushUniq = (arr, v) => { if (v && !arr.includes(v)) arr.push(v); };
+
+// Fold one event into the per-day cache (mutates state.days).
+function foldEvent(state, e) {
+  const day = (typeof e.ts === 'string' && e.ts.slice(0, 10)) || 'unknown';
+  const d = state.days[day] || (state.days[day] = freshDay());
+  const sid = e.sessionId;
+  const ch = channelOf(e.source);
+  const s = d.bySource[ch] || (d.bySource[ch] = freshSrc());
+
+  d.events += 1;
+  if (sid) { pushUniq(d.sessions, sid); pushUniq(s.visitors, sid); }
+  if (e.type === 'page_view') d.pageViews += 1;
+  if (e.type === 'cta_click') {
+    d.ctaClicks += 1;
+    const k = e.sku || 'unknown';
+    d.ctaBySku[k] = (d.ctaBySku[k] || 0) + 1;
+    s.ctaClicks += 1;
+  }
+  if (e.type === 'scroll_depth' && d.scrollDepth[e.meta] !== undefined) d.scrollDepth[e.meta] += 1;
+  if (e.type === 'checkout_start' && sid) {
+    pushUniq(d.checkoutSessions, sid);
+    pushUniq(s.checkoutSessions, sid);
+  }
+}
+
+// Aggregate selected day buckets into the response-shaped numbers.
+function aggregate(state, days) {
+  const sessions = new Set();
+  const checkoutSessions = new Set();
+  const ctaBySku = {};
+  const scrollDepth = { 25: 0, 50: 0, 75: 0, 100: 0 };
+  const src = {};
+  let events = 0, pageViews = 0, ctaClicks = 0;
+
+  for (const day of days) {
+    const d = state.days[day];
+    if (!d) continue;
+    events += d.events;
+    pageViews += d.pageViews;
+    ctaClicks += d.ctaClicks;
+    for (const sid of d.sessions) sessions.add(sid);
+    for (const sid of d.checkoutSessions) checkoutSessions.add(sid);
+    for (const k in d.ctaBySku) ctaBySku[k] = (ctaBySku[k] || 0) + d.ctaBySku[k];
+    for (const k of DEPTHS) scrollDepth[k] += d.scrollDepth[k] || 0;
+    for (const ch in d.bySource) {
+      const a = src[ch] || (src[ch] = { visitors: new Set(), ctaClicks: 0, checkoutSessions: new Set() });
+      for (const sid of d.bySource[ch].visitors) a.visitors.add(sid);
+      a.ctaClicks += d.bySource[ch].ctaClicks;
+      for (const sid of d.bySource[ch].checkoutSessions) a.checkoutSessions.add(sid);
+    }
+  }
+  return { sessions, checkoutSessions, ctaBySku, scrollDepth, src, events, pageViews, ctaClicks };
+}
+
 export default async (req) => {
   const url = new URL(req.url);
   const store = getStore('events');
 
-  // ---- WRITE path (public) ---------------------------------------------------
+  // ---- WRITE path (public) — UNCHANGED ---------------------------------------
   if (req.method === 'POST') {
     let body;
     try { body = await req.json(); } catch { return new Response('Bad JSON', { status: 400 }); }
@@ -126,118 +190,119 @@ export default async (req) => {
     return new Response(null, { status: 204 });
   }
 
-  // ---- READ path (token-guarded) ---------------------------------------------
+  // ---- READ path (token-guarded) — incremental cache -------------------------
   if (req.method === 'GET') {
     const token = req.headers.get('x-orders-token') || url.searchParams.get('token');
     if (!token || token !== process.env.ORDERS_TOKEN) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    // Optional time window so the weekly sync can pull just one week's numbers.
-    //   ?since=2026-06-01            (inclusive, ISO date or datetime)
-    //   ?until=2026-06-08            (exclusive). Omit both for all-time.
-    const since = url.searchParams.get('since');
-    const until = url.searchParams.get('until');
-    const inWindow = (ts) => (!since || (ts && ts >= since)) && (!until || (ts && ts < until));
-
-    // Timestamp-prefixed event keys let us skip out-of-window blobs before fetching.
-    const sinceMs = since ? Date.parse(since) : NaN;
-    const untilMs = until ? Date.parse(until) : NaN;
-    const keyWin = (since || until)
-      ? { sinceMs: Number.isFinite(sinceMs) ? sinceMs : null, untilMs: Number.isFinite(untilMs) ? untilMs : null }
-      : undefined;
-
-    const events = (await readAll(store, keyWin)).filter((e) => inWindow(e.ts));
-
-    // Ground-truth purchases come from the orders store, not client beacons. Orders
-    // are keyed by txnId (not timestamp), so they're filtered by receivedAt after read.
-    const ordersStore = getStore('orders');
-    const orders = (await readAll(ordersStore)).filter((o) => inWindow(o.receivedAt));
-
-    const byType = {};
-    const ctaBySku = {};
-    const scrollDepth = { 25: 0, 50: 0, 75: 0, 100: 0 };
-    const sessions = new Set();
-    const checkoutStartSessions = new Set();
-
-    for (const e of events) {
-      byType[e.type] = (byType[e.type] || 0) + 1;
-      if (e.sessionId) sessions.add(e.sessionId);
-      if (e.type === 'cta_click') ctaBySku[e.sku || 'unknown'] = (ctaBySku[e.sku || 'unknown'] || 0) + 1;
-      if (e.type === 'scroll_depth' && scrollDepth[e.meta] !== undefined) scrollDepth[e.meta] += 1;
-      if (e.type === 'checkout_start' && e.sessionId) checkoutStartSessions.add(e.sessionId);
-    }
-
-    const uniqueVisitors = sessions.size;
-    const ctaClicks = byType.cta_click || 0;
-    const checkoutStarts = checkoutStartSessions.size;
-    const purchases = orders.length; // every queued order is a completed payment
     const pct = (a, b) => (b ? +((a / b) * 100).toFixed(1) : 0);
 
-    // Per-channel funnel (UTM-attributed). Visits/CTA/checkouts from beacons,
-    // buyers/revenue ground-truthed from the order's stored source. Keyed by the
-    // Dashboard channel names so weekly numbers drop straight into that tab.
-    const srcAgg = {};
-    const ensure = (ch) => (srcAgg[ch] || (srcAgg[ch] = {
-      visitors: new Set(), ctaClicks: 0, checkoutSessions: new Set(), buyers: 0, revenue: 0,
-    }));
-    for (const e of events) {
-      const a = ensure(channelOf(e.source));
-      if (e.sessionId) a.visitors.add(e.sessionId);
-      if (e.type === 'cta_click') a.ctaClicks += 1;
-      if (e.type === 'checkout_start' && e.sessionId) a.checkoutSessions.add(e.sessionId);
-    }
-    for (const o of orders) {
-      const a = ensure(channelOf(o.source));
-      a.buyers += 1;
-      a.revenue += parseFloat(o.amount) || 0;
-    }
+    // Optional time window. ?since= inclusive, ?until= exclusive. ISO date or datetime.
+    // Windowing is at day granularity (the weekly sync uses midnight boundaries).
+    const since = url.searchParams.get('since');
+    const until = url.searchParams.get('until');
+    const sinceDay = since ? since.slice(0, 10) : null;
+    const untilDay = until ? until.slice(0, 10) : null;
+    const inWindow = (ts) => (!since || (ts && ts >= since)) && (!until || (ts && ts < until));
+
+    // Tunables (let me dial the backfill without redeploying).
+    const BATCH = Math.min(Math.max(parseInt(url.searchParams.get('batch') || '80', 10) || 80, 1), 600);
+    const CONC = Math.min(Math.max(parseInt(url.searchParams.get('conc') || '8', 10) || 8, 1), 25);
+
+    // 1. Load the cached rollup (or initialize).
+    const rollupStore = getStore('analytics_rollup');
+    let state = await rollupStore.get('state', { type: 'json' });
+    if (!state || state.version !== 2) state = { version: 2, lastKey: '', days: {} };
+
+    // 2. List event keys (cheap — keys only, no values fetched).
+    const allKeys = [];
+    let cursor;
+    do {
+      const page = await store.list(cursor ? { cursor } : undefined);
+      for (const b of page.blobs) allKeys.push(b.key);
+      cursor = page.cursor;
+    } while (cursor);
+
+    // 3. Fold only events beyond the highwater, oldest first, in a bounded batch.
+    const newKeys = allKeys.filter((k) => k > state.lastKey).sort();
+    const batch = newKeys.slice(0, BATCH);
+    const fetched = await mapLimit(batch, CONC, async (k) => {
+      try { return await store.get(k, { type: 'json' }); } catch { return null; }
+    });
+    let folded = 0;
+    for (const e of fetched) { if (e) { foldEvent(state, e); folded += 1; } }
+    if (batch.length) state.lastKey = batch[batch.length - 1]; // advance highwater
+    await rollupStore.setJSON('state', state);
+    const pending = newKeys.length - batch.length;
+
+    // 4. Select day buckets for the window (all days if no window).
+    const days = Object.keys(state.days).filter(
+      (day) => (!sinceDay || day >= sinceDay) && (!untilDay || day < untilDay),
+    );
+    const agg = aggregate(state, days);
+
+    // 5. Ground-truth purchases/revenue from the orders store (small — full scan ok).
+    const orders = (await readAll(getStore('orders'))).filter((o) => inWindow(o.receivedAt));
+
+    // 6. Merge beacon-side (visits/cta/checkouts) with order-side (buyers/revenue).
     const bySource = {};
-    for (const ch of Object.keys(srcAgg)) {
-      const a = srcAgg[ch];
+    const channels = new Set([...Object.keys(agg.src), ...orders.map((o) => channelOf(o.source))]);
+    for (const ch of channels) {
+      const a = agg.src[ch] || { visitors: new Set(), ctaClicks: 0, checkoutSessions: new Set() };
+      const chOrders = orders.filter((o) => channelOf(o.source) === ch);
+      const buyers = chOrders.length;
+      const revenue = chOrders.reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
       const visits = a.visitors.size;
       const checkouts = a.checkoutSessions.size;
       bySource[ch] = {
         visits,
         ctaClicks: a.ctaClicks,
         checkouts,
-        buyers: a.buyers,
-        revenue: a.revenue,
-        visit_to_buyer_pct: pct(a.buyers, visits),
-        checkout_to_buyer_pct: pct(a.buyers, checkouts),
+        buyers,
+        revenue,
+        visit_to_buyer_pct: pct(buyers, visits),
+        checkout_to_buyer_pct: pct(buyers, checkouts),
       };
     }
+
+    const uniqueVisitors = agg.sessions.size;
+    const checkoutStarts = agg.checkoutSessions.size;
+    const purchases = orders.length;
+    const revenue = orders.reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
 
     const rollup = {
       generatedAt: new Date().toISOString(),
       totals: {
-        events: events.length,
+        events: agg.events,
         uniqueVisitors,
-        pageViews: byType.page_view || 0,
-        ctaClicks,
+        pageViews: agg.pageViews,
+        ctaClicks: agg.ctaClicks,
         checkoutStarts,
         purchases,
       },
       funnel: {
-        // Each rate is the drop from the prior stage.
-        visitor_to_cta_pct: pct(ctaClicks, uniqueVisitors),
-        cta_to_checkout_pct: pct(checkoutStarts, ctaClicks),
+        visitor_to_cta_pct: pct(agg.ctaClicks, uniqueVisitors),
+        cta_to_checkout_pct: pct(checkoutStarts, agg.ctaClicks),
         checkout_to_purchase_pct: pct(purchases, checkoutStarts),
         visitor_to_purchase_pct: pct(purchases, uniqueVisitors),
       },
-      ctaBySku,
-      scrollDepth,
+      ctaBySku: agg.ctaBySku,
+      scrollDepth: agg.scrollDepth,
       bySource,
-      revenue: orders.reduce((s, o) => s + (parseFloat(o.amount) || 0), 0),
+      revenue,
+      // Backfill progress: pending > 0 means call again to fold the rest.
+      backfill: { pending, processedThisCall: folded, lastKey: state.lastKey, totalEvents: allKeys.length },
     };
 
     if (url.searchParams.get('raw') === '1') {
-      return Response.json({ rollup, events });
+      return Response.json({ rollup, days: state.days });
     }
     return Response.json(rollup);
   }
 
-  // ---- DELETE (token-guarded) — remove one event blob by key ------------------
+  // ---- DELETE (token-guarded) — remove one event blob by key — UNCHANGED ------
   if (req.method === 'DELETE') {
     const token = req.headers.get('x-orders-token') || url.searchParams.get('token');
     if (!token || token !== process.env.ORDERS_TOKEN) {
