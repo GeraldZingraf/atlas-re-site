@@ -211,9 +211,14 @@ export default async (req) => {
     const BATCH = Math.min(Math.max(parseInt(url.searchParams.get('batch') || '80', 10) || 80, 1), 600);
     const CONC = Math.min(Math.max(parseInt(url.searchParams.get('conc') || '8', 10) || 8, 1), 25);
 
-    // 1. Load the cached rollup (or initialize).
-    const rollupStore = getStore('analytics_rollup');
-    let state = await rollupStore.get('state', { type: 'json' });
+    // 1. Load the cached rollup (or initialize). STRONG consistency is required:
+    //    each read advances a highwater and writes it back, and the next read must
+    //    see that write. Under Netlify's default (eventual) consistency, rapid reads
+    //    get a stale highwater and re-fold the same events (wasted work, and raw
+    //    counters could inflate). Strong reads cost one slightly-slower get of a
+    //    single small blob — negligible.
+    const rollupStore = getStore({ name: 'analytics_rollup', consistency: 'strong' });
+    let state = await rollupStore.get('state', { type: 'json', consistency: 'strong' });
     if (!state || state.version !== 2) state = { version: 2, lastKey: '', days: {} };
 
     // 2. List event keys (cheap — keys only, no values fetched).
