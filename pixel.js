@@ -42,7 +42,19 @@
   } else if (route === '/thank-you') {
     if (!isTest) {
       var psku = params.get('sku') || '';
-      fbq('track', 'Purchase', { value: valueFor(psku), currency: 'USD', content_name: psku || 'unknown' });
+      // Prefer the authoritative order amount carried from capture-order (?amt=);
+      // fall back to the sku-based default so a legacy/sku-less URL still reports.
+      var amt = parseFloat(params.get('amt'));
+      var pvalue = (isFinite(amt) && amt > 0) ? amt : valueFor(psku);
+      // eventID = txn so this dedups against the server-side CAPI Purchase
+      // (same event_id = txnId). Meta collapses the two into one conversion.
+      var txn = params.get('txn') || '';
+      fbq(
+        'track',
+        'Purchase',
+        { value: pvalue, currency: 'USD', content_name: psku || 'unknown' },
+        txn ? { eventID: txn } : undefined
+      );
     }
   } else if (route === '/' || route === '') {
     fbq('track', 'ViewContent');

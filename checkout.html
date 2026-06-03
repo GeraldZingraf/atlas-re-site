@@ -166,6 +166,25 @@
     return d.id;
   }
 
+  // Meta click/browser identifiers for the server-side Conversions API. The Meta
+  // pixel sets _fbp on first visit and _fbc from the ad click (fbclid); reading
+  // them here and forwarding to capture-order lets CAPI match the buyer to the ad
+  // and dedup against the browser pixel. Falls back to building _fbc from a live
+  // fbclid param if the cookie isn't set yet.
+  function readCookie(name) {
+    const m = document.cookie.match('(?:^|; )' + name.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1') + '=([^;]*)');
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+  function metaIds() {
+    let fbp = readCookie('_fbp');
+    let fbc = readCookie('_fbc');
+    if (!fbc) {
+      const fbclid = new URLSearchParams(location.search).get('fbclid');
+      if (fbclid) fbc = 'fb.1.' + Date.now() + '.' + fbclid;
+    }
+    return { fbp, fbc };
+  }
+
   async function onApprove(data) {
     const v = contactValid();
     show('Completing your payment…', 'busy');
@@ -173,12 +192,15 @@
     // order is tagged with the channel that drove it (for the funnel Dashboard).
     let source = 'direct';
     try { source = localStorage.getItem('aa_src') || 'direct'; } catch (e) {}
+    const ids = metaIds();
     const r = await fetch('/.netlify/functions/capture-order', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         orderID: data.orderID,
         sandbox: SANDBOX,
         source: source,
+        fbp: ids.fbp,
+        fbc: ids.fbc,
         contact: { name: v.name, email: v.email, website: v.website },
       }),
     });
@@ -186,6 +208,7 @@
     if (d.ok) {
       location.href = '/thank-you.html?txn=' + encodeURIComponent(d.txnId)
         + '&sku=' + encodeURIComponent(d.sku || sku || '')
+        + (d.amount ? '&amt=' + encodeURIComponent(d.amount) : '')
         + (SANDBOX ? '&test=1' : '');
     } else {
       show('Your payment could not be completed. You have not been charged. Please try again.', 'err');

@@ -19,6 +19,15 @@ export default async (req) => {
 
   const store = getStore('orders');
 
+  // Look up a single order by transaction id, any status (fulfilled included).
+  //   GET /.netlify/functions/orders?txn=<txnId>&token=...
+  if (req.method === 'GET' && url.searchParams.get('txn')) {
+    const txnId = url.searchParams.get('txn');
+    const o = await store.get(txnId, { type: 'json' });
+    if (!o) return Response.json({ found: false, txnId }, { status: 404 });
+    return Response.json({ found: true, order: o });
+  }
+
   // List pending orders (oldest first).
   if (req.method === 'GET') {
     const { blobs } = await store.list();
