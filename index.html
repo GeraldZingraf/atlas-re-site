@@ -58,7 +58,7 @@
   .grad{background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
   .muted{color:var(--muted)}
   .faint{color:var(--faint)}
-  section{padding:84px 0;border-top:1px solid var(--line)}
+  section{padding:84px 0;border-top:1px solid var(--line);scroll-margin-top:70px}
   .hero{padding:92px 0 64px;border-top:0;text-align:center}
   .hero .lead{margin-left:auto;margin-right:auto}
 
@@ -74,6 +74,25 @@
   .btn-ghost:hover{border-color:var(--brand);color:#fff}
   .btn .arrow{font-size:1.1em;transform:translateY(1px)}
   .refund{font-size:.86rem;color:var(--faint);margin-top:12px}
+
+  /* top nav */
+  .nav{position:sticky;top:0;z-index:60;border-bottom:1px solid var(--line);background:rgba(13,15,22,.72);backdrop-filter:blur(8px)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+  .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.01em;text-decoration:none;color:var(--ink)}
+  .brand img{width:30px;height:30px;border-radius:7px}
+  .nav-links{display:flex;align-items:center;gap:20px}
+  .navlink{color:var(--muted);text-decoration:none;font-weight:600;font-size:.95rem}
+  .navlink:hover{color:var(--ink)}
+  .btn-sm{padding:10px 18px;font-size:.92rem}
+
+  /* hero CTA (free-first) */
+  .hero-cta{margin-top:34px;display:flex;flex-direction:column;align-items:center}
+  .btn-lg{padding:18px 34px;font-size:1.12rem}
+  .hero-secondary{display:inline-block;margin-top:16px;color:var(--muted);font-size:.98rem;text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:2px}
+  .hero-secondary:hover{color:var(--ink);border-color:var(--brand)}
+  .fork-kicker{margin-top:54px;text-align:center;scroll-margin-top:80px}
+  .seelink{display:inline-block;margin-top:10px;color:var(--faint);font-size:.92rem;text-decoration:none}
+  .seelink:hover{color:var(--ink)}
 
   /* fork */
   .fork{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:46px;text-align:left}
@@ -150,31 +169,52 @@
     .hero{padding:64px 0 44px}
     .sticky-cta{display:block}
     body{padding-bottom:76px}
+    .nav .navlink{display:none}
+    .hero-cta .btn-lg{width:100%}
   }
 </style>
 <script src="/analytics.js" defer></script>
 </head>
 <body>
 
+<nav class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="/"><img src="favicon.png" alt="" /> Atlas for Real Estate</a>
+    <div class="nav-links">
+      <a class="navlink" href="#pricing">Pricing</a>
+      <a class="btn btn-primary btn-sm" href="/free-starter.html">Get 3 free</a>
+    </div>
+  </div>
+</nav>
+
 <!-- ===================== HERO + FORK ===================== -->
 <header class="hero">
   <div class="wrap">
     <p class="eyebrow">AI agents for real estate</p>
     <h1>Hire an AI team that does the<br><span class="grad">work behind your deals.</span></h1>
-    <p class="lead">Scale yourself with agents, so you can focus on closing deals. Buy it, download it, and it sets itself up. No call to book, no demo to sit through.</p>
+    <p class="lead">First three agents are free. They live inside Claude Code (no coding needed). Put them to work today in 4 minutes or less.</p>
 
+    <div class="hero-cta">
+      <a class="btn btn-primary btn-lg" href="/free-starter.html">Get your first 3 AI hires free <span class="arrow">&rarr;</span></a>
+      <div class="refund">No card. No call. Yours to keep, whether or not you upgrade.</div>
+      <a class="hero-secondary" href="/checkout.html?sku=solo">or get the full team now, $497 &rarr;</a>
+    </div>
+
+    <p class="kicker fork-kicker" id="pricing">Already know you want the whole team?</p>
     <div class="fork">
       <div class="fork-card">
         <span class="tag">I work deals myself</span>
         <h3>Solo agent or team lead</h3>
-        <p>You still carry your own pipeline and want leverage without hiring an assistant.</p>
-        <a class="btn btn-primary" href="#solo">See the Solo Kit, $497 <span class="arrow">&rarr;</span></a>
+        <p>You carry your own pipeline and want leverage without hiring an assistant. Add 23 agents that work for you on your computer.</p>
+        <a class="btn btn-ghost" href="/checkout.html?sku=solo">Get the Solo Kit, $497 <span class="arrow">&rarr;</span></a>
+        <a class="seelink" href="#solo">See what's inside &rarr;</a>
       </div>
       <div class="fork-card">
         <span class="tag">I run a small team</span>
         <h3>Small-team broker</h3>
         <p>You supervise the agents and the pipeline. You don't carry your own deals.</p>
-        <a class="btn btn-primary" href="#broker">See the Broker Kit, $1,997 <span class="arrow">&rarr;</span></a>
+        <a class="btn btn-ghost" href="/checkout.html?sku=broker">Get the Broker Kit, $1,997 <span class="arrow">&rarr;</span></a>
+        <a class="seelink" href="#broker">See what's inside &rarr;</a>
       </div>
     </div>
   </div>
@@ -215,26 +255,24 @@
 <section>
   <div class="wrap">
     <p class="kicker">Meet the team</p>
-    <h2>Start with twenty-three. You talk to one.</h2>
-    <p class="lead" style="margin-top:16px">Six do the client-facing work that grows revenue. Seven run the back office that protects it. Ten keep the network learning and pruning on its own. You talk to Atlas. Atlas routes everything else, and builds new specialists as your work reveals the need.</p>
+    <h2>Twenty-three agents work behind the scenes. You talk to one.</h2>
+    <p class="lead" style="margin-top:16px">You never manage a roster or open a dashboard. You talk to Atlas, the way you would text an assistant, and Atlas quietly puts the rest of the team to work. No names to learn, no tasks to hand out. You ask, it routes, the work comes back done.</p>
 
     <div class="two" style="margin-top:30px">
       <div class="panel">
-        <h3>The six that grow your business</h3>
+        <h3>What changes on a normal Tuesday</h3>
         <ul class="clean">
-          <li><b>Lead follow-up.</b> Personalized first touch within minutes, then a 14-day, 7-touch sequence. Pauses the second they reply.</li>
-          <li><b>Transaction coordinator.</b> Reads dates off the executed contract, builds the 180-task timeline, hands you today's deadlines every morning.</li>
-          <li><b>Listing marketing pack.</b> MLS description, three social posts, a sphere email, and an open house invite, all in your voice. Fair-housing-clean.</li>
-          <li><b>CMA builder.</b> Comp analysis with defensible adjustments, a price range with reasoning, and a client-ready narrative.</li>
-          <li><b>Open house follow-up.</b> Thank-yous within the hour, day-2 highlights, day-5 re-engagement, plus a same-day report for your seller.</li>
-          <li><b>Past client nurture.</b> Monthly touch list, anniversary notes, referral asks timed to 90 days, 12 months, and 24 months post-close.</li>
+          <li>Every new lead gets a personal first touch within minutes, not whenever you finally sit down at night.</li>
+          <li>Every live deal has its dates tracked, so nothing slips while you are out showing houses.</li>
+          <li>A new listing turns into a full marketing pack before your coffee is cold.</li>
+          <li>Your past clients hear from you on the dates that actually bring referrals back.</li>
+          <li>The mileage, the renewals, the weekly numbers, all handled quietly in the background.</li>
         </ul>
       </div>
       <div class="panel panel-2">
-        <h3>The seven that protect it</h3>
-        <p class="muted">Mileage tracking that finds the deductions you lose every year. A daily watch on NAR and your state association for rule changes. A vendor rolodex you trust. A commission ledger that shows what cash lands this week. CE hours tracked against your renewal. A Monday business pulse. A CPA-ready tax package every December.</p>
-        <h3 style="margin-top:26px">The ten that run themselves</h3>
-        <p class="muted">Orchestration, voice learning, todo grooming, impact tracking, and the self-maintenance that keeps the network from sprawling. You never see most of it. That is the point.</p>
+        <h3>What that feels like</h3>
+        <p class="muted">You close the laptop and the work behind your deals is already done. The follow-up is written in your voice. The deadlines are covered. The marketing went out. You are still the only human your clients ever talk to, and the busywork that used to eat your nights and weekends is simply not yours to carry anymore.</p>
+        <p class="muted" style="margin-top:18px">Twenty-three agents cover the front office, the back office, and the work that quietly runs itself. You will never meet most of them. That is the point.</p>
       </div>
     </div>
   </div>
@@ -250,6 +288,7 @@
     <div class="stack">
       <p>Atlas ships with a Virtual Office you open from a shortcut on your desktop. It is your network rendered as a floor plan, branded with your name, not ours. Leads and sphere in one room, active deals in another, listing marketing, the back office, the learning floor where your voice gets tuned.</p>
       <p>You can see which specialists are working, what they produced overnight, and what is waiting for your review. It is the difference between trusting a black box and watching your team on the floor.</p>
+      <p><b>The office is also where your team grows.</b> Two buttons sit right on the floor. <b>Build a New Agent</b> spins up a brand-new specialist for a job you keep doing by hand. <b>Build a New Workflow</b> chains several agents into one routine that runs start to finish on its own. You describe what you want in plain English, and the office builds it and puts it to work. Your team is never frozen at twenty-three.</p>
       <p class="faint">One double-click. It runs entirely on your laptop.</p>
     </div>
   </div>
@@ -263,8 +302,8 @@
 <section>
   <div class="wrap">
     <p class="kicker">Day one is the difference</p>
-    <h2>A new hire takes four months. This takes four weeks.</h2>
-    <p class="lead" style="margin-top:16px">A real assistant needs a quarter before they know your voice, your market, and your standards. Atlas compresses that to four weeks, and you watch it happen.</p>
+    <h2>A new hire takes four months. Atlas builds a team of over 23 agents in 4 weeks.</h2>
+    <p class="lead" style="margin-top:16px">A real assistant needs a quarter before they know your voice, your market, and your standards. Atlas compresses that to four weeks. And then they start hiring (building) more agents for you every week.</p>
     <div class="timeline">
       <div class="row"><div class="wk">Week 1</div><div class="desc">Aggressive build. Your core specialists go live and start staging real work for your review. Every accept, edit, and reject teaches the network.</div></div>
       <div class="row"><div class="wk">Week 2</div><div class="desc">It has watched you long enough to write your voice file. Drafts start coming back sounding like you, not a generic template.</div></div>
@@ -321,16 +360,16 @@
     <p class="kicker">What it costs</p>
     <div class="price-card">
       <div class="price">$497<small>once. that is the whole product.</small></div>
-      <p class="muted">No Atlas subscription. No per-seat fee. No "lite" tier holding features hostage. You bring your own Claude subscription (from $20 a month) plus a few dollars of API usage for scheduled jobs. That is the only ongoing cost.</p>
+      <p class="muted">No Atlas subscription. No per-seat fee. No "lite" tier holding features hostage. You bring your own Claude subscription (from $20 a month). That is the only ongoing cost.</p>
       <ul class="clean">
         <li>23 AI specialists to start (6 client-facing, 7 back-office, 10 that run the network), and the team keeps growing as Atlas builds new ones with you</li>
         <li>The Realtor Ramp: a new-hire onboarding that configures the team to your business on day one. No forms.</li>
         <li>The Virtual Office, 7 CRM connection guides, and a fair-housing backstop on every drafting agent</li>
-        <li>Free updates for life. 30-day no-questions refund.</li>
       </ul>
       <!-- Solo Kit -> PayPal payment link -->
       <a class="btn btn-primary" href="/checkout.html?sku=solo">Get my team, $497 <span class="arrow">&rarr;</span></a>
       <div class="refund">30-day no-questions refund. Pay once. Yours to keep.</div>
+      <div style="margin-top:14px"><a class="seelink" href="/free-starter.html">Not ready to buy? Start with 3 free &rarr;</a></div>
     </div>
   </div>
 </section>
@@ -423,12 +462,11 @@
     <p class="kicker">What it costs</p>
     <div class="price-card">
       <div class="price">$1,997<small>flat. one time. every agent on your team.</small></div>
-      <p class="muted">The kit, the full setup playbook, and free updates for life. No per-seat fee, no Atlas subscription. You bring your own Claude subscription (from $20 a month) and a few dollars of API usage. Client confirmations send by email from your team's own Gmail or Outlook, so there is no extra messaging cost. Nothing else.</p>
+      <p class="muted">The kit, the full setup playbook, and free updates for life. No per-seat fee, no Atlas subscription. You bring your own Claude subscription (from $20 a month). Client confirmations send by email from your team's own Gmail or Outlook, so there is no extra messaging cost. Nothing else.</p>
       <ul class="clean">
         <li>Built for small teams, not solo producers and not large multi-office firms</li>
         <li>Four oversight specialists plus the back-office and meta agents</li>
         <li>The same 4-week new-hire ramp. No 90-day pilot, no consulting engagement.</li>
-        <li>30-day no-questions refund.</li>
       </ul>
       <!-- Broker Kit -> PayPal payment link -->
       <a class="btn btn-primary" href="/checkout.html?sku=broker">Get the Broker Kit, $1,997 <span class="arrow">&rarr;</span></a>
@@ -445,13 +483,13 @@
   <div class="wrap">
     <div>Atlas for Real Estate &middot; Built for solo agents and small teams.</div>
     <div class="faint">Runs on your own laptop inside Claude Code. Your data stays with you.</div>
+    <div><a class="navlink" href="/free-starter.html">Get your first 3 AI hires free &rarr;</a></div>
   </div>
 </footer>
 
 <!-- sticky mobile CTA -->
 <div class="sticky-cta">
-  <!-- TODO: point this at your primary checkout, or leave as #solo to send to pricing -->
-  <a class="btn btn-primary" href="#solo">Get Atlas for Real Estate <span class="arrow">&rarr;</span></a>
+  <a class="btn btn-primary" href="/free-starter.html">Get your first 3 AI hires free <span class="arrow">&rarr;</span></a>
 </div>
 
 </body>
