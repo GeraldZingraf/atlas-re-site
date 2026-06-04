@@ -5,10 +5,13 @@
 // lead via the SAME shared core, so there is one record shape and one license
 // generator. Mirrors the public posture of create-order.mjs / track.mjs (write).
 //
-//   POST /.netlify/functions/subscribe  { email, source } -> { ok:true, license, tier }
+//   POST /.netlify/functions/subscribe  { email, name, website, source }
+//     -> { ok:true, license, tier }
 //
-// Email is stored ONLY in the leads store (C3/C4) — never echoed to analytics or
-// placed in a URL. The response returns the license so the page can confirm.
+// email + name are required (the form collects both); website is optional and used
+// to pre-personalize the kit. Email/name/website are stored ONLY in the leads store
+// (C3/C4) — never echoed to analytics or placed in a URL. The response returns the
+// license so the page can confirm.
 
 import { createOrGetLead } from '../lib/leads-core.mjs';
 
@@ -26,10 +29,13 @@ export default async (req) => {
   if (!email || email.length > 254 || !EMAIL_RE.test(email)) {
     return Response.json({ ok: false, error: 'invalid_email' }, { status: 400 });
   }
+  const name = (body?.name || '').toString().trim();
+  if (!name) return Response.json({ ok: false, error: 'missing_name' }, { status: 400 });
+  const website = (body?.website || '').toString().trim();
   const source = (body?.source || 'direct').toString().toLowerCase().slice(0, 40);
 
   let result;
-  try { result = await createOrGetLead({ email, source }); }
+  try { result = await createOrGetLead({ email, name, website, source }); }
   catch { return Response.json({ ok: false, error: 'invalid_email' }, { status: 400 }); }
 
   return Response.json({ ok: true, license: result.record.license, tier: result.record.tier });

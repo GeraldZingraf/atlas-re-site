@@ -48,15 +48,14 @@
   ul.hires li::before{content:"";position:absolute;left:4px;top:18px;width:10px;height:10px;border-radius:50%;background:var(--accent-grad)}
   ul.hires li span{display:block;color:var(--faint);font-size:.92rem}
   form{margin:6px 0 0}
-  .row{display:flex;gap:10px;flex-wrap:wrap}
-  input[type=email]{
-    flex:1 1 260px;min-width:0;background:var(--bg);border:1px solid var(--line);
-    border-radius:var(--radius);padding:15px 16px;color:var(--ink);font-size:1rem
+  .field{
+    display:block;width:100%;background:var(--bg);border:1px solid var(--line);
+    border-radius:var(--radius);padding:15px 16px;color:var(--ink);font-size:1rem;margin-bottom:10px
   }
-  input[type=email]:focus{outline:none;border-color:var(--brand-2)}
+  .field:focus{outline:none;border-color:var(--brand-2)}
   button{
-    flex:0 0 auto;border:0;border-radius:var(--radius);padding:15px 24px;font-size:1rem;font-weight:700;
-    color:#0d0f16;background:var(--accent-grad);cursor:pointer
+    display:block;width:100%;border:0;border-radius:var(--radius);padding:16px 24px;font-size:1rem;font-weight:700;
+    color:#0d0f16;background:var(--accent-grad);cursor:pointer;margin-top:4px
   }
   button:disabled{opacity:.6;cursor:default}
   .privacy{color:var(--faint);font-size:.86rem;margin-top:14px}
@@ -90,12 +89,14 @@
     </ul>
 
     <form id="capture" novalidate>
-      <div class="row">
-        <input id="email" type="email" name="email" inputmode="email" autocomplete="email"
-               placeholder="you@yourbrokerage.com" required aria-label="Your email" />
-        <button id="submit" type="submit">Get my team</button>
-      </div>
-      <p class="privacy">No card. No call. We email your starter and a 4-minute setup guide. We use your email only to send your kit and support it. Unsubscribe anytime.</p>
+      <input id="name" class="field" type="text" name="name" autocomplete="name"
+             placeholder="Your name" required aria-label="Your name" />
+      <input id="email" class="field" type="email" name="email" inputmode="email" autocomplete="email"
+             placeholder="you@yourbrokerage.com" required aria-label="Your email" />
+      <input id="website" class="field" type="text" name="website" inputmode="url" autocomplete="url"
+             placeholder="Your website (optional)" aria-label="Your website, optional" />
+      <button id="submit" type="submit">Get my team</button>
+      <p class="privacy">No card. No call. We email your starter and a 4-minute setup guide. We use your details only to personalize, send, and support your kit. Unsubscribe anytime.</p>
       <p class="status" id="status" role="status" aria-live="polite"></p>
     </form>
 
@@ -111,7 +112,9 @@
 <script>
 (function () {
   var form = document.getElementById('capture');
+  var nameEl = document.getElementById('name');
   var emailEl = document.getElementById('email');
+  var websiteEl = document.getElementById('website');
   var btn = document.getElementById('submit');
   var statusEl = document.getElementById('status');
   var okPanel = document.getElementById('ok');
@@ -129,7 +132,14 @@
 
   form.addEventListener('submit', function (ev) {
     ev.preventDefault();
+    var name = (nameEl.value || '').trim();
     var email = (emailEl.value || '').trim();
+    var website = (websiteEl.value || '').trim();
+    if (!name) {
+      setStatus('Please enter your name.', true);
+      nameEl.focus();
+      return;
+    }
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setStatus('Please enter a valid email address.', true);
       emailEl.focus();
@@ -141,7 +151,7 @@
     fetch('/.netlify/functions/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, source: source() })
+      body: JSON.stringify({ email: email, name: name, website: website, source: source() })
     })
     .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
     .then(function (res) {

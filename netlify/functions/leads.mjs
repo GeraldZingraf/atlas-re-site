@@ -8,18 +8,25 @@
 // browser capture form does NOT call this directly — it posts to the public
 // subscribe.mjs front-door, which shares the same create-lead core.
 //
-//   POST   /.netlify/functions/leads            { email, source }      -> { license, tier }
+//   POST   /.netlify/functions/leads            { email, name, website, source } -> { license, tier }
 //   GET    /.netlify/functions/leads?email=     | ?license=            -> record | 404 {found:false}
+//   GET    /.netlify/functions/leads?pending=free                      -> { count, pending:[records] }
 //   POST   /.netlify/functions/leads?action=marry     { email, txnId } -> { license, tier:"paid", matched }
 //   POST   /.netlify/functions/leads?action=fulfilled { license, which } -> { ok:true }
 
-import { createOrGetLead, getByEmail, getByLicense, marry, markFulfilled, publicShape } from '../lib/leads-core.mjs';
+import { createOrGetLead, getByEmail, getByLicense, marry, markFulfilled, publicShape, listPendingFree } from '../lib/leads-core.mjs';
 
 export default async (req) => {
   const url = new URL(req.url);
   const token = req.headers.get('x-orders-token') || url.searchParams.get('token');
   if (!token || token !== process.env.ORDERS_TOKEN) {
     return new Response('Unauthorized', { status: 401 });
+  }
+
+  // GET — list pending free leads (the free-lead watcher polls this).
+  if (req.method === 'GET' && url.searchParams.get('pending') === 'free') {
+    const pending = await listPendingFree();
+    return Response.json({ count: pending.length, pending });
   }
 
   // GET — lookup by email or license.
@@ -55,11 +62,12 @@ export default async (req) => {
       return Response.json({ ok: true });
     }
 
-    // default — create or get a lead (idempotent on email).
-    const { email, source } = body || {};
+    // default — create or get a lead (idempotent on email). name/website optional
+    // here (server-side callers may not have them); the public form enforces name.
+    const { email, name, website, source } = body || {};
     if (!email) return Response.json({ error: 'Missing email' }, { status: 400 });
     let result;
-    try { result = await createOrGetLead({ email, source }); }
+    try { result = await createOrGetLead({ email, name, website, source }); }
     catch { return Response.json({ error: 'invalid_email' }, { status: 400 }); }
     return Response.json({ license: result.record.license, tier: result.record.tier });
   }

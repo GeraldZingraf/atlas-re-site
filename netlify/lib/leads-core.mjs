@@ -20,6 +20,7 @@ export const PAID_ACTIVATION_CAP = 2;   // paid license: 2 device activations
 const LICENSE_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 
 export const normalizeEmail = (e) => (e || '').trim().toLowerCase();
+const clip = (v, n) => (v || '').toString().trim().slice(0, n);
 
 // Strong consistency: license uniqueness + free->paid marriage are correctness-
 // sensitive, and the cost is one slightly-slower get of a small blob.
@@ -52,10 +53,12 @@ async function saveLead(rec) {
   return rec;
 }
 
-function freshRecord({ license, email, source, tier }) {
+function freshRecord({ license, email, name, website, source, tier }) {
   return {
     license,
     email: normalizeEmail(email),
+    name: clip(name, 120),       // captured at signup for kit pre-personalization (C3)
+    website: clip(website, 200), // optional; the pre-filler researches it
     source: (source || 'direct').toString().toLowerCase().slice(0, 40),
     tier: tier || 'free',
     createdAt: new Date().toISOString(),
@@ -81,13 +84,22 @@ export async function getByLicense(license) {
 }
 
 // --- create / get (C3 POST create-lead; idempotent on email) -----------------
-export async function createOrGetLead({ email, source }) {
+// On an existing record, backfill name/website ONLY where they were blank, so a
+// later signup can fill in what an earlier one missed without overwriting good data.
+export async function createOrGetLead({ email, name, website, source }) {
   const key = normalizeEmail(email);
   if (!key) throw new Error('missing_email');
   const existing = await leadsStore().get(key, { type: 'json' });
-  if (existing) return { record: existing, created: false };
+  if (existing) {
+    const n = clip(name, 120), w = clip(website, 200);
+    let changed = false;
+    if (n && !existing.name) { existing.name = n; changed = true; }
+    if (w && !existing.website) { existing.website = w; changed = true; }
+    if (changed) await saveLead(existing);
+    return { record: existing, created: false };
+  }
   const license = await uniqueLicense();
-  const record = freshRecord({ license, email: key, source, tier: 'free' });
+  const record = freshRecord({ license, email: key, name, website, source, tier: 'free' });
   await saveLead(record);
   return { record, created: true };
 }
@@ -176,8 +188,34 @@ export async function recordActivation({ license, deviceHint }) {
 // like devices/activationLog from API responses).
 export function publicShape(rec) {
   if (!rec) return null;
-  const { license, email, source, tier, createdAt, paidAt, txnId,
+  const { license, email, name, website, source, tier, createdAt, paidAt, txnId,
           freeFulfilledAt, paidFulfilledAt, activations, downloads } = rec;
-  return { license, email, source, tier, createdAt, paidAt, txnId,
-           freeFulfilledAt, paidFulfilledAt, activations: activations || 0, downloads: downloads || 0 };
+  return { license, email, name: name || '', website: website || '', source, tier, createdAt,
+           paidAt, txnId, freeFulfilledAt, paidFulfilledAt, activations: activations || 0, downloads: downloads || 0 };
+}
+
+// --- pending-free list (C3 GET ?pending=free) --------------------------------
+// Mirrors orders.mjs list-pending. Powers the local free-lead watcher: the leads
+// the pre-filler + deliver_free still need to act on. Full scan is fine here —
+// the leads store is small (mirrors orders' full scan).
+async function listAllLeads() {
+  const store = leadsStore();
+  const out = [];
+  let cursor;
+  do {
+    const page = await store.list(cursor ? { cursor } : undefined);
+    for (const b of page.blobs) {
+      const rec = await store.get(b.key, { type: 'json' });
+      if (rec) out.push(rec);
+    }
+    cursor = page.cursor;
+  } while (cursor);
+  return out;
+}
+
+export async function listPendingFree() {
+  const pending = (await listAllLeads())
+    .filter((r) => r.tier === 'free' && !r.freeFulfilledAt && !r.stopped)
+    .sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || '')); // oldest first
+  return pending.map(publicShape);
 }
