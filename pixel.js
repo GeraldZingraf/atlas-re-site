@@ -27,7 +27,7 @@
   fbq('init', META_PIXEL_ID);
   fbq('track', 'PageView');
 
-  var valueFor = function (sku) { return sku === 'broker' ? 1997 : 497; }; // solo default
+  var valueFor = function (sku) { return sku === 'broker' ? 1997 : 500; }; // solo default
 
   // Normalize the path so this works whether the host serves explicit files
   // (/checkout.html) or "pretty" URLs (/checkout). Netlify strips .html by

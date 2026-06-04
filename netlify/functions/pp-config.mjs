@@ -6,7 +6,7 @@
 // GET /.netlify/functions/pp-config?sku=solo&sandbox=1  -> sandbox client-id
 
 const CATALOG = {
-  solo:   { amount: '497.00',   label: 'Solo Kit',   display: '$497' },
+  solo:   { amount: '500.00',   label: 'Solo Kit',   display: '$500' },
   broker: { amount: '1997.00',  label: 'Broker Kit', display: '$1,997' },
 };
 

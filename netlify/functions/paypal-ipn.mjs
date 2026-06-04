@@ -19,7 +19,7 @@ const PAYPAL_VERIFY_URL = 'https://ipnpb.paypal.com/cgi-bin/webscr';
 
 // Map the gross amount to a SKU. Item names are the fallback.
 const SKU_BY_AMOUNT = {
-  '497.00': 'solo',
+  '500.00': 'solo',
   '1997.00': 'broker',
 };
 

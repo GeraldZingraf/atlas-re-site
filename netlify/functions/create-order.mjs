@@ -12,7 +12,7 @@
 
 // Single source of truth for what each SKU costs and is called.
 const CATALOG = {
-  solo:   { amount: '497.00',  name: 'Atlas-RE Solo Kit' },
+  solo:   { amount: '500.00',  name: 'Atlas-RE Solo Kit' },
   broker: { amount: '1997.00', name: 'Atlas-RE Broker Kit' },
 };
 
