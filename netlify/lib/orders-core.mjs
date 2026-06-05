@@ -4,19 +4,28 @@
 //
 // Strong consistency: the claim mutex must see its own write so a concurrent
 // trigger + sweep don't both deliver the same order.
+//
+// `storeName` lets callers target the isolated 'orders-test' store for end-to-end
+// tests; it defaults to the live 'orders' store. (The live store is what track.mjs
+// reads for revenue and what the laptop watcher polls, so 'orders-test' is invisible
+// to both.)
 
 import { getStore } from '@netlify/blobs';
 
-const ordersStore = () => getStore({ name: 'orders', consistency: 'strong' });
+const ALLOWED_STORES = new Set(['orders', 'orders-test']);
+const ordersStore = (storeName = 'orders') => {
+  const name = ALLOWED_STORES.has(storeName) ? storeName : 'orders';
+  return getStore({ name, consistency: 'strong' });
+};
 
-export async function getOrder(txnId) {
+export async function getOrder(txnId, storeName = 'orders') {
   if (!txnId) return null;
-  return await ordersStore().get(txnId, { type: 'json' });
+  return await ordersStore(storeName).get(txnId, { type: 'json' });
 }
 
 // Pending orders (status === 'pending'), oldest first. Small store — full scan ok.
-export async function listPendingOrders() {
-  const store = ordersStore();
+export async function listPendingOrders(storeName = 'orders') {
+  const store = ordersStore(storeName);
   const out = [];
   let cursor;
   do {
@@ -34,8 +43,8 @@ export async function listPendingOrders() {
 // Delivery mutex: ok:true to exactly one caller. Skips if already fulfilled or
 // another delivery claimed it within `staleMs` (a crashed attempt frees up so the
 // sweep retries). Mirrors leads-core.claimFreeDelivery.
-export async function claimOrderDelivery(txnId, staleMs = 10 * 60 * 1000) {
-  const store = ordersStore();
+export async function claimOrderDelivery(txnId, staleMs = 10 * 60 * 1000, storeName = 'orders') {
+  const store = ordersStore(storeName);
   const o = await store.get(txnId, { type: 'json' });
   if (!o) return { ok: false, reason: 'order_not_found' };
   if (o.status === 'fulfilled') return { ok: false, reason: 'already_fulfilled' };
@@ -46,8 +55,8 @@ export async function claimOrderDelivery(txnId, staleMs = 10 * 60 * 1000) {
   return { ok: true, order: o };
 }
 
-export async function markOrderFulfilled(txnId) {
-  const store = ordersStore();
+export async function markOrderFulfilled(txnId, storeName = 'orders') {
+  const store = ordersStore(storeName);
   const o = await store.get(txnId, { type: 'json' });
   if (!o) return null;
   o.status = 'fulfilled';
@@ -58,8 +67,8 @@ export async function markOrderFulfilled(txnId) {
 
 // Record a delivery failure on the order so it's visible via orders.mjs (?txn=)
 // without needing Netlify function logs.
-export async function recordOrderError(txnId, message) {
-  const store = ordersStore();
+export async function recordOrderError(txnId, message, storeName = 'orders') {
+  const store = ordersStore(storeName);
   const o = await store.get(txnId, { type: 'json' });
   if (!o) return;
   o.lastDeliveryError = (message || '').toString().slice(0, 500);

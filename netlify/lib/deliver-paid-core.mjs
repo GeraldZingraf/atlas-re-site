@@ -62,12 +62,12 @@ async function sendWelcome(env, to, subject, body) {
 
 // Deliver a paid kit for one order (identified by txnId). Returns a structured
 // result; never throws.
-export async function deliverPaid({ txnId } = {}) {
+export async function deliverPaid({ txnId, storeName = 'orders' } = {}) {
   const env = process.env;
   if (!txnId) return { ok: false, reason: 'missing_txnId' };
 
   let order;
-  try { order = await getOrder(txnId); }
+  try { order = await getOrder(txnId, storeName); }
   catch (e) { return { ok: false, reason: 'order_lookup_error', error: String(e?.message || e) }; }
   if (!order) return { ok: false, reason: 'order_not_found', txnId };
   if (order.status === 'fulfilled') return { ok: false, reason: 'already_fulfilled', txnId };
@@ -77,7 +77,7 @@ export async function deliverPaid({ txnId } = {}) {
   if (!order.email) return { ok: false, reason: 'order_missing_email', txnId };
 
   // Mutex: only one caller proceeds.
-  const claim = await claimOrderDelivery(txnId);
+  const claim = await claimOrderDelivery(txnId, 10 * 60 * 1000, storeName);
   if (!claim.ok) return { ok: false, reason: claim.reason, txnId };
 
   try {
@@ -130,13 +130,13 @@ export async function deliverPaid({ txnId } = {}) {
     // 5. Send + stamp fulfillment on BOTH the lead and the order.
     await sendWelcome(env, order.email, subject, body);
     await markFulfilled({ license, which: 'paid' });
-    await markOrderFulfilled(txnId);
+    await markOrderFulfilled(txnId, storeName);
 
     return { ok: true, txnId, sku, license, matched, email: order.email, downloadUrl };
   } catch (e) {
     const msg = String(e?.stack || e?.message || e);
     console.error('[deliver-paid] delivery_error', txnId, msg);
-    try { await recordOrderError(txnId, msg); } catch (_) {}
+    try { await recordOrderError(txnId, msg, storeName); } catch (_) {}
     return { ok: false, reason: 'delivery_error', error: msg, txnId };
   }
 }

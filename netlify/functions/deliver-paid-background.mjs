@@ -18,8 +18,10 @@ export default async (req) => {
   try { body = await req.json(); } catch { /* allow query-param fallback */ }
   const txnId = (body?.txnId || url.searchParams.get('txnId') || '').toString().trim();
   if (!txnId) return new Response('Missing txnId', { status: 400 });
+  // Optional: target the isolated test store for end-to-end order-flow tests.
+  const storeName = (body?.storeName || url.searchParams.get('storeName') || 'orders').toString();
 
-  const res = await deliverPaid({ txnId });
+  const res = await deliverPaid({ txnId, storeName });
   console.log('[deliver-paid-background]', JSON.stringify(res));
   return Response.json(res);
 };
