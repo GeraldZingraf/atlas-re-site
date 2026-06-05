@@ -151,7 +151,12 @@ export async function deliverPaidTest({ email, name = 'Test Buyer', sku = 'solo'
   if (!VALID_SKU.has(sku)) return { ok: false, reason: `unknown_sku:${sku}` };
   if (!email) return { ok: false, reason: 'missing_email' };
   try {
-    const license = 'AR-TESTPAID';
+    // Use a REAL license (via marry) so the download link actually resolves — download-kit
+    // meters against the leads store and refuses unknown licenses. Test emails are
+    // gzingraf+ aliases (filtered from the funnel) and NO order record is created, so this
+    // touches only a throwaway paid-lead record, never order/revenue data.
+    const m = await marry({ email, txnId: `TEST-PAID-${sku}` });
+    const license = m.record.license;
     const files = await loadPaidKit(sku);
     const { bytes, filename } = buildKitZip({ kit: files }, {
       license, email, tier: 'paid', issuedAt: new Date().toISOString(),
