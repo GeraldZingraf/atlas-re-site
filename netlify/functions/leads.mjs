@@ -14,7 +14,7 @@
 //   POST   /.netlify/functions/leads?action=marry     { email, txnId } -> { license, tier:"paid", matched }
 //   POST   /.netlify/functions/leads?action=fulfilled { license, which } -> { ok:true }
 
-import { createOrGetLead, getByEmail, getByLicense, marry, markFulfilled, publicShape, listPendingFree } from '../lib/leads-core.mjs';
+import { createOrGetLead, getByEmail, getByLicense, marry, markFulfilled, publicShape, listPendingFree, listAllLeads } from '../lib/leads-core.mjs';
 
 export default async (req) => {
   const url = new URL(req.url);
@@ -27,6 +27,15 @@ export default async (req) => {
   if (req.method === 'GET' && url.searchParams.get('pending') === 'free') {
     const pending = await listPendingFree();
     return Response.json({ count: pending.length, pending });
+  }
+
+  // GET — list ALL leads (admin reporting; e.g. the funnel tracker's Leads tab).
+  // Token-guarded like the rest of this endpoint; returns the same publicShape.
+  if (req.method === 'GET' && url.searchParams.get('all') === '1') {
+    const all = (await listAllLeads())
+      .map(publicShape)
+      .sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || '')); // oldest first
+    return Response.json({ count: all.length, leads: all });
   }
 
   // GET — lookup by email or license.

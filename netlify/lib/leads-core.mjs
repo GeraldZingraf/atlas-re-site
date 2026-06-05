@@ -198,7 +198,7 @@ export function publicShape(rec) {
 // Mirrors orders.mjs list-pending. Powers the local free-lead watcher: the leads
 // the pre-filler + deliver_free still need to act on. Full scan is fine here —
 // the leads store is small (mirrors orders' full scan).
-async function listAllLeads() {
+export async function listAllLeads() {
   const store = leadsStore();
   const out = [];
   let cursor;
