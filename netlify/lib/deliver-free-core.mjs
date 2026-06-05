@@ -15,10 +15,12 @@
 // delivery needs no Claude runtime. (Paid pre-fill stays in the local lane.)
 
 import { getStore } from '@netlify/blobs';
-import nodemailer from 'nodemailer';
 import crypto from 'node:crypto';
+// nodemailer is imported dynamically inside sendWelcome() so a bundling/resolution
+// failure surfaces as a catchable runtime error (recorded on the lead) rather than
+// crashing the whole function at module load.
 
-import { getByEmail, getByLicense, claimFreeDelivery, markFulfilled } from './leads-core.mjs';
+import { getByEmail, getByLicense, claimFreeDelivery, markFulfilled, recordDeliveryError } from './leads-core.mjs';
 import { buildKitZip, renderEmail } from './kit-build.mjs';
 
 const ASSETS_STORE = 'delivery-assets';   // base kit + email templates (pushed by push_delivery_assets.py)
@@ -37,6 +39,7 @@ async function sendWelcome(env, to, subject, body) {
   const sender = env.ATLAS_EMAIL;
   const pass = env.ATLAS_APP_PASSWORD;
   if (!sender || !pass) throw new Error('ATLAS_EMAIL / ATLAS_APP_PASSWORD not set in Netlify env');
+  const nodemailer = (await import('nodemailer')).default;
   const transport = nodemailer.createTransport({
     host: env.SMTP_HOST || 'smtp.gmail.com',
     port: parseInt(env.SMTP_PORT || '587', 10),
@@ -144,7 +147,11 @@ export async function deliverFree({ email, license: licenseIn } = {}) {
     return { ok: true, license, email: rec.email, downloadUrl };
   } catch (e) {
     // Delivery failed AFTER claiming. The claim goes stale in 10 min, so the next sweep
-    // retries automatically. Surface the error for the function log.
-    return { ok: false, reason: 'delivery_error', error: String(e?.message || e), license };
+    // retries automatically. Surface the error to the function log AND onto the lead
+    // record (readable via the leads API, since we can't reach Netlify logs locally).
+    const msg = String(e?.stack || e?.message || e);
+    console.error('[deliver-free] delivery_error', license, msg);
+    try { await recordDeliveryError(license, msg); } catch (_) {}
+    return { ok: false, reason: 'delivery_error', error: msg, license };
   }
 }

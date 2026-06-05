@@ -170,6 +170,16 @@ export async function claimFreeDelivery(license, staleMs = 10 * 60 * 1000) {
   return { ok: true, record: publicShape(rec) };
 }
 
+// Record why a delivery attempt failed, onto the lead record, so failures are visible
+// via the leads API (we can't read Netlify function logs from the local tooling).
+export async function recordDeliveryError(license, message) {
+  const rec = await getByLicense(license);
+  if (!rec) return;
+  rec.lastDeliveryError = (message || '').toString().slice(0, 500);
+  rec.lastDeliveryAttemptAt = new Date().toISOString();
+  await saveLead(rec);
+}
+
 // --- activation (C5) ---------------------------------------------------------
 // Distinct devices are capped at PAID_ACTIVATION_CAP. A device we've seen before
 // (same deviceHint) re-activates freely and is logged — a legit reinstall never
@@ -209,10 +219,13 @@ export async function recordActivation({ license, deviceHint }) {
 export function publicShape(rec) {
   if (!rec) return null;
   const { license, email, name, website, source, tier, createdAt, paidAt, txnId,
-          freeFulfilledAt, paidFulfilledAt, activations, downloads, firstDownloadAt } = rec;
+          freeFulfilledAt, paidFulfilledAt, activations, downloads, firstDownloadAt,
+          deliveringAt, lastDeliveryError, lastDeliveryAttemptAt } = rec;
   return { license, email, name: name || '', website: website || '', source, tier, createdAt,
            paidAt, txnId, freeFulfilledAt, paidFulfilledAt, activations: activations || 0,
-           downloads: downloads || 0, firstDownloadAt: firstDownloadAt || '' };
+           downloads: downloads || 0, firstDownloadAt: firstDownloadAt || '',
+           deliveringAt: deliveringAt || '', lastDeliveryError: lastDeliveryError || '',
+           lastDeliveryAttemptAt: lastDeliveryAttemptAt || '' };
 }
 
 // --- pending-free list (C3 GET ?pending=free) --------------------------------
