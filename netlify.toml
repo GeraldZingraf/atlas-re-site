@@ -7,6 +7,9 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+  # nodemailer uses dynamic requires that esbuild can't statically bundle; keep it
+  # external so Netlify installs it into the function's node_modules at build time.
+  external_node_modules = ["nodemailer"]
 
 # Clean channel short-links. Paste agent-atlas.co/go/<channel> anywhere; it sets
 # the utm_source so analytics.js attributes the visitor (and any purchase) to that

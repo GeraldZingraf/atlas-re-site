@@ -37,6 +37,7 @@ const ALLOWED = new Set([
   'scroll_depth',
   'cta_click',
   'lead_capture',   // C4 — mid-funnel signal (visit -> lead). No PII in the event.
+  'kit_download',   // server-side: free/paid kit actually pulled (lead -> download)
   'checkout_start',
   'purchase',
   'refund_view',
@@ -98,7 +99,7 @@ async function readAll(store) {
 
 // ---- incremental rollup cache helpers --------------------------------------
 const DEPTHS = [25, 50, 75, 100];
-const freshSrc = () => ({ visitors: [], ctaClicks: 0, leadSessions: [], checkoutSessions: [] });
+const freshSrc = () => ({ visitors: [], ctaClicks: 0, leadSessions: [], downloadLicenses: [], checkoutSessions: [] });
 const freshDay = () => ({
   events: 0,
   pageViews: 0,
@@ -107,6 +108,7 @@ const freshDay = () => ({
   scrollDepth: { 25: 0, 50: 0, 75: 0, 100: 0 },
   sessions: [],
   leadSessions: [],      // C4 — unique sessions that submitted the capture form
+  downloadLicenses: [],  // unique licenses that pulled the kit (lead -> download)
   checkoutSessions: [],
   guideSessions: [],     // unique sessions that viewed the install guide
   bySource: {},
@@ -135,6 +137,12 @@ function foldEvent(state, e) {
     pushUniq(d.leadSessions, sid);
     pushUniq(s.leadSessions, sid);
   }
+  // Server-side download event carries the license in `meta` (no browser session),
+  // so dedup the download funnel step by license rather than sessionId.
+  if (e.type === 'kit_download' && e.meta) {
+    pushUniq(d.downloadLicenses, e.meta);
+    pushUniq(s.downloadLicenses, e.meta);
+  }
   if (e.type === 'checkout_start' && sid) {
     pushUniq(d.checkoutSessions, sid);
     pushUniq(s.checkoutSessions, sid);
@@ -146,6 +154,7 @@ function foldEvent(state, e) {
 function aggregate(state, days) {
   const sessions = new Set();
   const leadSessions = new Set();
+  const downloadLicenses = new Set();
   const checkoutSessions = new Set();
   const guideSessions = new Set();
   const ctaBySku = {};
@@ -161,19 +170,21 @@ function aggregate(state, days) {
     ctaClicks += d.ctaClicks;
     for (const sid of d.sessions) sessions.add(sid);
     for (const sid of (d.leadSessions || [])) leadSessions.add(sid);
+    for (const lic of (d.downloadLicenses || [])) downloadLicenses.add(lic);
     for (const sid of d.checkoutSessions) checkoutSessions.add(sid);
     for (const sid of (d.guideSessions || [])) guideSessions.add(sid);
     for (const k in d.ctaBySku) ctaBySku[k] = (ctaBySku[k] || 0) + d.ctaBySku[k];
     for (const k of DEPTHS) scrollDepth[k] += d.scrollDepth[k] || 0;
     for (const ch in d.bySource) {
-      const a = src[ch] || (src[ch] = { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), checkoutSessions: new Set() });
+      const a = src[ch] || (src[ch] = { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), downloadLicenses: new Set(), checkoutSessions: new Set() });
       for (const sid of d.bySource[ch].visitors) a.visitors.add(sid);
       a.ctaClicks += d.bySource[ch].ctaClicks;
       for (const sid of (d.bySource[ch].leadSessions || [])) a.leadSessions.add(sid);
+      for (const lic of (d.bySource[ch].downloadLicenses || [])) a.downloadLicenses.add(lic);
       for (const sid of d.bySource[ch].checkoutSessions) a.checkoutSessions.add(sid);
     }
   }
-  return { sessions, leadSessions, checkoutSessions, guideSessions, ctaBySku, scrollDepth, src, events, pageViews, ctaClicks };
+  return { sessions, leadSessions, downloadLicenses, checkoutSessions, guideSessions, ctaBySku, scrollDepth, src, events, pageViews, ctaClicks };
 }
 
 export default async (req) => {
@@ -233,10 +244,11 @@ export default async (req) => {
     //    single small blob — negligible.
     const rollupStore = getStore({ name: 'analytics_rollup', consistency: 'strong' });
     let state = await rollupStore.get('state', { type: 'json', consistency: 'strong' });
-    // v3 adds lead/guide session tracking (C4). Bumping the version triggers a
-    // clean re-backfill from the events log so older day buckets gain the new
-    // fields instead of being read as undefined.
-    if (!state || state.version !== 3) state = { version: 3, lastKey: '', days: {} };
+    // v3 adds lead/guide session tracking (C4); v4 adds the kit_download step
+    // (unique licenses that pulled the kit). Bumping the version triggers a clean
+    // re-backfill from the events log so older day buckets gain the new fields
+    // instead of being read as undefined.
+    if (!state || state.version !== 4) state = { version: 4, lastKey: '', days: {} };
 
     // 2. List event keys (cheap — keys only, no values fetched).
     const allKeys = [];
@@ -272,21 +284,24 @@ export default async (req) => {
     const bySource = {};
     const channels = new Set([...Object.keys(agg.src), ...orders.map((o) => channelOf(o.source))]);
     for (const ch of channels) {
-      const a = agg.src[ch] || { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), checkoutSessions: new Set() };
+      const a = agg.src[ch] || { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), downloadLicenses: new Set(), checkoutSessions: new Set() };
       const chOrders = orders.filter((o) => channelOf(o.source) === ch);
       const buyers = chOrders.length;
       const revenue = chOrders.reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
       const visits = a.visitors.size;
       const leads = a.leadSessions.size;
+      const downloads = a.downloadLicenses.size;
       const checkouts = a.checkoutSessions.size;
       bySource[ch] = {
         visits,
         ctaClicks: a.ctaClicks,
         leads,
+        downloads,
         checkouts,
         buyers,
         revenue,
         visit_to_lead_pct: pct(leads, visits),
+        lead_to_download_pct: pct(downloads, leads),
         lead_to_buyer_pct: pct(buyers, leads),
         visit_to_buyer_pct: pct(buyers, visits),
         checkout_to_buyer_pct: pct(buyers, checkouts),
@@ -295,6 +310,7 @@ export default async (req) => {
 
     const uniqueVisitors = agg.sessions.size;
     const leads = agg.leadSessions.size;
+    const downloads = agg.downloadLicenses.size;
     const checkoutStarts = agg.checkoutSessions.size;
     const guideViews = agg.guideSessions.size;
     const purchases = orders.length;
@@ -308,6 +324,7 @@ export default async (req) => {
         pageViews: agg.pageViews,
         ctaClicks: agg.ctaClicks,
         leads,
+        downloads,
         checkoutStarts,
         guideViews,
         purchases,
@@ -315,6 +332,8 @@ export default async (req) => {
       funnel: {
         visitor_to_cta_pct: pct(agg.ctaClicks, uniqueVisitors),
         visit_to_lead_pct: pct(leads, uniqueVisitors),
+        lead_to_download_pct: pct(downloads, leads),
+        download_to_buyer_pct: pct(purchases, downloads),
         lead_to_buyer_pct: pct(purchases, leads),
         cta_to_checkout_pct: pct(checkoutStarts, agg.ctaClicks),
         checkout_to_purchase_pct: pct(purchases, checkoutStarts),

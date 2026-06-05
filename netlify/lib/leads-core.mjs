@@ -146,8 +146,28 @@ export async function meterDownload(license) {
     return { ok: false, reason: 'download_limit', cap: FREE_DOWNLOAD_CAP, downloads: current };
   }
   rec.downloads = current + 1;
+  if (!rec.firstDownloadAt) rec.firstDownloadAt = new Date().toISOString(); // actual kit-pull date
   await saveLead(rec);
-  return { ok: true, downloads: rec.downloads, tier: rec.tier };
+  return { ok: true, downloads: rec.downloads, tier: rec.tier, source: rec.source };
+}
+
+// --- free-delivery claim (cloud delivery idempotency) ------------------------
+// The instant on-signup trigger and the 15-min safety-net sweep can both target the
+// same lead. This is the mutex that stops a double-send: returns ok:true to exactly
+// one caller, who then owns delivery. Skips if the lead is already free-fulfilled or
+// another delivery claimed it within `staleMs` (a crashed/half-done delivery frees up
+// after the stale window so the sweep can retry). Strong-consistency store keeps the
+// check-then-set window tiny; not a hard distributed lock, but right-sized for the
+// low free-signup volume.
+export async function claimFreeDelivery(license, staleMs = 10 * 60 * 1000) {
+  const rec = await getByLicense(license);
+  if (!rec) return { ok: false, reason: 'unknown_license' };
+  if (rec.freeFulfilledAt) return { ok: false, reason: 'already_fulfilled' };
+  const claimedAt = rec.deliveringAt ? new Date(rec.deliveringAt).getTime() : 0;
+  if (claimedAt && (Date.now() - claimedAt) < staleMs) return { ok: false, reason: 'in_progress' };
+  rec.deliveringAt = new Date().toISOString();
+  await saveLead(rec);
+  return { ok: true, record: publicShape(rec) };
 }
 
 // --- activation (C5) ---------------------------------------------------------
@@ -189,9 +209,10 @@ export async function recordActivation({ license, deviceHint }) {
 export function publicShape(rec) {
   if (!rec) return null;
   const { license, email, name, website, source, tier, createdAt, paidAt, txnId,
-          freeFulfilledAt, paidFulfilledAt, activations, downloads } = rec;
+          freeFulfilledAt, paidFulfilledAt, activations, downloads, firstDownloadAt } = rec;
   return { license, email, name: name || '', website: website || '', source, tier, createdAt,
-           paidAt, txnId, freeFulfilledAt, paidFulfilledAt, activations: activations || 0, downloads: downloads || 0 };
+           paidAt, txnId, freeFulfilledAt, paidFulfilledAt, activations: activations || 0,
+           downloads: downloads || 0, firstDownloadAt: firstDownloadAt || '' };
 }
 
 // --- pending-free list (C3 GET ?pending=free) --------------------------------

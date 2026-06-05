@@ -38,5 +38,20 @@ export default async (req) => {
   try { result = await createOrGetLead({ email, name, website, source }); }
   catch { return Response.json({ ok: false, error: 'invalid_email' }, { status: 400 }); }
 
+  // Instant cloud delivery for brand-new free leads: fire the background delivery
+  // function (returns 202 immediately, runs async). Best-effort — a failure here
+  // NEVER blocks signup; the */15 deliver-free-sweep is the backstop. Only new free
+  // leads trigger it (a repeat signup already has a kit; paid goes through PayPal).
+  if (result.created && result.record.tier === 'free') {
+    try {
+      const origin = new URL(req.url).origin;
+      await fetch(`${origin}/.netlify/functions/deliver-free-background`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-orders-token': process.env.ORDERS_TOKEN || '' },
+        body: JSON.stringify({ email }),
+      });
+    } catch (_) { /* sweep will catch it */ }
+  }
+
   return Response.json({ ok: true, license: result.record.license, tier: result.record.tier });
 };

@@ -39,8 +39,9 @@ export default async (req) => {
   // a license on the kit, so a shared link exhausts the free 2-pull cap and then
   // returns "limit reached". Paid is counted but never refused here (activation is
   // the paid gate). Kits with no license skip this entirely.
+  let metered = null;
   if (rec.license) {
-    const metered = await meterDownload(rec.license);
+    metered = await meterDownload(rec.license);
     if (!metered.ok) {
       const msg = metered.reason === 'download_limit'
         ? 'Download limit reached for this license. Buy your own copy or contact support for a reset.'
@@ -50,9 +51,32 @@ export default async (req) => {
   }
 
   // First download — start the 24h link-lifetime clock.
-  if (!rec.downloadedAt) {
+  const isFirstDownload = !rec.downloadedAt;
+  if (isFirstDownload) {
     rec.downloadedAt = new Date().toISOString();
     try { await store.setJSON(t, rec); } catch (_) {}
+  }
+
+  // Funnel telemetry — fire a server-side `kit_download` event on the FIRST pull of
+  // each kit token, so the analytics rollup (track.mjs) can count unique downloaders:
+  // the step between lead_capture (form submit) and viewed_guide (opened install
+  // guide). Deduped by license in the rollup, so re-pulls don't double-count and a
+  // shared link can't inflate it. Channel-attributed via the lead's source. A
+  // telemetry write must NEVER block serving the bytes — best-effort, swallowed.
+  if (isFirstDownload) {
+    try {
+      const ev = {
+        type: 'kit_download',
+        sku: (metered && metered.tier) || 'free',
+        sessionId: '',                                  // server-side; no browser session
+        source: (metered && metered.source) || 'direct',
+        path: '/download-kit',
+        meta: rec.license || `tok-${t}`,                // dedup key for the rollup
+        ts: new Date().toISOString(),
+      };
+      const key = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      await getStore('events').setJSON(key, ev);
+    } catch (_) {}
   }
 
   const bytes = Buffer.from(rec.b64, 'base64');
