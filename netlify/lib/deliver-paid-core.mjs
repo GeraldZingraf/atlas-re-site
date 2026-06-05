@@ -140,3 +140,44 @@ export async function deliverPaid({ txnId } = {}) {
     return { ok: false, reason: 'delivery_error', error: msg, txnId };
   }
 }
+
+// Smoke test of the cloud paid-delivery path WITHOUT a real purchase: build the kit
+// from assets, store it, and email it to `email` — but create NO order record, do NO
+// marry, and stamp NO fulfillment. So it never pollutes the live order/revenue/lead
+// data. Lets us (and Gerald) verify paid delivery on demand. Token-guarded by the
+// caller. Returns synchronously so the result is readable over HTTP.
+export async function deliverPaidTest({ email, name = 'Test Buyer', sku = 'solo', matched = false } = {}) {
+  const env = process.env;
+  if (!VALID_SKU.has(sku)) return { ok: false, reason: `unknown_sku:${sku}` };
+  if (!email) return { ok: false, reason: 'missing_email' };
+  try {
+    const license = 'AR-TESTPAID';
+    const files = await loadPaidKit(sku);
+    const { bytes, filename } = buildKitZip({ kit: files }, {
+      license, email, tier: 'paid', issuedAt: new Date().toISOString(),
+      top: `paid-${sku}-${license}`,
+      filename: `Atlas_RE_${sku === 'broker' ? 'Broker' : 'Solo'}_${license}.zip`,
+    });
+    const dlToken = crypto.randomBytes(16).toString('hex');
+    await getStore(KITS_STORE).setJSON(dlToken, {
+      dlToken, filename, b64: Buffer.from(bytes).toString('base64'), license, tier: 'paid',
+    });
+    const base = env.URL || 'https://agent-atlas.co';
+    const downloadUrl = `${base}/.netlify/functions/download-kit?t=${dlToken}`;
+    const guideUrl = env.INSTALL_GUIDE_URL || 'https://agent-atlas.co/install-guide.html';
+    const emails = await loadPaidEmails();
+    const tplKey = matched ? 'welcome-paid-match' : 'welcome-paid-nomatch';
+    const tpl = emails[tplKey];
+    if (!tpl) throw new Error(`paid email '${tplKey}' missing from delivery-assets`);
+    const firstName = (name && name.trim().split(/\s+/)[0]) || 'there';
+    const { subject, body, missing } = renderEmail(tpl, {
+      first_name: firstName, name, download_url: downloadUrl, guide_url: guideUrl, license,
+    });
+    const blocking = missing.filter((x) => x !== 'checkout_url' && x !== 'guide_url');
+    if (blocking.length) throw new Error(`${tplKey} unresolved placeholders: ${blocking.join(', ')}`);
+    await sendWelcome(env, email, subject, body);
+    return { ok: true, test: true, sku, matched, email, downloadUrl };
+  } catch (e) {
+    return { ok: false, reason: 'delivery_error', error: String(e?.stack || e?.message || e) };
+  }
+}
