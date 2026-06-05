@@ -20,6 +20,37 @@ export default async (req) => {
 
   let body;
   try { body = await req.json(); } catch { return new Response('Bad JSON', { status: 400 }); }
+
+  const store = getStore('delivery-assets');
+
+  // --- per-kit upload (paid Solo/Broker — one kit per blob to stay under the
+  //     function payload limit) ----------------------------------------------------
+  //   { kind:'kit', name:'solo'|'broker', files: { "<relpath>": "<base64>" } }
+  if (body?.kind === 'kit') {
+    const name = (body.name || '').toString();
+    if (!['free', 'solo', 'broker'].includes(name)) {
+      return Response.json({ ok: false, error: 'kit name must be free|solo|broker' }, { status: 400 });
+    }
+    if (!body.files || typeof body.files !== 'object' || !Object.keys(body.files).length) {
+      return Response.json({ ok: false, error: 'missing or empty files' }, { status: 400 });
+    }
+    await store.setJSON(`kit-${name}`, { files: body.files, uploadedAt: new Date().toISOString() });
+    return Response.json({ ok: true, stored: `kit-${name}`, files: Object.keys(body.files).length });
+  }
+
+  // --- paid email templates ------------------------------------------------------
+  //   { kind:'paid-emails', emails: { 'welcome-paid-match':'...', 'welcome-paid-nomatch':'...' } }
+  if (body?.kind === 'paid-emails') {
+    const e = body.emails;
+    if (!e || !e['welcome-paid-match'] || !e['welcome-paid-nomatch']) {
+      return Response.json({ ok: false, error: 'missing welcome-paid-match / welcome-paid-nomatch' }, { status: 400 });
+    }
+    await store.setJSON('paid-emails', { ...e, uploadedAt: new Date().toISOString() });
+    return Response.json({ ok: true, stored: 'paid-emails', emails: Object.keys(e) });
+  }
+
+  // --- legacy free monolith (UNCHANGED — free delivery still reads 'current') -----
+  //   { kit: {...}, emails: { 'welcome-free':'...' } }
   if (!body?.kit || typeof body.kit !== 'object' || !Object.keys(body.kit).length) {
     return Response.json({ ok: false, error: 'missing or empty kit' }, { status: 400 });
   }
@@ -27,7 +58,7 @@ export default async (req) => {
     return Response.json({ ok: false, error: 'missing emails["welcome-free"]' }, { status: 400 });
   }
 
-  await getStore('delivery-assets').setJSON('current', {
+  await store.setJSON('current', {
     version: body.version || 1,
     kit: body.kit,
     emails: body.emails,

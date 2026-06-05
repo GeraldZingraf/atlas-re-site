@@ -192,5 +192,22 @@ export default async (req) => {
     });
   }
 
+  // Instant cloud delivery for a brand-new LIVE paid order: fire the background
+  // delivery function (returns 202, runs async) so the buyer gets their kit in
+  // seconds — no laptop in the loop. Best-effort: a failure here NEVER blocks the
+  // capture response; the */15 deliver-paid-sweep is the backstop. Sandbox orders go
+  // to the orders-test store and are not delivered.
+  if (!existing && !sandbox) {
+    try {
+      let origin = 'https://agent-atlas.co';
+      try { origin = new URL(req.url).origin; } catch {}
+      await fetch(`${origin}/.netlify/functions/deliver-paid-background`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-orders-token': process.env.ORDERS_TOKEN || '' },
+        body: JSON.stringify({ txnId }),
+      });
+    } catch (_) { /* sweep will catch it */ }
+  }
+
   return Response.json({ ok: true, status: 'queued', txnId, sku, amount: order.amount, email: order.email, sandbox });
 };

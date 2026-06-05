@@ -16,14 +16,16 @@ import { zipSync, strToU8 } from 'fflate';
 // Build the watermarked Starter kit zip in memory.
 //   assets.kit: { "<relpath>": "<base64 of file bytes>" }  (the immutable source kit)
 // Returns { bytes: Uint8Array, filename }.
-export function buildKitZip(assets, { license, email, tier = 'free', issuedAt }) {
+export function buildKitZip(assets, { license, email, tier = 'free', issuedAt, top, filename }) {
   if (!assets || !assets.kit) throw new Error('buildKitZip: assets.kit missing');
-  const top = `free-${license}`;
+  // Top folder inside the zip (cosmetic). Defaults to the free convention so the
+  // free path is unchanged; paid passes `paid-<sku>-<license>` explicitly.
+  const topName = top || `free-${license}`;
   const files = {};
 
   // 1. The immutable source kit, decoded from base64, re-rooted under the top folder.
   for (const [rel, b64] of Object.entries(assets.kit)) {
-    files[`${top}/${rel}`] = new Uint8Array(Buffer.from(b64, 'base64'));
+    files[`${topName}/${rel}`] = new Uint8Array(Buffer.from(b64, 'base64'));
   }
 
   // 2. profile/license.json — C1 local license identity (overrides any template copy).
@@ -38,15 +40,15 @@ export function buildKitZip(assets, { license, email, tier = 'free', issuedAt })
     null,
     2,
   ) + '\n';
-  files[`${top}/profile/license.json`] = strToU8(licenseJson);
+  files[`${topName}/profile/license.json`] = strToU8(licenseJson);
 
   // 3. Top-level human-readable watermark (deterrence + traceability, not a hard lock).
-  files[`${top}/.atlas-license`] = strToU8(
+  files[`${topName}/.atlas-license`] = strToU8(
     `Atlas-RE build watermark\nlicense: ${license}\ntier: ${tier}\n`,
   );
 
   const bytes = zipSync(files, { level: 6 });
-  return { bytes, filename: `Atlas_RE_Starter_${license}.zip` };
+  return { bytes, filename: filename || `Atlas_RE_Starter_${license}.zip` };
 }
 
 // Render an email template: first `Subject:` line -> subject (stripped from body),
