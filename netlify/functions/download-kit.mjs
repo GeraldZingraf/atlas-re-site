@@ -77,6 +77,18 @@ export default async (req) => {
       const key = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
       await getStore('events').setJSON(key, ev);
     } catch (_) {}
+
+    // Email Gerald that a kit was pulled (activation signal). Fire the background
+    // function (returns 202) so the download bytes are NEVER delayed by the SMTP send.
+    // Best-effort — a notify failure must not affect the download.
+    try {
+      const origin = new URL(req.url).origin;
+      await fetch(`${origin}/.netlify/functions/notify-download-background`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-orders-token': process.env.ORDERS_TOKEN || '' },
+        body: JSON.stringify({ license: rec.license || '', tier: rec.tier || '', filename: rec.filename || '' }),
+      });
+    } catch (_) {}
   }
 
   const bytes = Buffer.from(rec.b64, 'base64');
