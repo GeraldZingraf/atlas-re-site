@@ -225,6 +225,21 @@ export async function recordActivation({ license, deviceHint }) {
   return { ok: true, reactivation: false, activationsLeft: Math.max(0, PAID_ACTIVATION_CAP - rec.devices.length) };
 }
 
+// Atlas "came online" ping (free-trial funnel step: installed Claude + activated
+// Atlas). Called by the kit's SessionStart hook from the buyer's machine, keyed by
+// the license (its own secret). Stamps atlasActivatedAt on the FIRST ping; counts
+// every ping for liveness. Distinct from recordActivation (paid 2-device cap).
+export async function recordAtlasActivation(license) {
+  const rec = await getByLicense(license);
+  if (!rec) return { ok: false, reason: 'unknown_license' };
+  const firstTime = !rec.atlasActivatedAt;
+  if (firstTime) rec.atlasActivatedAt = new Date().toISOString();
+  rec.atlasActivationPings = (rec.atlasActivationPings || 0) + 1;
+  rec.atlasLastSeenAt = new Date().toISOString();
+  await saveLead(rec);
+  return { ok: true, firstTime, source: rec.source, tier: rec.tier, atlasActivatedAt: rec.atlasActivatedAt };
+}
+
 // Project a record down to C3's documented public shape (drops internal fields
 // like devices/activationLog from API responses).
 export function publicShape(rec) {
@@ -232,14 +247,17 @@ export function publicShape(rec) {
   const { license, email, name, website, source, tier, createdAt, paidAt, txnId,
           freeFulfilledAt, paidFulfilledAt, activations, downloads, firstDownloadAt,
           deliveringAt, lastDeliveryError, lastDeliveryAttemptAt,
-          lastDlToken, lastNotifyAt, lastNotifyError } = rec;
+          lastDlToken, lastNotifyAt, lastNotifyError,
+          atlasActivatedAt, atlasActivationPings, atlasLastSeenAt } = rec;
   return { license, email, name: name || '', website: website || '', source, tier, createdAt,
            paidAt, txnId, freeFulfilledAt, paidFulfilledAt, activations: activations || 0,
            downloads: downloads || 0, firstDownloadAt: firstDownloadAt || '',
            deliveringAt: deliveringAt || '', lastDeliveryError: lastDeliveryError || '',
            lastDeliveryAttemptAt: lastDeliveryAttemptAt || '',
            lastDlToken: lastDlToken || '', lastNotifyAt: lastNotifyAt || '',
-           lastNotifyError: lastNotifyError || '' };
+           lastNotifyError: lastNotifyError || '',
+           atlasActivatedAt: atlasActivatedAt || '', atlasActivationPings: atlasActivationPings || 0,
+           atlasLastSeenAt: atlasLastSeenAt || '' };
 }
 
 // --- pending-free list (C3 GET ?pending=free) --------------------------------
