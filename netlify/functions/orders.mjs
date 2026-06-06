@@ -28,6 +28,18 @@ export default async (req) => {
     return Response.json({ found: true, order: o });
   }
 
+  // List ALL orders (admin/cleanup) — token-guarded. Includes the blob key (txnId).
+  if (req.method === 'GET' && url.searchParams.get('all') === '1') {
+    const { blobs } = await store.list();
+    const all = [];
+    for (const b of blobs) {
+      const o = await store.get(b.key, { type: 'json' });
+      if (o) { o._key = b.key; all.push(o); }
+    }
+    all.sort((a, b) => (a.receivedAt || '').localeCompare(b.receivedAt || ''));
+    return Response.json({ count: all.length, orders: all });
+  }
+
   // List pending orders (oldest first).
   if (req.method === 'GET') {
     const { blobs } = await store.list();
@@ -54,6 +66,15 @@ export default async (req) => {
     o.fulfilledAt = new Date().toISOString();
     await store.setJSON(txnId, o);
     return Response.json({ ok: true, txnId, status: o.status });
+  }
+
+  // Delete an order blob (cleanup of stale/test orders) — token-guarded.
+  //   DELETE /.netlify/functions/orders?txn=<txnId>
+  if (req.method === 'DELETE') {
+    const txnId = url.searchParams.get('txn');
+    if (!txnId) return new Response('Missing txn', { status: 400 });
+    await store.delete(txnId);
+    return Response.json({ ok: true, deleted: txnId });
   }
 
   return new Response('Method not allowed', { status: 405 });
