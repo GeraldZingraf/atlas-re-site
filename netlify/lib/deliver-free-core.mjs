@@ -20,7 +20,7 @@ import crypto from 'node:crypto';
 // failure surfaces as a catchable runtime error (recorded on the lead) rather than
 // crashing the whole function at module load.
 
-import { getByEmail, getByLicense, claimFreeDelivery, markFulfilled, recordDeliveryError } from './leads-core.mjs';
+import { getByEmail, getByLicense, claimFreeDelivery, markFulfilled, recordDeliveryError, patchLead } from './leads-core.mjs';
 import { buildKitZip, renderEmail } from './kit-build.mjs';
 
 const ASSETS_STORE = 'delivery-assets';   // base kit + email templates (pushed by push_delivery_assets.py)
@@ -116,6 +116,7 @@ export async function deliverFree({ email, license: licenseIn } = {}) {
       license,
       tier: 'free',
     });
+    try { await patchLead(license, { lastDlToken: dlToken }); } catch (_) {}
 
     const base = env.URL || 'https://agent-atlas.co';
     const downloadUrl = `${base}/.netlify/functions/download-kit?t=${dlToken}`;

@@ -180,6 +180,17 @@ export async function recordDeliveryError(license, message) {
   await saveLead(rec);
 }
 
+// Merge arbitrary fields onto a lead record. Used for download-notify observability
+// (records the notify outcome + the last download token) so the notify path is
+// verifiable via the token-guarded leads API.
+export async function patchLead(license, fields) {
+  if (!license) return;
+  const rec = await getByLicense(license);
+  if (!rec) return;
+  Object.assign(rec, fields || {});
+  await saveLead(rec);
+}
+
 // --- activation (C5) ---------------------------------------------------------
 // Distinct devices are capped at PAID_ACTIVATION_CAP. A device we've seen before
 // (same deviceHint) re-activates freely and is logged — a legit reinstall never
@@ -220,12 +231,15 @@ export function publicShape(rec) {
   if (!rec) return null;
   const { license, email, name, website, source, tier, createdAt, paidAt, txnId,
           freeFulfilledAt, paidFulfilledAt, activations, downloads, firstDownloadAt,
-          deliveringAt, lastDeliveryError, lastDeliveryAttemptAt } = rec;
+          deliveringAt, lastDeliveryError, lastDeliveryAttemptAt,
+          lastDlToken, lastNotifyAt, lastNotifyError } = rec;
   return { license, email, name: name || '', website: website || '', source, tier, createdAt,
            paidAt, txnId, freeFulfilledAt, paidFulfilledAt, activations: activations || 0,
            downloads: downloads || 0, firstDownloadAt: firstDownloadAt || '',
            deliveringAt: deliveringAt || '', lastDeliveryError: lastDeliveryError || '',
-           lastDeliveryAttemptAt: lastDeliveryAttemptAt || '' };
+           lastDeliveryAttemptAt: lastDeliveryAttemptAt || '',
+           lastDlToken: lastDlToken || '', lastNotifyAt: lastNotifyAt || '',
+           lastNotifyError: lastNotifyError || '' };
 }
 
 // --- pending-free list (C3 GET ?pending=free) --------------------------------

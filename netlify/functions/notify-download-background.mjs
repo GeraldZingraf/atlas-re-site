@@ -8,7 +8,7 @@
 // Recipient: NOTIFY_EMAIL, else BCC_EMAIL (gzingraf@gmail.com), so it works with the
 // env vars already set.
 
-import { getByLicense } from '../lib/leads-core.mjs';
+import { getByLicense, patchLead } from '../lib/leads-core.mjs';
 import { sendMail } from '../lib/mailer.mjs';
 
 export default async (req) => {
@@ -51,10 +51,12 @@ export default async (req) => {
 
     await sendMail(env, { to, subject, text });
     console.log('[notify-download]', JSON.stringify({ ok: true, to, license, tier }));
+    try { await patchLead(license, { lastNotifyAt: new Date().toISOString(), lastNotifyError: '' }); } catch (_) {}
     return Response.json({ ok: true, to });
   } catch (e) {
     const msg = String(e?.message || e);
     console.error('[notify-download] error', msg);
+    try { await patchLead(license, { lastNotifyAt: new Date().toISOString(), lastNotifyError: msg }); } catch (_) {}
     return Response.json({ ok: false, error: msg });
   }
 };
