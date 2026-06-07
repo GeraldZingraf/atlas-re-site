@@ -156,3 +156,28 @@ export async function deliverFree({ email, license: licenseIn } = {}) {
     return { ok: false, reason: 'delivery_error', error: msg, license };
   }
 }
+
+// Rebuild a fresh download link for an existing FREE license, WITHOUT re-sending the
+// welcome or touching fulfillment. Used by re-engagement: the kit is rebuilt from the
+// current assets (so it includes the latest SessionStart activation hook) and stored
+// under a new token. Returns { ok, downloadUrl } or { ok:false }.
+export async function regenerateLink(license) {
+  if (!license) return { ok: false, reason: 'missing_license' };
+  const rec = await getByLicense(license);
+  if (!rec) return { ok: false, reason: 'lead_not_found' };
+  try {
+    const assets = await loadAssets();
+    const { bytes, filename } = buildKitZip(assets, {
+      license, email: rec.email, tier: 'free', issuedAt: new Date().toISOString(),
+    });
+    const dlToken = crypto.randomBytes(16).toString('hex');
+    await getStore(KITS_STORE).setJSON(dlToken, {
+      dlToken, filename, b64: Buffer.from(bytes).toString('base64'), license, tier: 'free',
+    });
+    try { await patchLead(license, { lastDlToken: dlToken }); } catch (_) {}
+    const base = process.env.URL || 'https://agent-atlas.co';
+    return { ok: true, downloadUrl: `${base}/.netlify/functions/download-kit?t=${dlToken}` };
+  } catch (e) {
+    return { ok: false, reason: 'build_error', error: String(e?.message || e) };
+  }
+}
