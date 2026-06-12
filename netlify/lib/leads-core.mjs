@@ -13,7 +13,7 @@ import { getStore } from '@netlify/blobs';
 import crypto from 'node:crypto';
 
 // --- caps (C2, FROZEN) -------------------------------------------------------
-export const FREE_DOWNLOAD_CAP = 2;     // free kit: 2 pulls per license
+export const FREE_DOWNLOAD_CAP = 4;     // free kit: 4 pulls per license (on-page download + email-backup link share one token; headroom for a re-download)
 export const PAID_ACTIVATION_CAP = 2;   // paid license: 2 device activations
 
 // C2: AR- prefix + 8 uppercase base32 chars, excluding ambiguous 0 O 1 I L.

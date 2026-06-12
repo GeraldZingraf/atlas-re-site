@@ -122,28 +122,39 @@ export async function deliverFree({ email, license: licenseIn } = {}) {
     const downloadUrl = `${base}/.netlify/functions/download-kit?t=${dlToken}`;
     const guideUrl = env.INSTALL_GUIDE_URL || 'https://agent-atlas.co/install-guide.html';
 
-    // 3. Render the lean welcome (link-only, no attachment).
-    const tpl = assets.emails['welcome-free'];
-    if (!tpl) throw new Error('welcome-free template missing from delivery-assets');
-    const firstName = (rec.name && rec.name.trim().split(/\s+/)[0]) || 'there';
-    const { subject, body, missing } = renderEmail(tpl, {
-      first_name: firstName,
-      name: rec.name || '',
-      download_url: downloadUrl,
-      guide_url: guideUrl,
-      license,
-      checkout_url: 'https://agent-atlas.co/checkout.html?sku=solo',
-    });
-    // Only the optional upsell token may be unused; download/guide/license must resolve.
-    const blocking = missing.filter((m) => m !== 'checkout_url');
-    if (blocking.length) throw new Error(`welcome-free has unresolved placeholders: ${blocking.join(', ')}`);
-
-    // 4. Send.
-    await sendWelcome(env, rec.email, subject, body);
-
-    // 5. Stamp fulfillment (drops the lead out of the pending sweep) + enroll for nurture.
+    // 3. Stamp fulfillment + enroll for nurture FIRST. The download link is the kit's
+    //    real delivery channel now (returned to the page and downloadable on the spot),
+    //    so the kit counts as delivered the moment it's built and stored — independent
+    //    of whether the welcome email lands. This is the "bad email" fix: a bounced or
+    //    fake address can no longer strand the buyer or trigger an endless sweep retry.
     await markFulfilled({ license, which: 'free' });
     await recordEnrollment(rec);
+
+    // 4. Welcome email — BEST-EFFORT backup copy of the same download link. A render or
+    //    SMTP failure is recorded on the lead but never fails delivery (the page already
+    //    has the link). The email reuses the SAME dlToken, so on-page + email share one
+    //    metered cap.
+    try {
+      const tpl = assets.emails['welcome-free'];
+      if (!tpl) throw new Error('welcome-free template missing from delivery-assets');
+      const firstName = (rec.name && rec.name.trim().split(/\s+/)[0]) || 'there';
+      const { subject, body, missing } = renderEmail(tpl, {
+        first_name: firstName,
+        name: rec.name || '',
+        download_url: downloadUrl,
+        guide_url: guideUrl,
+        license,
+        checkout_url: 'https://agent-atlas.co/checkout.html?sku=solo',
+      });
+      // Only the optional upsell token may be unused; download/guide/license must resolve.
+      const blocking = missing.filter((m) => m !== 'checkout_url');
+      if (blocking.length) throw new Error(`welcome-free has unresolved placeholders: ${blocking.join(', ')}`);
+      await sendWelcome(env, rec.email, subject, body);
+    } catch (mailErr) {
+      const msg = String(mailErr?.stack || mailErr?.message || mailErr);
+      console.error('[deliver-free] email_error (non-fatal)', license, msg);
+      try { await recordDeliveryError(license, `email (non-fatal): ${msg}`); } catch (_) {}
+    }
 
     return { ok: true, license, email: rec.email, downloadUrl };
   } catch (e) {

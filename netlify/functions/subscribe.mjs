@@ -14,6 +14,7 @@
 // license so the page can confirm.
 
 import { createOrGetLead } from '../lib/leads-core.mjs';
+import { deliverFree, regenerateLink } from '../lib/deliver-free-core.mjs';
 
 // Conservative single-line email check — just enough to reject junk/abuse, not a
 // full RFC validator (the real signal is whether the address receives the email).
@@ -38,20 +39,45 @@ export default async (req) => {
   try { result = await createOrGetLead({ email, name, website, source }); }
   catch { return Response.json({ ok: false, error: 'invalid_email' }, { status: 400 }); }
 
-  // Instant cloud delivery for brand-new free leads: fire the background delivery
-  // function (returns 202 immediately, runs async). Best-effort — a failure here
-  // NEVER blocks signup; the */15 deliver-free-sweep is the backstop. Only new free
-  // leads trigger it (a repeat signup already has a kit; paid goes through PayPal).
-  if (result.created && result.record.tier === 'free') {
+  // Instant on-page delivery for free leads: build the kit NOW (synchronously) and
+  // return its download link so the buyer downloads straight from the page — no email
+  // round-trip required (the "bad email" fix). The welcome email still goes out as a
+  // best-effort backup copy of the same link (handled inside deliverFree). Only free
+  // leads deliver here; paid goes through PayPal/capture-order.
+  //
+  //   - brand-new free lead          -> deliverFree (build, store, fulfill, email-backup)
+  //   - returning free lead (resubmit) -> regenerateLink (fresh link, no resend) so a
+  //                                       re-submit always recovers the download on-page
+  //   - any failure                  -> fall back to the background trigger + */15 sweep,
+  //                                       and the page shows the email-only path
+  let downloadUrl = null;
+  if (result.record.tier === 'free') {
     try {
-      const origin = new URL(req.url).origin;
-      await fetch(`${origin}/.netlify/functions/deliver-free-background`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-orders-token': process.env.ORDERS_TOKEN || '' },
-        body: JSON.stringify({ email }),
-      });
-    } catch (_) { /* sweep will catch it */ }
+      const r = (result.created || !result.record.freeFulfilledAt)
+        ? await deliverFree({ email })
+        : await regenerateLink(result.record.license);
+      if (r && r.ok && r.downloadUrl) downloadUrl = r.downloadUrl;
+    } catch (_) { /* fall through to the background fallback below */ }
+
+    if (!downloadUrl) {
+      // Could not produce a link inline (e.g. assets not loaded, or a delivery race).
+      // Try one fresh link, then hand off to the always-on async path as the backstop.
+      try {
+        const r2 = await regenerateLink(result.record.license);
+        if (r2 && r2.ok && r2.downloadUrl) downloadUrl = r2.downloadUrl;
+      } catch (_) {}
+      if (!downloadUrl) {
+        try {
+          const origin = new URL(req.url).origin;
+          await fetch(`${origin}/.netlify/functions/deliver-free-background`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-orders-token': process.env.ORDERS_TOKEN || '' },
+            body: JSON.stringify({ email }),
+          });
+        } catch (_) { /* sweep will catch it */ }
+      }
+    }
   }
 
-  return Response.json({ ok: true, license: result.record.license, tier: result.record.tier });
+  return Response.json({ ok: true, license: result.record.license, tier: result.record.tier, downloadUrl });
 };

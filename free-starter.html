@@ -67,6 +67,12 @@
   }
   .ok-panel b{color:var(--ink)}
   .ok-panel a{color:var(--brand-2)}
+  .dlbtn{
+    display:block;width:100%;text-align:center;text-decoration:none;border-radius:var(--radius);
+    padding:16px 24px;font-size:1rem;font-weight:700;color:#0d0f16 !important;
+    background:var(--accent-grad);margin:4px 0 14px
+  }
+  .backup{color:var(--faint);font-size:.9rem}
   .lic{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);font-weight:700;letter-spacing:.04em}
   .home{display:inline-block;margin-top:22px;color:var(--faint);text-decoration:none;font-size:.9rem}
   .home:hover{color:var(--ink)}
@@ -96,14 +102,16 @@
       <input id="website" class="field" type="text" name="website" inputmode="url" autocomplete="url"
              placeholder="Your website (optional)" aria-label="Your website, optional" />
       <button id="submit" type="submit">Get my team</button>
-      <p class="privacy">No card. No call. We email your starter and a 4-minute setup guide. We use your details only to personalize, send, and support your kit. Unsubscribe anytime.</p>
+      <p class="privacy">No card. No call. You download your starter right here, and we email a backup copy plus a 4-minute setup guide. We use your details only to personalize, send, and support your kit. Unsubscribe anytime.</p>
       <p class="status" id="status" role="status" aria-live="polite"></p>
     </form>
 
     <div class="ok-panel" id="ok">
-      <p style="margin-bottom:10px"><b>You are in.</b> Your starter is on its way to your inbox.</p>
-      <p style="margin-bottom:10px">Your license number is <span class="lic" id="lic"></span>. Keep it. It is how your team upgrades and stays trained on you later.</p>
-      <p style="margin:0">Want a head start? <a href="/install-guide.html">Open the 4-minute setup guide</a> while you wait.</p>
+      <p style="margin-bottom:12px"><b>You are in.</b> <span id="ok-headline">Your starter team is ready.</span></p>
+      <a class="dlbtn" id="dl" href="#" download style="display:none">Download your kit</a>
+      <p class="backup" id="backup" style="display:none">We also emailed a copy to <b id="ok-email"></b> as a backup.</p>
+      <p style="margin:0 0 10px">Your license number is <span class="lic" id="lic"></span>. Keep it. It is how your team upgrades and stays trained on you later.</p>
+      <p style="margin:0">Next: <a href="/install-guide.html">open the 4-minute setup guide</a>.</p>
     </div>
 
     <a class="home" href="/">Back to agent-atlas.co</a>
@@ -164,6 +172,24 @@
       try { if (window.aaGoogleLead) window.aaGoogleLead(email, name); } catch (e) {} // Google Ads Lead conversion (+ Enhanced Conversions)
 
       document.getElementById('lic').textContent = res.body.license || '';
+
+      // On-page delivery: if the kit was built inline, show a Download button straight
+      // away so the buyer never has to leave for their inbox. The same link is also
+      // emailed as a backup. If no link came back (delivery deferred to the async path),
+      // fall back to the inbox message.
+      var dl = document.getElementById('dl');
+      var headline = document.getElementById('ok-headline');
+      var backup = document.getElementById('backup');
+      if (res.body.downloadUrl) {
+        dl.href = res.body.downloadUrl;
+        dl.style.display = 'block';
+        headline.textContent = 'Your starter team is ready. Download it now:';
+        document.getElementById('ok-email').textContent = email;
+        backup.style.display = 'block';
+      } else {
+        headline.textContent = 'Your starter is on its way to your inbox.';
+      }
+
       form.style.display = 'none';
       okPanel.style.display = 'block';
       setStatus('');
