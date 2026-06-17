@@ -39,11 +39,12 @@
     fbq('track', 'ViewContent');
   }
 
-  // Lead on the "Start free trial" CTA click (any link to the app signup). Fired once.
+  // Lead on the "Start free trial" CTA click (links marked data-trial; the app has no
+  // /signup route, registration is on /login, so we mark trial CTAs explicitly). Fired once.
   var fired = false;
   document.addEventListener('click', function (ev) {
     if (fired) return;
-    var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="/signup"]') : null;
+    var a = ev.target && ev.target.closest ? ev.target.closest('a[data-trial]') : null;
     if (!a) return;
     fired = true;
     fbq('track', 'Lead', { content_name: 'start_free_trial' });

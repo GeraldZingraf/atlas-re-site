@@ -15,13 +15,16 @@
 <meta property="og:type" content="website" />
 <!--
   ============================================================
-  CTAs point at the self-serve SaaS app at https://app.agent-atlas.co (LIVE on Render):
-    Start free trial -> https://app.agent-atlas.co/signup  (the tracked conversion CTA)
-    Sign in          -> https://app.agent-atlas.co/login
-  Tracking (pixel.js / google-ads.js / analytics.js) keys off a click on any link to
-  /signup: Meta Lead, Google Lead, and the analytics checkout_start all fire on the
-  trial click. The paid Subscribe conversion fires server-side from the app.
-  /go/<channel> attribution preserved.
+  CTAs point at the self-serve SaaS app at https://app.agent-atlas.co (LIVE on Render).
+  The app has NO /signup route; registration happens on the combined /login page
+  ("Create account" / "Continue with Google"). So both CTAs target /login:
+    Start free trial -> https://app.agent-atlas.co/login  (marked data-trial="1")
+    Sign in          -> https://app.agent-atlas.co/login  (no data-trial)
+  Tracking (pixel.js / google-ads.js / analytics.js) keys off a click on a[data-trial],
+  so Meta Lead, Google Lead, and the analytics checkout_start fire on the trial CTA but
+  NOT on a returning user's Sign in. /go/<channel> attribution preserved.
+  NOTE: the server-side paid Subscribe conversion is NOT yet wired in the app (the
+  Stripe webhook does not fire CAPI/Google conversions). Open item, tracked outside M8.
   ============================================================
 -->
 <style>
@@ -199,7 +202,7 @@
       <a class="navlink" href="#how">How it works</a>
       <a class="navlink" href="#pricing">Pricing</a>
       <a class="navlink" href="https://app.agent-atlas.co/login">Sign in</a>
-      <a class="btn btn-primary btn-sm" href="https://app.agent-atlas.co/signup">Start free trial</a>
+      <a class="btn btn-primary btn-sm" href="https://app.agent-atlas.co/login" data-trial="1">Start free trial</a>
     </div>
   </div>
 </nav>
@@ -212,7 +215,7 @@
     <p class="lead">Atlas writes your follow-up, builds your listing marketing, and tracks every closing deadline, in your voice, on top of the CRM you already use. You review and approve. It does the rest.</p>
 
     <div class="hero-cta">
-      <a class="btn btn-primary btn-lg" href="https://app.agent-atlas.co/signup">Start free trial <span class="arrow">&rarr;</span></a>
+      <a class="btn btn-primary btn-lg" href="https://app.agent-atlas.co/login" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
       <div class="refund">14 days free. No card to look around. Cancel anytime.</div>
       <a class="hero-secondary" href="#how">See how it works &rarr;</a>
     </div>
@@ -349,7 +352,7 @@
         <div class="pprice">$50<small> / mo</small></div>
         <div class="phours">100 employee-hours / month</div>
         <p class="pfor">Solo agents getting leverage without hiring.</p>
-        <a class="btn btn-ghost" href="https://app.agent-atlas.co/signup">Start free trial <span class="arrow">&rarr;</span></a>
+        <a class="btn btn-ghost" href="https://app.agent-atlas.co/login" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
       </div>
       <div class="plan feature">
         <div class="ptag">Most popular</div>
@@ -357,7 +360,7 @@
         <div class="pprice">$100<small> / mo</small></div>
         <div class="phours">250 employee-hours / month</div>
         <p class="pfor">Busy solo producers with a full pipeline.</p>
-        <a class="btn btn-primary" href="https://app.agent-atlas.co/signup">Start free trial <span class="arrow">&rarr;</span></a>
+        <a class="btn btn-primary" href="https://app.agent-atlas.co/login" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
       </div>
       <div class="plan">
         <div class="ptag">&nbsp;</div>
@@ -365,7 +368,7 @@
         <div class="pprice">$200<small> / mo</small></div>
         <div class="phours">600 employee-hours / month</div>
         <p class="pfor">High-volume agents handing off the most.</p>
-        <a class="btn btn-ghost" href="https://app.agent-atlas.co/signup">Start free trial <span class="arrow">&rarr;</span></a>
+        <a class="btn btn-ghost" href="https://app.agent-atlas.co/login" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
       </div>
     </div>
 
@@ -433,7 +436,7 @@
 <footer>
   <div class="wrap">
     <div>Atlas for Real Estate &middot; An AI team for the busywork behind your deals.</div>
-    <div><a class="navlink" href="https://app.agent-atlas.co/signup">Start free trial &rarr;</a></div>
+    <div><a class="navlink" href="https://app.agent-atlas.co/login" data-trial="1">Start free trial &rarr;</a></div>
   </div>
   <div class="wrap" style="margin-top:16px;font-size:.86rem">
     <div>
@@ -449,7 +452,7 @@
 
 <!-- sticky mobile CTA -->
 <div class="sticky-cta">
-  <a class="btn btn-primary" href="https://app.agent-atlas.co/signup">Start free trial <span class="arrow">&rarr;</span></a>
+  <a class="btn btn-primary" href="https://app.agent-atlas.co/login" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
 </div>
 
 </body>

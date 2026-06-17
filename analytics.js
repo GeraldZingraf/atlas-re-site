@@ -61,11 +61,12 @@
   //  - 'purchase' (= a paid subscription) is sent SERVER-SIDE from the app on the
   //    Stripe subscription, the same way ground-truth orders used to. Not fired here.
 
-  // 3) CTA clicks — any link to the app signup. Fire 'checkout_start' (trial-start
-  // intent) so the channel funnel's middle stage stays populated, plus a 'cta_click'.
+  // 3) CTA clicks — the "Start free trial" links (marked data-trial; the app has no
+  // /signup route, registration is on /login). Fire 'checkout_start' (trial-start intent)
+  // so the channel funnel's middle stage stays populated, plus a 'cta_click'.
   var startedTrial = false;
   document.addEventListener('click', function (ev) {
-    var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="/signup"]') : null;
+    var a = ev.target && ev.target.closest ? ev.target.closest('a[data-trial]') : null;
     if (!a) return;
     send('cta_click', '', 'start_free_trial');
     if (!startedTrial) { startedTrial = true; send('checkout_start', '', 'start_free_trial'); }

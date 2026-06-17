@@ -60,13 +60,14 @@
     gtag('event', 'conversion', { send_to: GOOGLE_TAG_ID + '/' + LEAD_LABEL });
   };
 
-  // Fire the Lead conversion on the "Start free trial" CTA click (any link to /signup).
-  // No user_data here (no form on the marketing site); the app can re-fire aaGoogleLead
-  // with email/name after registration for Enhanced Conversions. Fired once.
+  // Fire the Lead conversion on the "Start free trial" CTA click (links marked data-trial;
+  // the app has no /signup route, registration is on /login). No user_data here (no form on
+  // the marketing site); the app can re-fire aaGoogleLead with email/name after registration
+  // for Enhanced Conversions. Fired once.
   var fired = false;
   document.addEventListener('click', function (ev) {
     if (fired) return;
-    var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="/signup"]') : null;
+    var a = ev.target && ev.target.closest ? ev.target.closest('a[data-trial]') : null;
     if (!a) return;
     fired = true;
     window.aaGoogleLead();
