@@ -33,7 +33,7 @@
 | Live site (kill) | Rebuild (ship) |
 |---|---|
 | "Lives inside Claude Code", "runs on your laptop", "no servers", BYO Claude | Hosted cloud app, used in the browser, sign up and go |
-| Pay-once $500 Solo / $1,997 Broker, PayPal `checkout.html` | Subscription hours ladder + 30-day card-on-file trial |
+| Pay-once $500 Solo / $1,997 Broker, PayPal `checkout.html` | Subscription hours ladder + 14-day card-on-file trial |
 | "Get 3 free" / `free-starter.html` download | One primary CTA: **Start free trial** -> Supabase Auth signup |
 | **Broker Kit / small-team fork, "I run a small team", virtual sales manager** | **Removed entirely. Solo agents only. No team/broker copy anywhere.** |
 | Virtual Office section + demo video | Command-center dashboard story (`DASHBOARD-SPEC.md`) |
@@ -67,7 +67,7 @@
 - **Headline:** Hire an AI team that does the busywork behind your deals.
 - **Subhead:** Atlas writes your follow-up, builds your listing marketing, and tracks every closing deadline, in your voice, on top of the CRM you already use. You review and approve. It does the rest.
 - **Primary CTA:** Start free trial
-- **Friction reducer (under CTA):** 30 days free. No card to look around. Cancel anytime.
+- **Friction reducer (under CTA):** 14 days free. No card to look around. Cancel anytime.
 - **Secondary link:** See how it works
 
 **Alternate (B): the zoom-in / outcome angle**
@@ -179,7 +179,7 @@ You review what it staged, approve what is ready, and the rest of the busywork i
 
 **Headline:** Pay for the hours your team works. Nothing else.
 
-**Intro:** Every plan is measured in employee-hours of finished work. Start free for 30 days, then pick a plan. Need more in a busy month? Add hours in blocks. No per-seat fees, no setup fees.
+**Intro:** Every plan is measured in employee-hours of finished work. Start free for 14 days, then pick a plan. Need more in a busy month? Add hours in blocks. No per-seat fees, no setup fees.
 
 | Plan | Price | Hours / month | Best for |
 |---|---|---|---|
@@ -187,7 +187,7 @@ You review what it staged, approve what is ready, and the rest of the busywork i
 | **Pro** | $100 / mo | 250 employee-hours | Busy solo producers with a full pipeline |
 | **Max** | $200 / mo | 600 employee-hours | High-volume agents handing off the most |
 
-- **Trial:** 30 days free, card on file, cancel anytime before it ends. We never cut you off in the middle of a task.
+- **Trial:** 14 days free, card on file, cancel anytime before it ends. We never cut you off in the middle of a task.
 - **Buy more:** Out of hours in a heavy month? Add a block without changing your plan.
 - **CTA:** Start free trial
 
@@ -235,7 +235,7 @@ You review what it staged, approve what is ready, and the rest of the busywork i
 - **Do I need to be technical?** No. You connect your CRM and email with a few clicks and follow a short setup. If you can set up a CRM email filter, you can do this.
 - **Does it replace my CRM?** No. It works alongside Follow Up Boss and Lofty. Your CRM stays the source of truth. Atlas is the layer on top that does the drafting, the deadlines, and the voice.
 - **Do you send messages for me?** Atlas drafts and stages everything for your approval. You decide what sends automatically once you trust it. It sends by email from your connected account.
-- **What does it cost?** Plans start at $50 a month for 100 employee-hours of finished work. Start with a 30-day free trial.
+- **What does it cost?** Plans start at $50 a month for 100 employee-hours of finished work. Start with a 14-day free trial.
 - **What about fair housing?** A fair-housing check runs on every draft. Language touching protected classes gets flagged and replaced with a neutral alternative. It is a backstop, not a replacement for your judgment.
 - **Where does my data live and who sees it?** In the cloud, isolated to your account, under a zero-retention model agreement. See our DPA and sub-processor list.
 - **Can I cancel?** Anytime. Cancel before your trial ends and you are not charged.
