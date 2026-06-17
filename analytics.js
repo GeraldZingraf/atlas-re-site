@@ -54,28 +54,21 @@
   // 1) Page view on every load.
   send('page_view');
 
-  // 2) Page-specific entry events.
-  if (/checkout\.html$/.test(path)) {
-    send('checkout_start', params.get('sku') || '');
-  } else if (/thank-you\.html$/.test(path)) {
-    // Client-side completion marker. Ground-truth purchases come from the orders
-    // store; this just closes the funnel for the visitor-side rates.
-    send('purchase', params.get('sku') || '');
-  } else if (/refund\.html$/.test(path)) {
-    send('refund_view');
-  } else if (/install-guide(\.html)?$/.test(path)) {
-    // Activation funnel step — did the buyer actually open the install guide?
-    // Tolerant of the pretty URL (/install-guide) and explicit /install-guide.html.
-    send('viewed_guide');
-  }
+  // 2) Funnel stages (SaaS). The three tracker stages stay visits -> "checkout" ->
+  // "purchase"; in the SaaS funnel that maps to visits -> trial-start -> subscription,
+  // so the existing bySource rollup + Dashboard keep working unchanged.
+  //  - 'checkout_start' now fires on the "Start free trial" CTA click (intent, below).
+  //  - 'purchase' (= a paid subscription) is sent SERVER-SIDE from the app on the
+  //    Stripe subscription, the same way ground-truth orders used to. Not fired here.
 
-  // 3) CTA clicks — any link that heads to checkout, tagged with its sku.
+  // 3) CTA clicks — any link to the app signup. Fire 'checkout_start' (trial-start
+  // intent) so the channel funnel's middle stage stays populated, plus a 'cta_click'.
+  var startedTrial = false;
   document.addEventListener('click', function (ev) {
-    var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="checkout.html"]') : null;
+    var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="/signup"]') : null;
     if (!a) return;
-    var sku = '';
-    try { sku = new URL(a.href, location.origin).searchParams.get('sku') || ''; } catch (e) {}
-    send('cta_click', sku);
+    send('cta_click', '', 'start_free_trial');
+    if (!startedTrial) { startedTrial = true; send('checkout_start', '', 'start_free_trial'); }
   }, true);
 
   // 4) Scroll depth — fire each threshold once per page load.
