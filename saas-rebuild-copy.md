@@ -1,8 +1,10 @@
 # agent-atlas.co - SaaS rebuild copy + structure (M8)
 
-> **Status: DRAFT v2, staged for Gerald's review. Not published.** Copy/IA for the M8
-> marketing-site overhaul. Replaces the pay-once downloadable-kit funnel in `index.html` with the
-> self-serve SaaS funnel.
+> **Status: SHIPPED + LIVE on agent-atlas.co (2026-06-16).** Copy/IA for the M8 marketing-site
+> overhaul. Replaced the pay-once downloadable-kit funnel in `index.html` with the self-serve SaaS
+> funnel. Final commits on `origin/main` of the `atlas-re-site` repo: `6bc5164` (rebuild + legal),
+> `d95bbb5` (CTA tracking), `d8e2170` (cleanup), `30acfce` (trial-length doc fix), `9d395ec`
+> (CTA `/signup`-404 regression fix). See the as-built deltas + checklist at the bottom of this file.
 >
 > **v2 changes:** Broker/team offer removed entirely (Solo only). Copy rewritten against a
 > conversion-copywriting playbook (sources below). Plan named **Max** (not Scale).
@@ -251,14 +253,20 @@ You review what it staged, approve what is ready, and the rest of the busywork i
 
 ---
 
-## Build checklist (engineering, tracks M8 exit gate)
+## Build checklist (engineering, tracks M8 exit gate) — COMPLETE 2026-06-16
 
-- [ ] Replace `index.html` hero/sections/pricing/FAQ/footer per above; keep the existing dark-theme design system.
-- [ ] Remove the entire Broker Kit / small-team funnel: the `#broker` sections, the hero fork, `checkout.html?sku=broker`, and any "team" language.
-- [ ] Remove `checkout.html`, `free-starter.html`, `install-guide.html`, `thank-you.html`, `refund.html` (or repurpose) and the PayPal SDK wiring.
-- [ ] Primary CTA points at the app signup (decide: static-links-to-app vs fold into `apps/web`).
-- [ ] Re-point `pixel.js` / `google-ads.js`: retire one-time Purchase, fire `trial-start` and `subscription`. Keep the server-side CAPI + Enhanced Conversions wiring, change the events.
-- [ ] Verify all 7 `/go/<channel>` links still resolve and `bySource` still populates.
-- [ ] Legal pages already reconciled for the SaaS (Render added, SMS/TCPA fixed, Max tier). Just confirm footer links resolve.
-- [ ] Replace Virtual Office video with a command-center dashboard visual.
-- [ ] QA on mobile + desktop; confirm a cold visitor reaches signup with attribution intact.
+- [x] Replace `index.html` hero/sections/pricing/FAQ/footer per above; existing dark-theme design system kept.
+- [x] Remove the entire Broker Kit / small-team funnel: no `#broker` sections, no hero fork, no "team" language. Solo only.
+- [x] Old pay-once pages (`checkout.html`, `free-starter.html`, etc.) + PayPal SDK wiring gone from the served site. (Dormant PayPal/kit Netlify functions remain in `netlify/functions/` but are inert and unreferenced.)
+- [x] Primary CTA points at the app. **As-built delta:** the app has **no `/signup` route** (404); registration is on the combined `/login` page. So all 7 "Start free trial" CTAs target `app.agent-atlas.co/login` and are marked `data-trial="1"`. Approach = static links to the app (not folded into `apps/web`).
+- [x] Re-point `pixel.js` / `google-ads.js` / `analytics.js`: one-time Purchase retired; Meta Lead + Google Lead + analytics `checkout_start` now fire on a click of `a[data-trial]` (the trial CTA), not on Sign in. **As-built delta / OPEN:** the server-side `trial-start` / `subscription` (paid) conversion events are **NOT built** — the app's Stripe webhook fires no Meta CAPI / Google conversion. So we track trial *intent*, not *revenue*. Tracked in memory `m8-revenue-conversion-gap`; lives in the platform repo, outside M8.
+- [x] All 7 `/go/<channel>` redirects still resolve in `netlify.toml`; `track.mjs` + `leads.mjs` present so `bySource` populates. (Dead `/go/youtube` + `/go/tiktok` removed.)
+- [x] Legal pages reconciled for the SaaS; footer links (`/legal/terms|privacy|dpa|acceptable-use|subprocessors`) resolve. (Owned separately; confirmed linked, left alone.)
+- [x] Virtual Office video replaced. **As-built delta:** swapped for a lightweight CSS "command-center" scoreboard mock in the hero (illustrative, labelled "Preview"), not a real dashboard screenshot. Orphaned `virtual-office-demo.{gif,mp4,webm}` deleted. Replace the mock with a real screenshot when one exists.
+- [x] Verified on the live deploy: corrected JS + CTAs shipped (curl), `/login` returns 200 and supports account creation, `/signup` 404 gone. Trial length is **14 days** (real Stripe value; the "30 days" in this doc's drafts was corrected to 14).
+
+### Remaining open items (all outside M8 / outside this repo)
+- **Revenue conversion wiring** — fire server-side Subscribe/StartTrial from the Stripe webhook (platform repo). Memory: `m8-revenue-conversion-gap`.
+- **Empirical funnel confirmation** — first real trial click should land a Lead in Meta Events Manager + a `checkout_start` in `bySource` (or validate now via Meta Test Events without polluting data).
+- **`START-HERE.md` (platform repo) is stale** — still says "M8 not started" (line ~156) and "30-day trial" (line ~171). Left untouched: that repo has parked uncommitted WIP + an active concurrent session. Update it there.
+- **Stale docs** — root `README.md` + `saas-platform/**/BUILD-PLAN.md` still describe the dead pay-once / PayPal / Virtual Office model.
