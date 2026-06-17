@@ -46,11 +46,3 @@
   from = "/go/activerain"
   to = "/?utm_source=activerain"
   status = 302
-[[redirects]]
-  from = "/go/youtube"
-  to = "/?utm_source=youtube"
-  status = 302
-[[redirects]]
-  from = "/go/tiktok"
-  to = "/?utm_source=tiktok"
-  status = 302
