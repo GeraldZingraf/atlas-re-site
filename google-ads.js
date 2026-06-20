@@ -66,9 +66,20 @@
   // for Enhanced Conversions. Fired once.
   var fired = false;
   document.addEventListener('click', function (ev) {
-    if (fired) return;
     var a = ev.target && ev.target.closest ? ev.target.closest('a[data-trial]') : null;
     if (!a) return;
+    // Carry the first-touch gclid to the app signup URL so the app's server-side
+    // conversion upload can attribute the trial/subscription to the ad click.
+    // Done in the capture phase BEFORE navigation, on every click (independent of
+    // the once-only conversion fire below). Only when present; never overwrite an
+    // existing gclid param.
+    try {
+      var g = localStorage.getItem('aa_gclid');
+      if (g && a.href && a.href.indexOf('gclid=') === -1) {
+        a.href += (a.href.indexOf('?') === -1 ? '?' : '&') + 'gclid=' + encodeURIComponent(g);
+      }
+    } catch (e) {}
+    if (fired) return;
     fired = true;
     window.aaGoogleLead();
   }, true);

@@ -68,6 +68,18 @@
   document.addEventListener('click', function (ev) {
     var a = ev.target && ev.target.closest ? ev.target.closest('a[data-trial]') : null;
     if (!a) return;
+    // Carry first-party attribution across the domain hop to app.agent-atlas.co
+    // (localStorage does not cross origins). Append the sid + first-touch source to
+    // the trial CTA so the app can join the signup back to this visit and channel.
+    // Capture phase, before navigation; never overwrite a param already present.
+    try {
+      if (a.href) {
+        var extra = [];
+        if (a.href.indexOf('aa_src=') === -1) extra.push('aa_src=' + encodeURIComponent(SOURCE));
+        if (a.href.indexOf('aa_sid=') === -1) extra.push('aa_sid=' + encodeURIComponent(sid));
+        if (extra.length) a.href += (a.href.indexOf('?') === -1 ? '?' : '&') + extra.join('&');
+      }
+    } catch (e) {}
     send('cta_click', '', 'start_free_trial');
     if (!startedTrial) { startedTrial = true; send('checkout_start', '', 'start_free_trial'); }
   }, true);
