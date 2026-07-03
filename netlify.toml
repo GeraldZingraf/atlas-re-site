@@ -46,3 +46,11 @@
   from = "/go/activerain"
   to = "/?utm_source=activerain"
   status = 302
+[[redirects]]
+  from = "/go/sponsored"
+  to = "/?utm_source=sponsored"
+  status = 302
+[[redirects]]
+  from = "/go/influencer"
+  to = "/?utm_source=influencer"
+  status = 302
