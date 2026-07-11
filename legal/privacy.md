@@ -203,7 +203,12 @@ complying with legal obligations.
 - **AI transcripts and outputs** are retained so you can review and reuse them,
   until you delete them or close your account.
 - **Connected-account data** is accessed as needed to perform tasks. We retain only
-  what is needed to provide the Service and the records of work done.
+  what is needed to provide the Service and the records of work done. When you
+  disconnect a connected account, we immediately delete the stored access credentials
+  (OAuth tokens or API keys) we hold for that integration and stop accessing it; for
+  Google we also revoke our access with Google. When you close your account, we delete
+  your connected-account data within 30 days after your subscription ends, except for
+  records we are required to keep to comply with law.
 - **Payment records** are retained as needed for accounting and legal requirements,
   and the underlying payment details are held by Stripe.
 
