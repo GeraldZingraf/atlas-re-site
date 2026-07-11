@@ -38,13 +38,11 @@ payment, the last four digits of a card, and billing metadata needed for
 accounting and support.
 
 ### 2.3 Connected-account data
-When you connect a third-party account through OAuth (for example Google
-Workspace, Gmail, Calendar, and Drive, or a CRM such as Follow Up Boss or Lofty),
-the Service accesses data in that account so the AI agents can do the work you
-request. Depending on what you connect and enable, this can include the emails we
-send for you, calendar events, the documents Atlas creates or that you select in
-Drive, and CRM records such as leads, clients, conversation history, and
-transaction details. Atlas draws the context it needs about your leads and
+When you connect a third-party account through OAuth (for example Gmail, or a CRM
+such as Follow Up Boss or Lofty), the Service accesses data in that account so the
+AI agents can do the work you request. Depending on what you connect and enable,
+this can include the emails we send for you and CRM records such as leads, clients,
+conversation history, and transaction details. Atlas draws the context it needs about your leads and
 conversations primarily from the CRM you connect (for example Follow Up Boss or
 Lofty). We access this data to perform the tasks you direct, and we can read from
 and write to those accounts as needed (for example drafting and, where you enable
@@ -135,19 +133,18 @@ We may also share information:
 When you connect an account, you are shown the permissions (scopes) the Service is
 requesting, and you authorize that access through the provider's own OAuth flow. We
 request only the scopes needed to perform the tasks the Service offers. For Google
-accounts, this currently means sending email on your behalf, managing your
-calendar, and creating and editing the documents Atlas produces in Drive (limited
-to files Atlas creates or that you explicitly select). Atlas does not read your
-full Gmail mailbox and does not access files in your Drive that it did not create
-or that you did not select. The lead and conversation context Atlas needs is drawn
+accounts, this currently means sending email on your behalf from your Gmail account
+(the gmail.send permission), together with basic sign-in information (your email
+address and name). Atlas does not read, list, or modify your Gmail mailbox, and it
+does not access your Google Calendar or Google Drive. The lead and conversation context Atlas needs is drawn
 from the CRM you connect (such as Follow Up Boss or Lofty), where the Service reads
 and writes records to do the work you direct.
 
-If we later offer features that require broader access, such as reading your full
-email mailbox, we will request those additional scopes separately, show you what
-they cover, and complete any verification Google requires (including the Cloud
-Application Security Assessment) before those features are enabled for your
-account.
+If we later offer features that require broader access, such as Google Calendar,
+Google Drive, or reading your full email mailbox, we will request those additional
+scopes separately, show you what they cover, and complete any verification Google
+requires (including the Cloud Application Security Assessment where applicable)
+before those features are enabled for your account.
 
 The Service uses this access to act on your behalf and under your direction. You
 can review and revoke access at any time, either from your account settings in the
