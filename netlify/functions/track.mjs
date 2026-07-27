@@ -111,7 +111,7 @@ async function readAll(store) {
 
 // ---- incremental rollup cache helpers --------------------------------------
 const DEPTHS = [25, 50, 75, 100];
-const freshSrc = () => ({ visitors: [], ctaClicks: 0, leadSessions: [], downloadLicenses: [], activatedLicenses: [], checkoutSessions: [], signupSessions: [] });
+const freshSrc = () => ({ visitors: [], ctaClicks: 0, leadSessions: [], downloadLicenses: [], activatedLicenses: [], checkoutSessions: [], signupSessions: [], scrollDepth: { 25: 0, 50: 0, 75: 0, 100: 0 } });
 const freshDay = () => ({
   events: 0,
   pageViews: 0,
@@ -146,7 +146,17 @@ function foldEvent(state, e) {
     d.ctaBySku[k] = (d.ctaBySku[k] || 0) + 1;
     s.ctaClicks += 1;
   }
-  if (e.type === 'scroll_depth' && d.scrollDepth[e.meta] !== undefined) d.scrollDepth[e.meta] += 1;
+  // Scroll depth is tracked per source as well as globally. The global curve alone
+  // cannot separate "the page does not persuade" from "the traffic was never
+  // qualified": if paid visitors bounce above the fold while Direct visitors read
+  // down, that is a traffic problem, not a landing-page problem. Per-source is the
+  // only way to tell those apart. (`s.scrollDepth || {}` guards day buckets written
+  // before this field existed, so no rollup version bump is needed.)
+  if (e.type === 'scroll_depth' && d.scrollDepth[e.meta] !== undefined) {
+    d.scrollDepth[e.meta] += 1;
+    if (!s.scrollDepth) s.scrollDepth = { 25: 0, 50: 0, 75: 0, 100: 0 };
+    s.scrollDepth[e.meta] += 1;
+  }
   if (e.type === 'lead_capture' && sid) {
     pushUniq(d.leadSessions, sid);
     pushUniq(s.leadSessions, sid);
@@ -208,9 +218,10 @@ function aggregate(state, days) {
     for (const k in d.ctaBySku) ctaBySku[k] = (ctaBySku[k] || 0) + d.ctaBySku[k];
     for (const k of DEPTHS) scrollDepth[k] += d.scrollDepth[k] || 0;
     for (const ch in d.bySource) {
-      const a = src[ch] || (src[ch] = { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), downloadLicenses: new Set(), activatedLicenses: new Set(), checkoutSessions: new Set(), signupSessions: new Set() });
+      const a = src[ch] || (src[ch] = { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), downloadLicenses: new Set(), activatedLicenses: new Set(), checkoutSessions: new Set(), signupSessions: new Set(), scrollDepth: { 25: 0, 50: 0, 75: 0, 100: 0 } });
       for (const sid of d.bySource[ch].visitors) a.visitors.add(sid);
       a.ctaClicks += d.bySource[ch].ctaClicks;
+      for (const k of DEPTHS) a.scrollDepth[k] += (d.bySource[ch].scrollDepth || {})[k] || 0;
       for (const sid of (d.bySource[ch].leadSessions || [])) a.leadSessions.add(sid);
       for (const lic of (d.bySource[ch].downloadLicenses || [])) a.downloadLicenses.add(lic);
       for (const lic of (d.bySource[ch].activatedLicenses || [])) a.activatedLicenses.add(lic);
@@ -318,7 +329,7 @@ export default async (req) => {
     const bySource = {};
     const channels = new Set([...Object.keys(agg.src), ...orders.map((o) => channelOf(o.source))]);
     for (const ch of channels) {
-      const a = agg.src[ch] || { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), downloadLicenses: new Set(), activatedLicenses: new Set(), checkoutSessions: new Set(), signupSessions: new Set() };
+      const a = agg.src[ch] || { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), downloadLicenses: new Set(), activatedLicenses: new Set(), checkoutSessions: new Set(), signupSessions: new Set(), scrollDepth: { 25: 0, 50: 0, 75: 0, 100: 0 } };
       const chOrders = orders.filter((o) => channelOf(o.source) === ch);
       const buyers = chOrders.length;
       const revenue = chOrders.reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
@@ -348,6 +359,16 @@ export default async (req) => {
         // The arrival rate across the domain hop. A low number means people click the
         // CTA and never land on the signup page; a high number means they land and bail.
         checkout_to_signup_pct: pct(signupViews, checkouts),
+        // Per-source engagement curve. Compare a paid channel against Direct: if paid
+        // visitors bounce above the fold while Direct reads down, the traffic is
+        // unqualified rather than the page being weak. On 2026-07-27 the GLOBAL curve
+        // showed only 19% of visitors passing 25% and 7.7% reaching the pricing
+        // section (~75% depth), but there was no way to attribute that split.
+        scrollDepth: { ...(a.scrollDepth || { 25: 0, 50: 0, 75: 0, 100: 0 }) },
+        // Headline engagement number: did they scroll at all past the hero?
+        visit_to_scroll25_pct: pct((a.scrollDepth || {})[25] || 0, visits),
+        // Did they ever reach pricing? It sits at roughly the 75% mark on index.html.
+        visit_to_pricing_pct: pct((a.scrollDepth || {})[75] || 0, visits),
       };
     }
 
