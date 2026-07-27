@@ -4,6 +4,10 @@
 //   POST /.netlify/functions/track  { type, sku, sessionId, source, path, meta }
 //   -> 204. Events land in the "events" blob store. `source` is the UTM-attributed
 //   channel (see SOURCE_TO_CHANNEL) and powers the per-channel `bySource` rollup.
+//   The app (app.agent-atlas.co) also beacons `signup_view` here cross-origin. That
+//   works without CORS config because the beacon uses a text/plain body, which is a
+//   CORS-safelisted content type: no preflight, request delivered, response opaque
+//   (the sender never needs to read it). Do not "fix" that to application/json.
 //
 // READ (token-guarded, same ORDERS_TOKEN as orders.mjs): the local engine /
 // Claude pulls the rolled-up funnel.
@@ -40,6 +44,11 @@ const ALLOWED = new Set([
   'kit_download',   // server-side: free/paid kit actually pulled (lead -> download)
   'atlas_activated',// server-side: kit came online (installed Claude + activated Atlas)
   'checkout_start',
+  'signup_view',    // app-side: the signup page actually RENDERED after the CTA hop.
+                    // Beaconed cross-origin from app.agent-atlas.co/login using the
+                    // aa_sid the CTA carried over, so it dedupes and attributes on the
+                    // same session as the click. Splits the old CTA-click -> account
+                    // black hole into "never arrived" vs "arrived and bailed".
   'purchase',
   'refund_view',
   'viewed_guide',   // install-guide page view (activation funnel step)
@@ -102,7 +111,7 @@ async function readAll(store) {
 
 // ---- incremental rollup cache helpers --------------------------------------
 const DEPTHS = [25, 50, 75, 100];
-const freshSrc = () => ({ visitors: [], ctaClicks: 0, leadSessions: [], downloadLicenses: [], activatedLicenses: [], checkoutSessions: [] });
+const freshSrc = () => ({ visitors: [], ctaClicks: 0, leadSessions: [], downloadLicenses: [], activatedLicenses: [], checkoutSessions: [], signupSessions: [] });
 const freshDay = () => ({
   events: 0,
   pageViews: 0,
@@ -114,6 +123,7 @@ const freshDay = () => ({
   downloadLicenses: [],  // unique licenses that pulled the kit (lead -> download)
   activatedLicenses: [], // unique licenses whose Atlas came online (download -> activated)
   checkoutSessions: [],
+  signupSessions: [],    // unique sessions that reached the app signup page (CTA -> arrival)
   guideSessions: [],     // unique sessions that viewed the install guide
   bySource: {},
 });
@@ -156,6 +166,12 @@ function foldEvent(state, e) {
     pushUniq(d.checkoutSessions, sid);
     pushUniq(s.checkoutSessions, sid);
   }
+  // Cross-origin beacon from the app's signup page. Same sid as the CTA click, so
+  // checkoutSessions -> signupSessions is a true per-visitor arrival rate.
+  if (e.type === 'signup_view' && sid) {
+    pushUniq(d.signupSessions, sid);
+    pushUniq(s.signupSessions, sid);
+  }
   if (e.type === 'viewed_guide' && sid) pushUniq(d.guideSessions, sid);
 }
 
@@ -166,6 +182,7 @@ function aggregate(state, days) {
   const downloadLicenses = new Set();
   const activatedLicenses = new Set();
   const checkoutSessions = new Set();
+  const signupSessions = new Set();
   const guideSessions = new Set();
   const ctaBySku = {};
   const scrollDepth = { 25: 0, 50: 0, 75: 0, 100: 0 };
@@ -183,20 +200,25 @@ function aggregate(state, days) {
     for (const lic of (d.downloadLicenses || [])) downloadLicenses.add(lic);
     for (const lic of (d.activatedLicenses || [])) activatedLicenses.add(lic);
     for (const sid of d.checkoutSessions) checkoutSessions.add(sid);
+    // Guarded with `|| []`: day buckets written before signup_view existed lack the
+    // field. This is why the rollup version does NOT need bumping (a bump would force
+    // a full re-backfill of every historical event for a field that has no history).
+    for (const sid of (d.signupSessions || [])) signupSessions.add(sid);
     for (const sid of (d.guideSessions || [])) guideSessions.add(sid);
     for (const k in d.ctaBySku) ctaBySku[k] = (ctaBySku[k] || 0) + d.ctaBySku[k];
     for (const k of DEPTHS) scrollDepth[k] += d.scrollDepth[k] || 0;
     for (const ch in d.bySource) {
-      const a = src[ch] || (src[ch] = { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), downloadLicenses: new Set(), activatedLicenses: new Set(), checkoutSessions: new Set() });
+      const a = src[ch] || (src[ch] = { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), downloadLicenses: new Set(), activatedLicenses: new Set(), checkoutSessions: new Set(), signupSessions: new Set() });
       for (const sid of d.bySource[ch].visitors) a.visitors.add(sid);
       a.ctaClicks += d.bySource[ch].ctaClicks;
       for (const sid of (d.bySource[ch].leadSessions || [])) a.leadSessions.add(sid);
       for (const lic of (d.bySource[ch].downloadLicenses || [])) a.downloadLicenses.add(lic);
       for (const lic of (d.bySource[ch].activatedLicenses || [])) a.activatedLicenses.add(lic);
       for (const sid of d.bySource[ch].checkoutSessions) a.checkoutSessions.add(sid);
+      for (const sid of (d.bySource[ch].signupSessions || [])) a.signupSessions.add(sid);
     }
   }
-  return { sessions, leadSessions, downloadLicenses, activatedLicenses, checkoutSessions, guideSessions, ctaBySku, scrollDepth, src, events, pageViews, ctaClicks };
+  return { sessions, leadSessions, downloadLicenses, activatedLicenses, checkoutSessions, signupSessions, guideSessions, ctaBySku, scrollDepth, src, events, pageViews, ctaClicks };
 }
 
 export default async (req) => {
@@ -296,7 +318,7 @@ export default async (req) => {
     const bySource = {};
     const channels = new Set([...Object.keys(agg.src), ...orders.map((o) => channelOf(o.source))]);
     for (const ch of channels) {
-      const a = agg.src[ch] || { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), downloadLicenses: new Set(), activatedLicenses: new Set(), checkoutSessions: new Set() };
+      const a = agg.src[ch] || { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), downloadLicenses: new Set(), activatedLicenses: new Set(), checkoutSessions: new Set(), signupSessions: new Set() };
       const chOrders = orders.filter((o) => channelOf(o.source) === ch);
       const buyers = chOrders.length;
       const revenue = chOrders.reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
@@ -305,6 +327,7 @@ export default async (req) => {
       const downloads = a.downloadLicenses.size;
       const activated = a.activatedLicenses.size;
       const checkouts = a.checkoutSessions.size;
+      const signupViews = a.signupSessions.size;
       bySource[ch] = {
         visits,
         ctaClicks: a.ctaClicks,
@@ -312,6 +335,7 @@ export default async (req) => {
         downloads,
         activated,
         checkouts,
+        signupViews,
         buyers,
         revenue,
         visit_to_lead_pct: pct(leads, visits),
@@ -321,6 +345,9 @@ export default async (req) => {
         lead_to_buyer_pct: pct(buyers, leads),
         visit_to_buyer_pct: pct(buyers, visits),
         checkout_to_buyer_pct: pct(buyers, checkouts),
+        // The arrival rate across the domain hop. A low number means people click the
+        // CTA and never land on the signup page; a high number means they land and bail.
+        checkout_to_signup_pct: pct(signupViews, checkouts),
       };
     }
 
@@ -329,6 +356,7 @@ export default async (req) => {
     const downloads = agg.downloadLicenses.size;
     const activated = agg.activatedLicenses.size;
     const checkoutStarts = agg.checkoutSessions.size;
+    const signupViews = agg.signupSessions.size;
     const guideViews = agg.guideSessions.size;
     const purchases = orders.length;
     const revenue = orders.reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
@@ -344,6 +372,7 @@ export default async (req) => {
         downloads,
         activated,
         checkoutStarts,
+        signupViews,
         guideViews,
         purchases,
       },
@@ -356,6 +385,7 @@ export default async (req) => {
         download_to_buyer_pct: pct(purchases, downloads),
         lead_to_buyer_pct: pct(purchases, leads),
         cta_to_checkout_pct: pct(checkoutStarts, agg.ctaClicks),
+        checkout_to_signup_pct: pct(signupViews, checkoutStarts),
         checkout_to_purchase_pct: pct(purchases, checkoutStarts),
         visitor_to_purchase_pct: pct(purchases, uniqueVisitors),
       },
