@@ -178,7 +178,14 @@ function foldEvent(state, e) {
   }
   // Cross-origin beacon from the app's signup page. Same sid as the CTA click, so
   // checkoutSessions -> signupSessions is a true per-visitor arrival rate.
+  // Day and bySource buckets cached before this field existed have no array to push
+  // into, so initialize lazily (same pattern as scrollDepth above) instead of bumping
+  // the rollup version. Without this the fold throws on the first signup_view against
+  // an old bucket, which aborts the read before the highwater is written back — the
+  // whole GET 502s and never recovers on its own.
   if (e.type === 'signup_view' && sid) {
+    if (!d.signupSessions) d.signupSessions = [];
+    if (!s.signupSessions) s.signupSessions = [];
     pushUniq(d.signupSessions, sid);
     pushUniq(s.signupSessions, sid);
   }
