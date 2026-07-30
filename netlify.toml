@@ -11,6 +11,13 @@
   # external so Netlify installs it into the function's node_modules at build time.
   external_node_modules = ["nodemailer"]
 
+# Pre-sell bridge: serve start.html at the clean /start path (the landing-page
+# "Start free trial" CTAs point here before handing off to the app signup).
+[[redirects]]
+  from = "/start"
+  to = "/start.html"
+  status = 200
+
 # Clean channel short-links. Paste agent-atlas.co/go/<channel> anywhere; it sets
 # the utm_source so analytics.js attributes the visitor (and any purchase) to that
 # funnel. Keeps the pasted URL clean instead of a tracky ?utm_source= string.

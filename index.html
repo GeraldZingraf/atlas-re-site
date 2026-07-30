@@ -15,16 +15,20 @@
 <meta property="og:type" content="website" />
 <!--
   ============================================================
-  CTAs point at the self-serve SaaS app at https://app.agent-atlas.co (LIVE on Render).
-  The app has NO /signup route; registration happens on the combined /login page
-  ("Create account" / "Continue with Google"). So both CTAs target /login:
-    Start free trial -> https://app.agent-atlas.co/login  (marked data-trial="1")
-    Sign in          -> https://app.agent-atlas.co/login  (no data-trial)
+  Trial CTAs point at the pre-sell bridge /start (start.html, same origin), NOT
+  straight at the app. The bridge warms a cold ad click, sets the card expectation,
+  then hands off to the app signup with one CTA. Sign-in links still go straight to
+  the app /login. So:
+    Start free trial -> /start                                   (marked data-trial="1")
+    Sign in          -> https://app.agent-atlas.co/login         (no data-trial)
+  The app has NO /signup route; registration is on the combined /login page
+  ("Create account" / "Continue with Google"), and the bridge passes ?mode=signup.
   Tracking (pixel.js / google-ads.js / analytics.js) keys off a click on a[data-trial],
-  so Meta Lead, Google Lead, and the analytics checkout_start fire on the trial CTA but
-  NOT on a returning user's Sign in. /go/<channel> attribution preserved.
-  NOTE: the server-side paid Subscribe conversion is NOT yet wired in the app (the
-  Stripe webhook does not fire CAPI/Google conversions). Open item, tracked outside M8.
+  so Meta Lead, Google Lead, and the analytics checkout_start still fire on the trial
+  CTA click here (unchanged), NOT on a returning user's Sign in. The bridge is same
+  origin, so aa_sid / aa_src / aa_gclid persist in localStorage across the hop; the
+  bridge forwards them onward to the app and fires a 'bridge_continue' funnel event.
+  /go/<channel> attribution preserved.
   ============================================================
 -->
 <style>
@@ -119,17 +123,27 @@
   .card h3{margin-bottom:10px}
   .card p{color:var(--muted);margin:0}
 
-  /* command-center preview mock (illustrative, not real data) */
-  .mock{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line);border-radius:18px;padding:24px;max-width:520px;width:100%}
-  .mock .mock-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-  .mock .mock-label{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
-  .mock .mock-tag{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--brand-2);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
-  .mock .mock-big{font-size:2.8rem;font-weight:800;letter-spacing:-.03em;margin:6px 0 2px}
-  .mock .mock-sub{color:var(--muted);font-size:.95rem;margin-bottom:18px}
-  .mock .mock-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line);color:var(--muted);font-size:.96rem}
-  .mock .mock-row b{color:var(--ink);font-weight:700}
-  .mock-cap{text-align:center;color:var(--faint);font-size:.86rem;margin-top:12px}
-  .hero-visual{display:flex;justify-content:center;margin-top:48px}
+  .mock-cap{text-align:center;color:var(--faint);font-size:.86rem;margin-top:14px}
+
+  /* look-inside carousel (real app screenshots) */
+  .carousel{position:relative;max-width:900px;margin:30px auto 0}
+  .car-frame{overflow:hidden;border-radius:18px;border:1px solid var(--line);background:#fff}
+  .car-track{display:flex;transition:transform .35s ease}
+  .car-slide{flex:none;width:100%}
+  .car-slide img{display:block;width:100%;height:auto}
+  .car-btn{
+    position:absolute;top:50%;transform:translateY(-50%);z-index:2;
+    width:42px;height:42px;border-radius:999px;border:1px solid var(--line);
+    background:var(--panel-2);color:var(--ink);font-size:1.2rem;font-weight:800;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .car-btn:hover{border-color:var(--brand)}
+  .car-prev{left:-21px}
+  .car-next{right:-21px}
+  .car-dots{display:flex;justify-content:center;gap:8px;margin-top:14px}
+  .car-dot{width:8px;height:8px;border-radius:999px;border:0;padding:0;background:var(--line);cursor:pointer}
+  .car-dot.on{background:var(--brand)}
+  @media (max-width:640px){.car-prev{left:6px}.car-next{right:6px}}
 
   /* timeline */
   .timeline{margin-top:26px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
@@ -205,7 +219,7 @@
       <a class="navlink" href="#how">How it works</a>
       <a class="navlink" href="#pricing">Pricing</a>
       <a class="navlink" href="https://app.agent-atlas.co/login">Sign in</a>
-      <a class="btn btn-primary btn-sm" href="https://app.agent-atlas.co/login" data-trial="1">Start free trial</a>
+      <a class="btn btn-primary btn-sm" href="/start" data-trial="1">Start free trial</a>
     </div>
   </div>
 </nav>
@@ -218,7 +232,7 @@
     <p class="lead">Atlas writes your follow-up, builds your listing marketing, and tracks every closing deadline, in your voice, on top of the CRM you already use. You review and approve. It does the rest.</p>
 
     <div class="hero-cta">
-      <a class="btn btn-primary btn-lg" href="https://app.agent-atlas.co/login" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
+      <a class="btn btn-primary btn-lg" href="/start" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
       <div class="refund">14 days free, then from $50/month. Cancel anytime before day 14 and you won't be charged.</div>
       <a class="hero-secondary" href="#how">See how it works &rarr;</a>
     </div>
@@ -228,25 +242,34 @@
       <span>Fair-housing check on every draft</span>
       <span>Your data stays yours, never used to train AI</span>
     </div>
-
-    <div class="hero-visual">
-      <!-- Illustrative command-center preview. Replace with a real dashboard screenshot when ready. -->
-      <div class="mock" role="img" aria-label="A preview of the Atlas command center showing the employee-hours scoreboard for the week.">
-        <div class="mock-top">
-          <span class="mock-label">This week</span>
-          <span class="mock-tag">Preview</span>
-        </div>
-        <div class="mock-big">37 hours</div>
-        <div class="mock-sub">of work your team did for you</div>
-        <div class="mock-row"><span>Lead follow-up</span><b>14 drafts</b></div>
-        <div class="mock-row"><span>Listing marketing</span><b>3 packs</b></div>
-        <div class="mock-row"><span>Deadlines tracked</span><b>11 deals</b></div>
-        <div class="mock-row"><span>Past-client touches</span><b>9 sent</b></div>
-      </div>
-    </div>
-    <p class="mock-cap">A preview of your command center. Your numbers are your own.</p>
   </div>
 </header>
+
+<!-- ===================== LOOK INSIDE ===================== -->
+<section>
+  <div class="wrap center">
+    <p class="kicker">Inside Atlas</p>
+    <div class="carousel" id="peek" aria-roledescription="carousel" aria-label="Screens from the Atlas app">
+      <div class="car-frame">
+        <div class="car-track" id="peek-track">
+          <div class="car-slide">
+            <img src="assets/app-office.png" alt="The Atlas office: your team at their desks, with the team roster, automations, and today's calendar." decoding="async" width="1372" height="728" />
+          </div>
+          <div class="car-slide">
+            <img src="assets/app-team.png" alt="The team screen: each specialist with their skills, from lead follow-up to transaction deadlines to the books." decoding="async" width="1372" height="728" />
+          </div>
+          <div class="car-slide">
+            <img src="assets/app-automations.png" alt="The automations screen: recurring work on a schedule, one-time runs, and a builder for your own automations." decoding="async" width="1372" height="728" />
+          </div>
+        </div>
+      </div>
+      <button class="car-btn car-prev" type="button" aria-label="Previous screen">&#8249;</button>
+      <button class="car-btn car-next" type="button" aria-label="Next screen">&#8250;</button>
+      <div class="car-dots" id="peek-dots"></div>
+    </div>
+    <p class="mock-cap">Your office, your team, your automations. Real screens from Atlas.</p>
+  </div>
+</section>
 
 <!-- ===================== PROBLEM ===================== -->
 <section>
@@ -256,9 +279,9 @@
       <h2>Your CRM captures the lead. Then the real work lands on you.</h2>
     </div>
     <div class="stack">
-      <p>Follow Up Boss, Lofty, kvCORE. They are good at capturing leads, running drips, and hosting your IDX site.</p>
-      <p>Here is what they leave on your desk at 9pm: the follow-up that has to sound like you, the dozen live deals each with their own contingencies and dates, the new listing that needs a description plus three social posts plus a sphere email, the open-house visitors you meant to thank by name, and the Hendersons hitting their twelve-month referral window.</p>
-      <p><b>That is the work that decides your year. Right now it is all on you, after hours, when you are tired. That is the work Atlas does.</b></p>
+      <p>Follow Up Boss, Lofty, kvCORE. Good at capturing leads and running drips.</p>
+      <p>Here is what they leave on your desk at 9pm: the follow-up that has to sound like you, the live deals each with their own dates and contingencies, the new listing that needs marketing, the Hendersons hitting their referral window.</p>
+      <p><b>That work decides your year, and right now it happens after hours. That is the work Atlas does.</b></p>
     </div>
   </div>
 </section>
@@ -268,8 +291,8 @@
   <div class="wrap">
     <p class="kicker">What Atlas is</p>
     <h2>A team of AI specialists that works while you are out showing houses.</h2>
-    <p class="lead" style="margin-top:16px">Atlas is a team of AI specialists you run from your browser. You talk to one assistant, the way you would text a real one, and the rest of the team handles the follow-up, the listing marketing, the transaction deadlines, and the past-client outreach behind it. It learns your voice from your edits and stages everything for your approval until you trust it to run on its own.</p>
-    <p style="margin-top:14px"><b>You stay the only human your clients ever talk to. The busywork behind the deal is just not yours to carry anymore.</b></p>
+    <p class="lead" style="margin-top:16px">You talk to one assistant, the way you would text a real one. Behind it, a team of specialists handles the follow-up, the listing marketing, the deadlines, and the past-client outreach.</p>
+    <p style="margin-top:14px"><b>You stay the only human your clients ever talk to.</b></p>
 
     <div class="cards3">
       <div class="card">
@@ -288,20 +311,6 @@
   </div>
 </section>
 
-<!-- ===================== SCOREBOARD ===================== -->
-<section>
-  <div class="wrap two">
-    <div>
-      <p class="kicker">What you get back</p>
-      <h2>Watch the hours add up.</h2>
-    </div>
-    <div class="stack">
-      <p>Atlas measures every task it finishes in employee-hours, the same way you would measure a real assistant. The follow-up it wrote. The marketing pack it built. The deadlines it tracked. Open your dashboard and see exactly how many hours of work your team did for you this week.</p>
-      <p><b>That number is the whole point.</b> It is also how your plan is metered, so you only ever pay for work that actually got done.</p>
-    </div>
-  </div>
-</section>
-
 <!-- ===================== COMMAND CENTER ===================== -->
 <section>
   <div class="wrap two">
@@ -310,8 +319,8 @@
       <h2>One screen. Your whole team, what they did, and what needs you.</h2>
     </div>
     <div class="stack">
-      <p>Your home screen shows your agents and what each one is working on, the tasks that ran overnight, a calendar of what is scheduled next, and the hours your team has saved you. Anything that needs your eyes sits in one review queue. You approve, edit, or discard, and the team learns from every call.</p>
-      <p>When the same task shows up in your week three times, Atlas suggests a new specialist for it. You approve, the team gets stronger. <b>You are never stuck with the team you started with.</b></p>
+      <p>A morning briefing of what needs you today. Your agents and what each one is working on. A calendar of what runs next, and the hours of finished work your team put up this week, measured the way you would measure a real assistant. Anything that needs your eyes sits in one review queue.</p>
+      <p>When the same task keeps landing on you, Atlas suggests a new specialist for it. Or describe the task in plain English and Atlas builds the automation for your approval. <b>You are never stuck with the team you started with.</b></p>
     </div>
   </div>
 </section>
@@ -323,7 +332,7 @@
     <h2>The busywork is handled before you get to it.</h2>
     <ul class="clean" style="max-width:70ch">
       <li>A new lead comes in at 7:40am. Atlas has <b>a personal first touch out the door before you finish your coffee</b>, not whenever you sit down at night.</li>
-      <li>A listing goes live. Atlas turns it into an MLS-ready description, captions for Instagram, Facebook, and LinkedIn, and a short reel script <b>in about five minutes, not the four hours it used to take</b>.</li>
+      <li>A listing goes live. Atlas turns it into an MLS-ready description, <b>posts scheduled to LinkedIn, Facebook, and X</b>, plus an Instagram caption and a reel script, <b>in about five minutes, not four hours</b>.</li>
       <li>Three deals are mid-contract. Atlas is <b>tracking every contingency and closing date</b>, so nothing slips while you are at a showing.</li>
       <li>A past client hits their referral window. Atlas drafts the check-in <b>at the 90-day, 12-month, and 24-month marks that actually bring referrals back</b>.</li>
       <li>Month-end arrives. Atlas already has <b>your commission math, CE credits, and mileage tallied</b>, so the books are not another late night.</li>
@@ -338,11 +347,11 @@
     <p class="kicker">How it works</p>
     <h2>Set up in an afternoon. No call, no consultant.</h2>
     <div class="timeline">
-      <div class="row"><div class="wk">1</div><div class="desc"><b>Start your free trial.</b> Sign up with email or Google, then add a card to start. No charge for 14 days.</div></div>
-      <div class="row"><div class="wk">2</div><div class="desc"><b>Connect your CRM and email.</b> Follow Up Boss or Lofty, plus Gmail or Outlook. A few clicks.</div></div>
-      <div class="row"><div class="wk">3</div><div class="desc"><b>Hand it two of your own messages.</b> Atlas reads your voice from them and tunes every draft to sound like you.</div></div>
-      <div class="row"><div class="wk">4</div><div class="desc"><b>See your first win.</b> Atlas drafts a real follow-up on a real lead, in your voice, before you finish setup.</div></div>
-      <div class="row"><div class="wk">5</div><div class="desc"><b>Approve and go.</b> Your starting team goes live. You review what it stages. It earns the trust to run routine work on its own.</div></div>
+      <div class="row"><div class="wk">1</div><div class="desc"><b>Start your free trial.</b> Sign up with email or Google, add a card. No charge for 14 days.</div></div>
+      <div class="row"><div class="wk">2</div><div class="desc"><b>Connect your email.</b> Gmail or Outlook, a few clicks. Hook up Follow Up Boss or Lofty whenever you like.</div></div>
+      <div class="row"><div class="wk">3</div><div class="desc"><b>Tell Atlas about your business.</b> Type as much or as little as you like. Your team shows up ready.</div></div>
+      <div class="row"><div class="wk">4</div><div class="desc"><b>Meet your team.</b> Switch off anyone you don't need. They start working the same day.</div></div>
+      <div class="row"><div class="wk">5</div><div class="desc"><b>Review and approve.</b> Drafts land in one queue. Your edits teach it your voice, and it earns the trust to run routine work on its own.</div></div>
     </div>
     <p class="muted" style="margin-top:20px">The only people in this are you and your clients. There is no call, because there does not need to be one.</p>
   </div>
@@ -352,7 +361,7 @@
 <section id="pricing">
   <div class="wrap center">
     <p class="kicker">Pricing</p>
-    <h2>Pay for the hours your team works. Nothing else.</h2>
+    <h2 style="font-size:clamp(1.5rem,3.1vw,2.35rem)">Pay for the hours your team works. Nothing else.</h2>
     <p class="lead" style="margin-top:16px">Every plan is measured in employee-hours of finished work. Start free for 14 days, then pick a plan. Need more in a busy month? Add hours in blocks. No per-seat fees, no setup fees.</p>
 
     <div class="plans">
@@ -362,7 +371,7 @@
         <div class="pprice">$50<small> / mo</small></div>
         <div class="phours">100 employee-hours / month</div>
         <p class="pfor">Solo agents getting leverage without hiring.</p>
-        <a class="btn btn-ghost" href="https://app.agent-atlas.co/login" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
+        <a class="btn btn-ghost" href="/start" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
       </div>
       <div class="plan feature">
         <div class="ptag">Most popular</div>
@@ -370,7 +379,7 @@
         <div class="pprice">$100<small> / mo</small></div>
         <div class="phours">250 employee-hours / month</div>
         <p class="pfor">Busy solo producers with a full pipeline.</p>
-        <a class="btn btn-primary" href="https://app.agent-atlas.co/login" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
+        <a class="btn btn-primary" href="/start" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
       </div>
       <div class="plan">
         <div class="ptag">&nbsp;</div>
@@ -378,12 +387,13 @@
         <div class="pprice">$200<small> / mo</small></div>
         <div class="phours">600 employee-hours / month</div>
         <p class="pfor">High-volume agents handing off the most.</p>
-        <a class="btn btn-ghost" href="https://app.agent-atlas.co/login" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
+        <a class="btn btn-ghost" href="/start" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
       </div>
     </div>
 
     <div class="price-foot">
-      <p class="muted">Start with 14 days free. We take a card to start your trial and it becomes a paid plan on day 15, cancel anytime before then and you pay nothing. We never cut you off in the middle of a task. Out of hours in a heavy month? Add a block without changing your plan.</p>
+      <p class="muted">We take a card to start the trial. It becomes your plan on day 15; cancel before then and you pay nothing.</p>
+      <p class="muted">Heavy month? Add 40 hours for $25 without changing plans. We never cut you off mid-task.</p>
     </div>
   </div>
 </section>
@@ -403,7 +413,7 @@
       <p class="kicker">Who this is NOT for, and we mean it</p>
       <ul class="clean">
         <li>Anyone expecting full autopilot on day one. Every message waits for your approval until you promote it.</li>
-        <li>Agents on a CRM we do not support yet. We start with Follow Up Boss and Lofty, and add more.</li>
+        <li>Agents who need deep sync with a CRM beyond Follow Up Boss and Lofty today. Any lead source can feed Atlas, but activity-logging back to other CRMs is still coming.</li>
       </ul>
     </div>
   </div>
@@ -418,25 +428,17 @@
   </div>
 </section>
 
-<!-- ===================== TESTIMONIAL ===================== -->
-<section>
-  <div class="wrap">
-    <blockquote class="quote">
-      <p>"Atlas just did it. Super cool, thank you."</p>
-      <cite>Neil Paine, Broker, Sotheby's International Realty</cite>
-    </blockquote>
-  </div>
-</section>
-
 <!-- ===================== FAQ ===================== -->
 <section>
   <div class="wrap">
     <p class="kicker">Frequently asked</p>
     <h2 style="margin-bottom:18px">Questions</h2>
-    <details><summary>Do I need to be technical?</summary><p>No. You connect your CRM and email with a few clicks and follow a short setup. If you can set up a CRM email filter, you can do this.</p></details>
-    <details><summary>Does it replace my CRM?</summary><p>No. It works alongside Follow Up Boss and Lofty. Your CRM stays the source of truth. Atlas is the layer on top that does the drafting, the deadlines, and the voice.</p></details>
+    <details><summary>Do I need to be technical?</summary><p>No. You connect your email with a few clicks and follow a short setup. If you can set up a CRM email filter, you can do this.</p></details>
+    <details><summary>Does it replace my CRM?</summary><p>No. Your CRM stays the source of truth. Atlas is the layer on top that does the drafting, the deadlines, and the voice.</p></details>
+    <details><summary>I'm not on Follow Up Boss or Lofty. Can I still use it?</summary><p>Yes. Any lead source that can send a webhook feeds Atlas: your website form, Zapier, most CRMs. Logging activity back into the CRM is Follow Up Boss and Lofty today.</p></details>
     <details><summary>Do you send messages for me?</summary><p>Atlas drafts and stages everything for your approval. You decide what sends automatically once you trust it. It sends by email from your connected account.</p></details>
-    <details><summary>What does it cost?</summary><p>Plans start at $50 a month for 100 employee-hours of finished work. Start with a 14-day free trial.</p></details>
+    <details><summary>What does the trial include?</summary><p>14 days and 20 employee-hours of finished work with your full team. Card on file, no charge until day 15.</p></details>
+    <details><summary>What does it cost?</summary><p>Plans start at $50 a month for 100 employee-hours of finished work. Need more, add 40-hour blocks for $25.</p></details>
     <details><summary>What about fair housing?</summary><p>A fair-housing check runs on every draft. Language touching protected classes gets flagged and replaced with a neutral alternative. It is a backstop, not a replacement for your judgment.</p></details>
     <details><summary>Where does my data live and who sees it?</summary><p>In the cloud, isolated to your account, under a zero-retention model agreement. See our DPA and sub-processor list in the footer.</p></details>
     <details><summary>Can I cancel?</summary><p>Anytime. Cancel before day 14 and your card is never charged.</p></details>
@@ -446,7 +448,7 @@
 <footer>
   <div class="wrap">
     <div>Atlas for Real Estate &middot; An AI team for the busywork behind your deals.</div>
-    <div><a class="navlink" href="https://app.agent-atlas.co/login" data-trial="1">Start free trial &rarr;</a></div>
+    <div><a class="navlink" href="/start" data-trial="1">Start free trial &rarr;</a></div>
   </div>
   <div class="wrap" style="margin-top:16px;font-size:.86rem">
     <div>
@@ -463,8 +465,34 @@
 
 <!-- sticky mobile CTA -->
 <div class="sticky-cta">
-  <a class="btn btn-primary" href="https://app.agent-atlas.co/login" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
+  <a class="btn btn-primary" href="/start" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
 </div>
 
+<script>
+(function(){
+  var car = document.getElementById('peek');
+  if (!car) return;
+  var track = document.getElementById('peek-track');
+  var slides = track.children.length;
+  var dotsBox = document.getElementById('peek-dots');
+  var i = 0;
+  for (var d = 0; d < slides; d++) {
+    var b = document.createElement('button');
+    b.className = 'car-dot'; b.type = 'button';
+    b.setAttribute('aria-label', 'Show preview ' + (d + 1) + ' of ' + slides);
+    (function(n){ b.addEventListener('click', function(){ go(n); }); })(d);
+    dotsBox.appendChild(b);
+  }
+  function go(n){
+    i = (n + slides) % slides;
+    track.style.transform = 'translateX(-' + (i * 100) + '%)';
+    var dots = dotsBox.children;
+    for (var k = 0; k < dots.length; k++) dots[k].className = 'car-dot' + (k === i ? ' on' : '');
+  }
+  car.querySelector('.car-prev').addEventListener('click', function(){ go(i - 1); });
+  car.querySelector('.car-next').addEventListener('click', function(){ go(i + 1); });
+  go(0);
+})();
+</script>
 </body>
 </html>
