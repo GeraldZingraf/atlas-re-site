@@ -44,6 +44,10 @@ const ALLOWED = new Set([
   'kit_download',   // server-side: free/paid kit actually pulled (lead -> download)
   'atlas_activated',// server-side: kit came online (installed Claude + activated Atlas)
   'checkout_start',
+  'bridge_continue',// /start pre-sell bridge: clicked "Create my account" to proceed to
+                    // the app signup. Sits between checkout_start (landing CTA click) and
+                    // signup_view (app signup page rendered), so it isolates the bridge's
+                    // own continue-through rate.
   'signup_view',    // app-side: the signup page actually RENDERED after the CTA hop.
                     // Beaconed cross-origin from app.agent-atlas.co/login using the
                     // aa_sid the CTA carried over, so it dedupes and attributes on the
@@ -189,6 +193,14 @@ function foldEvent(state, e) {
     pushUniq(d.signupSessions, sid);
     pushUniq(s.signupSessions, sid);
   }
+  // /start bridge continue. Same lazy-init pattern as signup_view above, so day/source
+  // buckets cached before this field existed gain it without a rollup version bump.
+  if (e.type === 'bridge_continue' && sid) {
+    if (!d.bridgeSessions) d.bridgeSessions = [];
+    if (!s.bridgeSessions) s.bridgeSessions = [];
+    pushUniq(d.bridgeSessions, sid);
+    pushUniq(s.bridgeSessions, sid);
+  }
   if (e.type === 'viewed_guide' && sid) pushUniq(d.guideSessions, sid);
 }
 
@@ -200,6 +212,7 @@ function aggregate(state, days) {
   const activatedLicenses = new Set();
   const checkoutSessions = new Set();
   const signupSessions = new Set();
+  const bridgeSessions = new Set();
   const guideSessions = new Set();
   const ctaBySku = {};
   const scrollDepth = { 25: 0, 50: 0, 75: 0, 100: 0 };
@@ -221,11 +234,12 @@ function aggregate(state, days) {
     // field. This is why the rollup version does NOT need bumping (a bump would force
     // a full re-backfill of every historical event for a field that has no history).
     for (const sid of (d.signupSessions || [])) signupSessions.add(sid);
+    for (const sid of (d.bridgeSessions || [])) bridgeSessions.add(sid);
     for (const sid of (d.guideSessions || [])) guideSessions.add(sid);
     for (const k in d.ctaBySku) ctaBySku[k] = (ctaBySku[k] || 0) + d.ctaBySku[k];
     for (const k of DEPTHS) scrollDepth[k] += d.scrollDepth[k] || 0;
     for (const ch in d.bySource) {
-      const a = src[ch] || (src[ch] = { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), downloadLicenses: new Set(), activatedLicenses: new Set(), checkoutSessions: new Set(), signupSessions: new Set(), scrollDepth: { 25: 0, 50: 0, 75: 0, 100: 0 } });
+      const a = src[ch] || (src[ch] = { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), downloadLicenses: new Set(), activatedLicenses: new Set(), checkoutSessions: new Set(), signupSessions: new Set(), bridgeSessions: new Set(), scrollDepth: { 25: 0, 50: 0, 75: 0, 100: 0 } });
       for (const sid of d.bySource[ch].visitors) a.visitors.add(sid);
       a.ctaClicks += d.bySource[ch].ctaClicks;
       for (const k of DEPTHS) a.scrollDepth[k] += (d.bySource[ch].scrollDepth || {})[k] || 0;
@@ -234,9 +248,11 @@ function aggregate(state, days) {
       for (const lic of (d.bySource[ch].activatedLicenses || [])) a.activatedLicenses.add(lic);
       for (const sid of d.bySource[ch].checkoutSessions) a.checkoutSessions.add(sid);
       for (const sid of (d.bySource[ch].signupSessions || [])) a.signupSessions.add(sid);
+      if (!a.bridgeSessions) a.bridgeSessions = new Set();
+      for (const sid of (d.bySource[ch].bridgeSessions || [])) a.bridgeSessions.add(sid);
     }
   }
-  return { sessions, leadSessions, downloadLicenses, activatedLicenses, checkoutSessions, signupSessions, guideSessions, ctaBySku, scrollDepth, src, events, pageViews, ctaClicks };
+  return { sessions, leadSessions, downloadLicenses, activatedLicenses, checkoutSessions, signupSessions, bridgeSessions, guideSessions, ctaBySku, scrollDepth, src, events, pageViews, ctaClicks };
 }
 
 export default async (req) => {
@@ -336,7 +352,7 @@ export default async (req) => {
     const bySource = {};
     const channels = new Set([...Object.keys(agg.src), ...orders.map((o) => channelOf(o.source))]);
     for (const ch of channels) {
-      const a = agg.src[ch] || { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), downloadLicenses: new Set(), activatedLicenses: new Set(), checkoutSessions: new Set(), signupSessions: new Set(), scrollDepth: { 25: 0, 50: 0, 75: 0, 100: 0 } };
+      const a = agg.src[ch] || { visitors: new Set(), ctaClicks: 0, leadSessions: new Set(), downloadLicenses: new Set(), activatedLicenses: new Set(), checkoutSessions: new Set(), signupSessions: new Set(), bridgeSessions: new Set(), scrollDepth: { 25: 0, 50: 0, 75: 0, 100: 0 } };
       const chOrders = orders.filter((o) => channelOf(o.source) === ch);
       const buyers = chOrders.length;
       const revenue = chOrders.reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
@@ -346,6 +362,7 @@ export default async (req) => {
       const activated = a.activatedLicenses.size;
       const checkouts = a.checkoutSessions.size;
       const signupViews = a.signupSessions.size;
+      const bridgeContinues = (a.bridgeSessions || new Set()).size;
       bySource[ch] = {
         visits,
         ctaClicks: a.ctaClicks,
@@ -353,6 +370,7 @@ export default async (req) => {
         downloads,
         activated,
         checkouts,
+        bridgeContinues,
         signupViews,
         buyers,
         revenue,
@@ -366,6 +384,10 @@ export default async (req) => {
         // The arrival rate across the domain hop. A low number means people click the
         // CTA and never land on the signup page; a high number means they land and bail.
         checkout_to_signup_pct: pct(signupViews, checkouts),
+        // /start bridge continue-through: of those who clicked the landing CTA, how many
+        // clicked through the bridge, and of those how many reached the app signup page.
+        checkout_to_bridge_pct: pct(bridgeContinues, checkouts),
+        bridge_to_signup_pct: pct(signupViews, bridgeContinues),
         // Per-source engagement curve. Compare a paid channel against Direct: if paid
         // visitors bounce above the fold while Direct reads down, the traffic is
         // unqualified rather than the page being weak. On 2026-07-27 the GLOBAL curve
@@ -385,6 +407,7 @@ export default async (req) => {
     const activated = agg.activatedLicenses.size;
     const checkoutStarts = agg.checkoutSessions.size;
     const signupViews = agg.signupSessions.size;
+    const bridgeContinues = agg.bridgeSessions.size;
     const guideViews = agg.guideSessions.size;
     const purchases = orders.length;
     const revenue = orders.reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
@@ -400,6 +423,7 @@ export default async (req) => {
         downloads,
         activated,
         checkoutStarts,
+        bridgeContinues,
         signupViews,
         guideViews,
         purchases,
@@ -413,6 +437,8 @@ export default async (req) => {
         download_to_buyer_pct: pct(purchases, downloads),
         lead_to_buyer_pct: pct(purchases, leads),
         cta_to_checkout_pct: pct(checkoutStarts, agg.ctaClicks),
+        checkout_to_bridge_pct: pct(bridgeContinues, checkoutStarts),
+        bridge_to_signup_pct: pct(signupViews, bridgeContinues),
         checkout_to_signup_pct: pct(signupViews, checkoutStarts),
         checkout_to_purchase_pct: pct(purchases, checkoutStarts),
         visitor_to_purchase_pct: pct(purchases, uniqueVisitors),
