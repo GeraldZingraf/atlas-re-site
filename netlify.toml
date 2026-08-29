@@ -11,6 +11,19 @@
   # external so Netlify installs it into the function's node_modules at build time.
   external_node_modules = ["nodemailer"]
 
+# Internal working docs live in the repo for the record but must not be served
+# from the public site (publish = "." would otherwise expose them as static files).
+[[redirects]]
+  from = "/WIND-DOWN.md"
+  to = "/index.html"
+  status = 404
+  force = true
+[[redirects]]
+  from = "/saas-rebuild-copy.md"
+  to = "/index.html"
+  status = 404
+  force = true
+
 # Pre-sell bridge: serve start.html at the clean /start path (the landing-page
 # "Start free trial" CTAs point here before handing off to the app signup).
 [[redirects]]
