@@ -4,9 +4,10 @@ Atlas for Real Estate was wound down on 2026-08-28. The LLC is kept and the prod
 pivoting; the full record lives in `WIND-DOWN.md` at the root of the `atlas-a11y/atlas-platform`
 repo.
 
-**Correction (2026-08-29):** this note first said the business took $0 revenue across both
-eras. That was wrong. A prod audit found one subscription that converted from trial to paid on
-2026-08-21 and was never canceled. The kit era did take $0.
+**Revenue (settled 2026-08-29):** $0 from real customers across both eras. A prod audit found
+one subscription that converted from trial to paid on 2026-08-21 and was never canceled, but
+Gerald confirmed it is his own throwaway test account, still charging his card until he cancels
+it. No third party was ever billed.
 
 **This site still sells.** The landing CTAs point at `/start`, which hands off to
 `app.agent-atlas.co/login?mode=signup`, and signup takes a card. That purchase path must be cut
