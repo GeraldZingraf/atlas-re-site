@@ -1,9 +1,20 @@
 # agent-atlas.co: wind-down note (2026-08-28)
 
-Atlas for Real Estate was wound down on 2026-08-28. The business took $0 revenue across both
-its eras (the pay-once kit, then the SaaS trial funnel this site served). The LLC is kept and
-the product is pivoting; the full record lives in `WIND-DOWN.md` at the root of the
-`atlas-a11y/atlas-platform` repo.
+Atlas for Real Estate was wound down on 2026-08-28. The LLC is kept and the product is
+pivoting; the full record lives in `WIND-DOWN.md` at the root of the `atlas-a11y/atlas-platform`
+repo.
+
+**Correction (2026-08-29):** this note first said the business took $0 revenue across both
+eras. That was wrong. A prod audit found one subscription that converted from trial to paid on
+2026-08-21 and was never canceled. The kit era did take $0.
+
+**This site still sells.** The landing CTAs point at `/start`, which hands off to
+`app.agent-atlas.co/login?mode=signup`, and signup takes a card. That purchase path must be cut
+before the app is torn down, or a stranger can start a card-required trial for a product that
+is being deleted. The old PayPal kit buttons are already gone from `index.html`, so PayPal is
+not exposed. When the Render service is deleted, delete the `app.agent-atlas.co` DNS record at
+the same time: a CNAME left pointing at a deprovisioned host is a subdomain-takeover risk on a
+domain that is being kept.
 
 ## What this repo is
 
