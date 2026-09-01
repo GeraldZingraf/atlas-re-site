@@ -1,498 +1,74 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="facebook-domain-verification" content="zqqasmim846l6gt64hepjsdqm9vp9g" />
-<title>Atlas for Real Estate: an AI team that does the busywork behind your deals</title>
-<link rel="icon" type="image/png" href="favicon.png" />
-<link rel="apple-touch-icon" href="favicon.png" />
-<script src="/pixel.js"></script>
-<script src="/google-ads.js" defer></script>
-<meta name="description" content="Atlas writes your follow-up, builds your listing marketing, and tracks every deadline, in your voice, on top of your CRM. You review and approve. Start your 14-day free trial." />
-<meta property="og:title" content="Atlas for Real Estate" />
-<meta property="og:description" content="Hire an AI team that handles the busywork behind every deal. In your voice, on top of your CRM. Start a free trial." />
-<meta property="og:type" content="website" />
-<!--
-  ============================================================
-  Trial CTAs point at the pre-sell bridge /start (start.html, same origin), NOT
-  straight at the app. The bridge warms a cold ad click, sets the card expectation,
-  then hands off to the app signup with one CTA. Sign-in links still go straight to
-  the app /login. So:
-    Start free trial -> /start                                   (marked data-trial="1")
-    Sign in          -> https://app.agent-atlas.co/login         (no data-trial)
-  The app has NO /signup route; registration is on the combined /login page
-  ("Create account" / "Continue with Google"), and the bridge passes ?mode=signup.
-  Tracking (pixel.js / google-ads.js / analytics.js) keys off a click on a[data-trial],
-  so Meta Lead, Google Lead, and the analytics checkout_start still fire on the trial
-  CTA click here (unchanged), NOT on a returning user's Sign in. The bridge is same
-  origin, so aa_sid / aa_src / aa_gclid persist in localStorage across the hop; the
-  bridge forwards them onward to the app and fires a 'bridge_continue' funnel event.
-  /go/<channel> attribution preserved.
-  ============================================================
--->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Atlas</title>
+<meta name="description" content="Agent Atlas is building something new.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.png">
 <style>
-  :root{
-    --bg:#0d0f16;
-    --bg-2:#12151f;
-    --panel:#171b27;
-    --panel-2:#1d2230;
-    --line:#2a3040;
-    --ink:#eef1f7;
-    --muted:#a6adbd;
-    --faint:#7d8597;
-    --brand:#7c5cff;
-    --brand-2:#2bb6b0;
-    --accent-grad:linear-gradient(100deg,#7c5cff 0%,#2bb6b0 100%);
-    --radius:16px;
-    --maxw:1080px;
+  :root {
+    --bg: #0f1219;
+    --panel: #171b27;
+    --ink: #eef1f7;
+    --ink-soft: #a6adbd;
+    --rule: #2a3040;
+    --accent: #7c5cff;
+    --accent-2: #2bb6b0;
   }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{
-    margin:0;background:var(--bg);color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    line-height:1.6;-webkit-font-smoothing:antialiased;
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    display: grid;
+    place-items: center;
+    padding: 32px;
   }
-  a{color:inherit}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
-  .eyebrow{
-    text-transform:uppercase;letter-spacing:.22em;font-size:.74rem;font-weight:700;
-    color:var(--brand-2);margin:0 0 18px
+  main {
+    width: 100%;
+    max-width: 560px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    padding: 44px 40px;
+    text-align: center;
   }
-  h1,h2,h3{line-height:1.12;margin:0;font-weight:800;letter-spacing:-.02em}
-  h1{font-size:clamp(2.3rem,6vw,4.1rem)}
-  h2{font-size:clamp(1.9rem,4.4vw,2.9rem)}
-  h3{font-size:1.2rem;letter-spacing:-.01em}
-  p{margin:0 0 16px}
-  .lead{font-size:clamp(1.05rem,1.8vw,1.25rem);color:var(--muted);max-width:60ch}
-  .grad{background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .muted{color:var(--muted)}
-  .faint{color:var(--faint)}
-  section{padding:84px 0;border-top:1px solid var(--line);scroll-margin-top:70px}
-  .hero{padding:92px 0 64px;border-top:0;text-align:center}
-  .hero .lead{margin-left:auto;margin-right:auto}
-
-  /* buttons */
-  .btn{
-    display:inline-flex;align-items:center;gap:.6em;justify-content:center;
-    font-weight:700;font-size:1.02rem;text-decoration:none;cursor:pointer;
-    padding:16px 28px;border-radius:999px;border:0;transition:transform .12s ease,filter .12s ease;
+  .mark {
+    width: 46px;
+    height: 46px;
+    margin: 0 auto 26px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
   }
-  .btn-primary{background:var(--accent-grad);color:#fff;box-shadow:0 10px 30px rgba(124,92,255,.28)}
-  .btn-primary:hover{transform:translateY(-1px);filter:brightness(1.06)}
-  .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
-  .btn-ghost:hover{border-color:var(--brand);color:#fff}
-  .btn .arrow{font-size:1.1em;transform:translateY(1px)}
-  .refund{font-size:.86rem;color:var(--faint);margin-top:12px}
-
-  /* top nav */
-  .nav{position:sticky;top:0;z-index:60;border-bottom:1px solid var(--line);background:rgba(13,15,22,.72);backdrop-filter:blur(8px)}
-  .nav-in{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
-  .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.01em;text-decoration:none;color:var(--ink)}
-  .brand img{width:30px;height:30px;border-radius:7px}
-  .nav-links{display:flex;align-items:center;gap:20px}
-  .navlink{color:var(--muted);text-decoration:none;font-weight:600;font-size:.95rem}
-  .navlink:hover{color:var(--ink)}
-  .btn-sm{padding:10px 18px;font-size:.92rem}
-
-  /* hero CTA */
-  .hero-cta{margin-top:34px;display:flex;flex-direction:column;align-items:center}
-  .btn-lg{padding:18px 34px;font-size:1.12rem}
-  .hero-secondary{display:inline-block;margin-top:16px;color:var(--muted);font-size:.98rem;text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:2px}
-  .hero-secondary:hover{color:var(--ink);border-color:var(--brand)}
-  .trust-strip{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 22px;margin-top:28px;color:var(--faint);font-size:.86rem;font-weight:600}
-  .trust-strip span{display:inline-flex;align-items:center;gap:8px}
-  .trust-strip span::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--accent-grad);flex:none}
-
-  /* layout helpers */
-  .kicker{color:var(--faint);font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-bottom:14px}
-  .two{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
-  .stack>*+*{margin-top:14px}
-  ul.clean{list-style:none;padding:0;margin:18px 0 0}
-  ul.clean li{position:relative;padding-left:28px;margin-bottom:14px;color:var(--muted)}
-  ul.clean li::before{content:"";position:absolute;left:0;top:.55em;width:11px;height:11px;border-radius:3px;background:var(--accent-grad)}
-  ul.clean li b{color:var(--ink);font-weight:700}
-
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:30px 28px}
-  .panel-2{background:var(--panel-2)}
-
-  /* three-card grid (feature to benefit) */
-  .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:34px;text-align:left}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px 24px}
-  .card h3{margin-bottom:10px}
-  .card p{color:var(--muted);margin:0}
-
-  .mock-cap{text-align:center;color:var(--faint);font-size:.86rem;margin-top:14px}
-
-  /* look-inside carousel (real app screenshots) */
-  .carousel{position:relative;max-width:900px;margin:30px auto 0}
-  .car-frame{overflow:hidden;border-radius:18px;border:1px solid var(--line);background:#fff}
-  .car-track{display:flex;transition:transform .35s ease}
-  .car-slide{flex:none;width:100%}
-  .car-slide img{display:block;width:100%;height:auto}
-  .car-btn{
-    position:absolute;top:50%;transform:translateY(-50%);z-index:2;
-    width:42px;height:42px;border-radius:999px;border:1px solid var(--line);
-    background:var(--panel-2);color:var(--ink);font-size:1.2rem;font-weight:800;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;
+  h1 {
+    margin: 0 0 14px;
+    font-size: clamp(1.7rem, 5vw, 2.15rem);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
   }
-  .car-btn:hover{border-color:var(--brand)}
-  .car-prev{left:-21px}
-  .car-next{right:-21px}
-  .car-dots{display:flex;justify-content:center;gap:8px;margin-top:14px}
-  .car-dot{width:8px;height:8px;border-radius:999px;border:0;padding:0;background:var(--line);cursor:pointer}
-  .car-dot.on{background:var(--brand)}
-  @media (max-width:640px){.car-prev{left:6px}.car-next{right:6px}}
-
-  /* timeline */
-  .timeline{margin-top:26px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
-  .timeline .row{display:grid;grid-template-columns:54px 1fr;gap:0;border-top:1px solid var(--line)}
-  .timeline .row:first-child{border-top:0}
-  .timeline .wk{padding:18px 20px;font-weight:800;background:var(--panel-2);color:#fff;white-space:nowrap;text-align:center}
-  .timeline .desc{padding:18px 20px;color:var(--muted)}
-
-  /* pricing plans */
-  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin:34px auto 0;max-width:980px;text-align:left}
-  .plan{background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line);border-radius:18px;padding:30px 26px;display:flex;flex-direction:column}
-  .plan.feature{border-color:var(--brand);box-shadow:0 10px 30px rgba(124,92,255,.18)}
-  .plan .ptag{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brand-2);margin-bottom:6px;min-height:1em}
-  .plan .pname{font-weight:800;font-size:1.15rem}
-  .plan .pprice{font-size:2.3rem;font-weight:800;letter-spacing:-.02em;margin:8px 0 0}
-  .plan .pprice small{font-size:.95rem;font-weight:600;color:var(--muted);letter-spacing:0}
-  .plan .phours{color:var(--ink);font-weight:700;margin:6px 0 10px}
-  .plan .pfor{color:var(--muted);flex:1;margin:0 0 18px}
-  .price-foot{max-width:760px;margin:24px auto 0;text-align:center}
-  .price-foot .refund{margin-top:6px}
-
-  /* faq */
-  details{border-top:1px solid var(--line);padding:18px 0}
-  details summary{cursor:pointer;font-weight:700;font-size:1.05rem;list-style:none;display:flex;justify-content:space-between;gap:16px}
-  details summary::-webkit-details-marker{display:none}
-  details summary::after{content:"+";color:var(--brand-2);font-weight:800;font-size:1.3rem;line-height:1}
-  details[open] summary::after{content:"\2013"}
-  details p{margin-top:12px;color:var(--muted)}
-
-  .quote{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--brand);border-radius:var(--radius);padding:28px 30px;max-width:640px;margin:0 auto}
-  .quote p{font-size:1.2rem;line-height:1.5;color:var(--ink);margin:0 0 14px;font-style:italic}
-  .quote cite{font-style:normal;color:var(--muted);font-size:.92rem;font-weight:700;letter-spacing:.01em}
-
-  .section-head{max-width:62ch}
-  .section-head .lead{margin-top:18px}
-  .center{text-align:center}
-  .center .section-head{margin-left:auto;margin-right:auto}
-  .center .lead{margin-left:auto;margin-right:auto}
-
-  footer{padding:56px 0 80px;border-top:1px solid var(--line);color:var(--faint);font-size:.92rem}
-  footer .wrap{display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:center}
-
-  /* sticky mobile CTA */
-  .sticky-cta{
-    display:none;position:fixed;left:0;right:0;bottom:0;z-index:50;
-    background:rgba(13,15,22,.92);backdrop-filter:blur(8px);border-top:1px solid var(--line);
-    padding:12px 16px
-  }
-  .sticky-cta .btn{width:100%}
-
-  @media (max-width:880px){
-    .cards3{grid-template-columns:1fr}
-    .plans{grid-template-columns:1fr}
-  }
-  @media (max-width:780px){
-    .two{grid-template-columns:1fr;gap:28px}
-    section{padding:60px 0}
-    .hero{padding:64px 0 44px}
-    .sticky-cta{display:block}
-    body{padding-bottom:76px}
-    .nav .navlink{display:none}
-    .hero-cta .btn-lg{width:100%}
+  p { margin: 0 auto; max-width: 44ch; color: var(--ink-soft); }
+  p + p { margin-top: 14px; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f4f6fa;
+      --panel: #ffffff;
+      --ink: #171b27;
+      --ink-soft: #5b6474;
+      --rule: #dfe4ec;
+    }
   }
 </style>
-<script src="/analytics.js" defer></script>
 </head>
 <body>
-
-<nav class="nav">
-  <div class="wrap nav-in">
-    <a class="brand" href="/"><img src="favicon.png" alt="" /> Atlas for Real Estate</a>
-    <div class="nav-links">
-      <a class="navlink" href="#how">How it works</a>
-      <a class="navlink" href="#pricing">Pricing</a>
-      <a class="navlink" href="https://app.agent-atlas.co/login">Sign in</a>
-      <a class="btn btn-primary btn-sm" href="/start" data-trial="1">Start free trial</a>
-    </div>
-  </div>
-</nav>
-
-<!-- ===================== HERO ===================== -->
-<header class="hero">
-  <div class="wrap">
-    <p class="eyebrow">An AI team for solo real estate agents</p>
-    <h1>Hire an AI team that does the<br><span class="grad">busywork behind your deals.</span></h1>
-    <p class="lead">Atlas writes your follow-up, builds your listing marketing, and tracks every closing deadline, in your voice, on top of the CRM you already use. You review and approve. It does the rest.</p>
-
-    <div class="hero-cta">
-      <a class="btn btn-primary btn-lg" href="/start" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
-      <div class="refund">14 days free, then from $50/month. Cancel anytime before day 14 and you won't be charged.</div>
-      <a class="hero-secondary" href="#how">See how it works &rarr;</a>
-    </div>
-
-    <div class="trust-strip">
-      <span>Works with Follow Up Boss and Lofty</span>
-      <span>Fair-housing check on every draft</span>
-      <span>Your data stays yours, never used to train AI</span>
-    </div>
-  </div>
-</header>
-
-<!-- ===================== LOOK INSIDE ===================== -->
-<section>
-  <div class="wrap center">
-    <p class="kicker">Inside Atlas</p>
-    <div class="carousel" id="peek" aria-roledescription="carousel" aria-label="Screens from the Atlas app">
-      <div class="car-frame">
-        <div class="car-track" id="peek-track">
-          <div class="car-slide">
-            <img src="assets/app-office.png" alt="The Atlas office: your team at their desks, with the team roster, automations, and today's calendar." decoding="async" width="1372" height="728" />
-          </div>
-          <div class="car-slide">
-            <img src="assets/app-team.png" alt="The team screen: each specialist with their skills, from lead follow-up to transaction deadlines to the books." decoding="async" width="1372" height="728" />
-          </div>
-          <div class="car-slide">
-            <img src="assets/app-automations.png" alt="The automations screen: recurring work on a schedule, one-time runs, and a builder for your own automations." decoding="async" width="1372" height="728" />
-          </div>
-        </div>
-      </div>
-      <button class="car-btn car-prev" type="button" aria-label="Previous screen">&#8249;</button>
-      <button class="car-btn car-next" type="button" aria-label="Next screen">&#8250;</button>
-      <div class="car-dots" id="peek-dots"></div>
-    </div>
-    <p class="mock-cap">Your office, your team, your automations. Real screens from Atlas.</p>
-  </div>
-</section>
-
-<!-- ===================== PROBLEM ===================== -->
-<section>
-  <div class="wrap two">
-    <div>
-      <p class="kicker">The problem you already know</p>
-      <h2>Your CRM captures the lead. Then the real work lands on you.</h2>
-    </div>
-    <div class="stack">
-      <p>Follow Up Boss, Lofty, kvCORE. Good at capturing leads and running drips.</p>
-      <p>Here is what they leave on your desk at 9pm: the follow-up that has to sound like you, the live deals each with their own dates and contingencies, the new listing that needs marketing, the Hendersons hitting their referral window.</p>
-      <p><b>That work decides your year, and right now it happens after hours. That is the work Atlas does.</b></p>
-    </div>
-  </div>
-</section>
-
-<!-- ===================== WHAT ATLAS IS ===================== -->
-<section>
-  <div class="wrap">
-    <p class="kicker">What Atlas is</p>
-    <h2>A team of AI specialists that works while you are out showing houses.</h2>
-    <p class="lead" style="margin-top:16px">You talk to one assistant, the way you would text a real one. Behind it, a team of specialists handles the follow-up, the listing marketing, the deadlines, and the past-client outreach.</p>
-    <p style="margin-top:14px"><b>You stay the only human your clients ever talk to.</b></p>
-
-    <div class="cards3">
-      <div class="card">
-        <h3>It sits on top of your CRM</h3>
-        <p>Follow Up Boss and Lofty to start. Your CRM stays the source of truth. Atlas is the layer that actually does the work on top of it, not a replacement.</p>
-      </div>
-      <div class="card">
-        <h3>It writes in your voice</h3>
-        <p>It learns from the edits you make in the first couple of weeks, so drafts sound like you, not a generic template.</p>
-      </div>
-      <div class="card">
-        <h3>You stay in control</h3>
-        <p>Every message waits for your approval until you promote it to send on its own. A fair-housing check runs on anything it drafts.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===================== COMMAND CENTER ===================== -->
-<section>
-  <div class="wrap two">
-    <div>
-      <p class="kicker">Your command center</p>
-      <h2>One screen. Your whole team, what they did, and what needs you.</h2>
-    </div>
-    <div class="stack">
-      <p>A morning briefing of what needs you today. Your agents and what each one is working on. A calendar of what runs next, and the hours of finished work your team put up this week, measured the way you would measure a real assistant. Anything that needs your eyes sits in one review queue.</p>
-      <p>When the same task keeps landing on you, Atlas suggests a new specialist for it. Or describe the task in plain English and Atlas builds the automation for your approval. <b>You are never stuck with the team you started with.</b></p>
-    </div>
-  </div>
-</section>
-
-<!-- ===================== A NORMAL TUESDAY ===================== -->
-<section>
-  <div class="wrap">
-    <p class="kicker">What changes on a normal Tuesday</p>
-    <h2>The busywork is handled before you get to it.</h2>
-    <ul class="clean" style="max-width:70ch">
-      <li>A new lead comes in at 7:40am. Atlas has <b>a personal first touch out the door before you finish your coffee</b>, not whenever you sit down at night.</li>
-      <li>A listing goes live. Atlas turns it into an MLS-ready description, <b>posts scheduled to LinkedIn, Facebook, and X</b>, plus an Instagram caption and a reel script, <b>in about five minutes, not four hours</b>.</li>
-      <li>Three deals are mid-contract. Atlas is <b>tracking every contingency and closing date</b>, so nothing slips while you are at a showing.</li>
-      <li>A past client hits their referral window. Atlas drafts the check-in <b>at the 90-day, 12-month, and 24-month marks that actually bring referrals back</b>.</li>
-      <li>Month-end arrives. Atlas already has <b>your commission math, CE credits, and mileage tallied</b>, so the books are not another late night.</li>
-    </ul>
-    <p class="muted" style="margin-top:18px">You review what it staged, approve what is ready, and the rest of the busywork is simply handled.</p>
-  </div>
-</section>
-
-<!-- ===================== HOW IT WORKS ===================== -->
-<section id="how">
-  <div class="wrap">
-    <p class="kicker">How it works</p>
-    <h2>Set up in an afternoon. No call, no consultant.</h2>
-    <div class="timeline">
-      <div class="row"><div class="wk">1</div><div class="desc"><b>Start your free trial.</b> Sign up with email or Google, add a card. No charge for 14 days.</div></div>
-      <div class="row"><div class="wk">2</div><div class="desc"><b>Connect your email.</b> Gmail or Outlook, a few clicks. Hook up Follow Up Boss or Lofty whenever you like.</div></div>
-      <div class="row"><div class="wk">3</div><div class="desc"><b>Tell Atlas about your business.</b> Type as much or as little as you like. Your team shows up ready.</div></div>
-      <div class="row"><div class="wk">4</div><div class="desc"><b>Meet your team.</b> Switch off anyone you don't need. They start working the same day.</div></div>
-      <div class="row"><div class="wk">5</div><div class="desc"><b>Review and approve.</b> Drafts land in one queue. Your edits teach it your voice, and it earns the trust to run routine work on its own.</div></div>
-    </div>
-    <p class="muted" style="margin-top:20px">The only people in this are you and your clients. There is no call, because there does not need to be one.</p>
-  </div>
-</section>
-
-<!-- ===================== PRICING ===================== -->
-<section id="pricing">
-  <div class="wrap center">
-    <p class="kicker">Pricing</p>
-    <h2 style="font-size:clamp(1.5rem,3.1vw,2.35rem)">Pay for the hours your team works. Nothing else.</h2>
-    <p class="lead" style="margin-top:16px">Every plan is measured in employee-hours of finished work. Start free for 14 days, then pick a plan. Need more in a busy month? Add hours in blocks. No per-seat fees, no setup fees.</p>
-
-    <div class="plans">
-      <div class="plan">
-        <div class="ptag">&nbsp;</div>
-        <div class="pname">Starter</div>
-        <div class="pprice">$50<small> / mo</small></div>
-        <div class="phours">100 employee-hours / month</div>
-        <p class="pfor">Solo agents getting leverage without hiring.</p>
-        <a class="btn btn-ghost" href="/start" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
-      </div>
-      <div class="plan feature">
-        <div class="ptag">Most popular</div>
-        <div class="pname">Pro</div>
-        <div class="pprice">$100<small> / mo</small></div>
-        <div class="phours">250 employee-hours / month</div>
-        <p class="pfor">Busy solo producers with a full pipeline.</p>
-        <a class="btn btn-primary" href="/start" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
-      </div>
-      <div class="plan">
-        <div class="ptag">&nbsp;</div>
-        <div class="pname">Max</div>
-        <div class="pprice">$200<small> / mo</small></div>
-        <div class="phours">600 employee-hours / month</div>
-        <p class="pfor">High-volume agents handing off the most.</p>
-        <a class="btn btn-ghost" href="/start" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
-      </div>
-    </div>
-
-    <div class="price-foot">
-      <p class="muted">We take a card to start the trial. It becomes your plan on day 15; cancel before then and you pay nothing.</p>
-      <p class="muted">Heavy month? Add 40 hours for $25 without changing plans. We never cut you off mid-task.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ===================== WHO FOR / NOT FOR ===================== -->
-<section>
-  <div class="wrap two">
-    <div>
-      <p class="kicker">Who this is for</p>
-      <ul class="clean">
-        <li>Solo agents doing ten or more deals a year who want leverage without hiring an assistant.</li>
-        <li>Producers who still carry their own pipeline and are tired of doing the busywork after hours.</li>
-        <li>Agents on Follow Up Boss or Lofty who want a layer that does the work, not another inbox to check.</li>
-      </ul>
-    </div>
-    <div>
-      <p class="kicker">Who this is NOT for, and we mean it</p>
-      <ul class="clean">
-        <li>Anyone expecting full autopilot on day one. Every message waits for your approval until you promote it.</li>
-        <li>Agents who need deep sync with a CRM beyond Follow Up Boss and Lofty today. Any lead source can feed Atlas, but activity-logging back to other CRMs is still coming.</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- ===================== TRUST / DATA ===================== -->
-<section>
-  <div class="wrap section-head">
-    <p class="kicker">Your data</p>
-    <h2>Built to be trusted with your business.</h2>
-    <p class="lead" style="margin-top:16px">Atlas runs in the cloud so your team keeps working when your laptop is closed. Your data is isolated to your account and never mixed with another customer's. The AI runs under a zero-retention agreement, so your clients' information is not used to train anyone's model. You can export or delete your data at any time. Our data processing agreement and the full list of services we rely on are linked below.</p>
-  </div>
-</section>
-
-<!-- ===================== FAQ ===================== -->
-<section>
-  <div class="wrap">
-    <p class="kicker">Frequently asked</p>
-    <h2 style="margin-bottom:18px">Questions</h2>
-    <details><summary>Do I need to be technical?</summary><p>No. You connect your email with a few clicks and follow a short setup. If you can set up a CRM email filter, you can do this.</p></details>
-    <details><summary>Does it replace my CRM?</summary><p>No. Your CRM stays the source of truth. Atlas is the layer on top that does the drafting, the deadlines, and the voice.</p></details>
-    <details><summary>I'm not on Follow Up Boss or Lofty. Can I still use it?</summary><p>Yes. Any lead source that can send a webhook feeds Atlas: your website form, Zapier, most CRMs. Logging activity back into the CRM is Follow Up Boss and Lofty today.</p></details>
-    <details><summary>Do you send messages for me?</summary><p>Atlas drafts and stages everything for your approval. You decide what sends automatically once you trust it. It sends by email from your connected account.</p></details>
-    <details><summary>What does the trial include?</summary><p>14 days and 20 employee-hours of finished work with your full team. Card on file, no charge until day 15.</p></details>
-    <details><summary>What does it cost?</summary><p>Plans start at $50 a month for 100 employee-hours of finished work. Need more, add 40-hour blocks for $25.</p></details>
-    <details><summary>What about fair housing?</summary><p>A fair-housing check runs on every draft. Language touching protected classes gets flagged and replaced with a neutral alternative. It is a backstop, not a replacement for your judgment.</p></details>
-    <details><summary>Where does my data live and who sees it?</summary><p>In the cloud, isolated to your account, under a zero-retention model agreement. See our DPA and sub-processor list in the footer.</p></details>
-    <details><summary>Can I cancel?</summary><p>Anytime. Cancel before day 14 and your card is never charged.</p></details>
-  </div>
-</section>
-
-<footer>
-  <div class="wrap">
-    <div>Atlas for Real Estate &middot; An AI team for the busywork behind your deals.</div>
-    <div><a class="navlink" href="/start" data-trial="1">Start free trial &rarr;</a></div>
-  </div>
-  <div class="wrap" style="margin-top:16px;font-size:.86rem">
-    <div>
-      <a class="navlink" href="/legal/terms">Terms</a> &middot;
-      <a class="navlink" href="/legal/privacy">Privacy</a> &middot;
-      <a class="navlink" href="/legal/dpa">DPA</a> &middot;
-      <a class="navlink" href="/legal/acceptable-use">Acceptable Use</a> &middot;
-      <a class="navlink" href="/legal/subprocessors">Sub-processors</a> &middot;
-      <a class="navlink" href="mailto:atlas@agent-atlas.co">Contact</a>
-    </div>
-    <div class="faint">&copy; 2026 Agent Atlas &middot; Richmond, VA</div>
-  </div>
-</footer>
-
-<!-- sticky mobile CTA -->
-<div class="sticky-cta">
-  <a class="btn btn-primary" href="/start" data-trial="1">Start free trial <span class="arrow">&rarr;</span></a>
-</div>
-
-<script>
-(function(){
-  var car = document.getElementById('peek');
-  if (!car) return;
-  var track = document.getElementById('peek-track');
-  var slides = track.children.length;
-  var dotsBox = document.getElementById('peek-dots');
-  var i = 0;
-  for (var d = 0; d < slides; d++) {
-    var b = document.createElement('button');
-    b.className = 'car-dot'; b.type = 'button';
-    b.setAttribute('aria-label', 'Show preview ' + (d + 1) + ' of ' + slides);
-    (function(n){ b.addEventListener('click', function(){ go(n); }); })(d);
-    dotsBox.appendChild(b);
-  }
-  function go(n){
-    i = (n + slides) % slides;
-    track.style.transform = 'translateX(-' + (i * 100) + '%)';
-    var dots = dotsBox.children;
-    for (var k = 0; k < dots.length; k++) dots[k].className = 'car-dot' + (k === i ? ' on' : '');
-  }
-  car.querySelector('.car-prev').addEventListener('click', function(){ go(i - 1); });
-  car.querySelector('.car-next').addEventListener('click', function(){ go(i + 1); });
-  go(0);
-})();
-</script>
+  <main>
+    <div class="mark" aria-hidden="true"></div>
+    <h1>Agent Atlas</h1>
+    <p>We are building something new. This page is a placeholder while the next project takes shape.</p>
+  </main>
 </body>
 </html>

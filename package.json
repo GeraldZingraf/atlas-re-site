@@ -1,12 +1,7 @@
 {
-  "name": "atlas-re-site",
-  "version": "1.0.0",
+  "name": "agent-atlas-site",
+  "version": "2.0.0",
   "private": true,
-  "description": "agent-atlas.co static site + PayPal IPN fulfillment functions",
-  "type": "module",
-  "dependencies": {
-    "@netlify/blobs": "^8.1.0",
-    "fflate": "^0.8.3",
-    "nodemailer": "^6.9.14"
-  }
+  "description": "agent-atlas.co static placeholder, pending repurpose",
+  "type": "module"
 }

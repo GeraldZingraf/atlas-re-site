@@ -1,76 +1,42 @@
 # Netlify config for agent-atlas.co
-# Static site at the root + serverless functions for the PayPal IPN pipeline.
+#
+# The Atlas for Real Estate product was wound down on 2026-08-28 and its whole
+# surface (landing page, pre-sell bridge, legal pages, analytics, and the 22
+# serverless functions behind the kit-era PayPal pipeline and the SaaS lead
+# capture) was removed. What remains is a static placeholder while the domain is
+# repurposed for the next project. See WIND-DOWN.md.
 
 [build]
   publish = "."
 
-[functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
-  # nodemailer uses dynamic requires that esbuild can't statically bundle; keep it
-  # external so Netlify installs it into the function's node_modules at build time.
-  external_node_modules = ["nodemailer"]
-
-# Internal working docs live in the repo for the record but must not be served
-# from the public site (publish = "." would otherwise expose them as static files).
+# Working docs live in the repo for the record but must not be served, since
+# publish = "." would otherwise expose them as static files.
 [[redirects]]
   from = "/WIND-DOWN.md"
   to = "/index.html"
   status = 404
   force = true
-[[redirects]]
-  from = "/saas-rebuild-copy.md"
-  to = "/index.html"
-  status = 404
-  force = true
 
-# Pre-sell bridge: serve start.html at the clean /start path (the landing-page
-# "Start free trial" CTAs point here before handing off to the app signup).
+# Everything the old site published is gone. Answer the retired paths with a
+# clean 410 (permanently gone) rather than a soft 404, so search engines and any
+# lingering links drop them quickly.
 [[redirects]]
   from = "/start"
-  to = "/start.html"
-  status = 200
-
-# Clean channel short-links. Paste agent-atlas.co/go/<channel> anywhere; it sets
-# the utm_source so analytics.js attributes the visitor (and any purchase) to that
-# funnel. Keeps the pasted URL clean instead of a tracky ?utm_source= string.
+  to = "/index.html"
+  status = 410
+  force = true
 [[redirects]]
-  from = "/go/linkedin"
-  to = "/?utm_source=linkedin"
-  status = 302
+  from = "/legal/*"
+  to = "/index.html"
+  status = 410
+  force = true
 [[redirects]]
-  from = "/go/meta"
-  to = "/?utm_source=meta"
-  status = 302
+  from = "/go/*"
+  to = "/index.html"
+  status = 410
+  force = true
 [[redirects]]
-  from = "/go/fbgroup"
-  to = "/?utm_source=fbgroup"
-  status = 302
-[[redirects]]
-  from = "/go/reddit"
-  to = "/?utm_source=reddit"
-  status = 302
-[[redirects]]
-  from = "/go/biggerpockets"
-  to = "/?utm_source=biggerpockets"
-  status = 302
-[[redirects]]
-  from = "/go/labcoat"
-  to = "/?utm_source=labcoat"
-  status = 302
-[[redirects]]
-  from = "/go/google"
-  to = "/?utm_source=google"
-  status = 302
-[[redirects]]
-  from = "/go/activerain"
-  to = "/?utm_source=activerain"
-  status = 302
-[[redirects]]
-  from = "/go/sponsored"
-  to = "/?utm_source=sponsored"
-  status = 302
-[[redirects]]
-  from = "/go/influencer"
-  to = "/?utm_source=influencer"
-  status = 302
+  from = "/.netlify/functions/*"
+  to = "/index.html"
+  status = 410
+  force = true
