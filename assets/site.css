@@ -917,20 +917,14 @@ html:has(dialog[open]) { overflow: hidden; }
 }
 .split .intro { margin-top: 16px; color: var(--muted); max-width: 46ch; }
 .people { list-style: none; margin: 44px 0 0; padding: 0; display: grid; gap: 40px; }
-.person { display: grid; grid-template-columns: 84px 1fr; gap: 22px; align-items: start; }
-.stamp {
-  width: 78px; height: 78px; border-radius: 50%;
-  display: grid; place-items: center;
-  background: var(--chart);
-  color: var(--brass);
-  font: italic 44px/1 var(--serif);
+.person { display: grid; grid-template-columns: 104px 1fr; gap: 22px; align-items: start; }
+.portrait {
+  display: block; width: 92px; height: 92px; border-radius: 50%;
+  object-fit: cover; background: var(--brass);
   box-shadow:
-    inset 0 0 0 2px var(--brass),
-    inset 0 0 0 6px var(--chart),
-    inset 0 0 0 7px rgba(224, 164, 88, .5),
-    0 0 0 6px var(--die),
-    0 10px 18px 4px rgba(0, 0, 0, .45);
-  transform: rotate(var(--r, -6deg));
+    0 0 0 3px var(--ink),
+    0 0 0 5px var(--brass),
+    0 12px 22px 2px rgba(0, 0, 0, .45);
   margin: 6px 0 0 6px;
 }
 .person h3 { font: 600 20px/1.2 var(--sans); letter-spacing: -.01em; }
