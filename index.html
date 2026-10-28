@@ -125,7 +125,6 @@
     </div>
 
     <div class="section-head">
-      <p class="mono-label">How it works</p>
       <h2 id="how-title">From one conversation to your hours back.</h2>
     </div>
 
@@ -249,73 +248,27 @@
   </section>
 
 
-  <!-- 3b. An example morning: what the agents do, played out (sample data) -->
+  <!-- 3b. Agents at work: a bird's-eye view of the workflow, animated by site.js -->
   <section class="work band" id="at-work" aria-labelledby="work-title">
     <div class="work-wrap">
       <div class="work-head">
-        <p class="mono-label">An example morning</p>
-        <h2 id="work-title">Your agents, at 6 a.m.</h2>
-        <p>While you sleep, they sort the inbox, draft the replies and build the numbers. When you wake up, there's one text waiting.</p>
+        <p class="mono-label">A bird's-eye view</p>
+        <h2 id="work-title">Your agents, at work.</h2>
+        <p>Information in. Agents on it. You make the call. The work ships.</p>
       </div>
 
-      <div class="work-stage" data-work>
-        <div class="inbox">
-          <div class="win-bar">
-            <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-            <span class="mono-label">Overnight inbox</span>
-            <span class="win-clock" data-clock>6:02 a.m.</span>
-          </div>
-          <ul class="mail" aria-label="Overnight inbox">
-            <li class="mail-row">
-              <span class="mail-from">Dana R.</span>
-              <span class="mail-subj">Wrong size on order #1042</span>
-              <span class="mail-status" data-done="Reply drafted">Reply drafted</span>
-            </li>
-            <li class="mail-row">
-              <span class="mail-from">Produce supplier</span>
-              <span class="mail-subj">Invoice #2231, due Friday</span>
-              <span class="mail-status" data-done="Filed · due Fri">Filed · due Fri</span>
-            </li>
-            <li class="mail-row">
-              <span class="mail-from">Marcus T.</span>
-              <span class="mail-subj">Can I move Thursday's appointment?</span>
-              <span class="mail-status" data-done="Moved to Fri 10:00">Moved to Fri 10:00</span>
-            </li>
-            <li class="mail-row">
-              <span class="mail-from">Sales system</span>
-              <span class="mail-subj">Monday export: sales_mon.csv</span>
-              <span class="mail-status" data-done="Scorecard built">Scorecard built</span>
-            </li>
-          </ul>
-          <div class="draft">
-            <p class="mono-label">Draft reply to Dana · waiting for your OK</p>
-            <p class="draft-text" data-draft>Hi Dana, sorry about the mix-up. A replacement in the right size ships today, with a prepaid label for the return. Your $112 refund goes through as soon as it's approved.</p>
-          </div>
-        </div>
-
-        <div class="phone" aria-label="Text messages from your assistant">
-          <div class="phone-notch" aria-hidden="true"></div>
-          <div class="phone-top"><span class="mono-label">Your assistant</span><span class="phone-time">6:02</span></div>
-          <div class="thread" data-thread aria-live="polite">
-            <p class="msg agent">Morning. Monday's scorecard: sales $4,820, up 4% on last Monday. Labor 27%. Three new reviews, average 4.7.</p>
-            <p class="msg agent">Handled 4 things overnight. One needs you: Dana's refund is $112, over your $100 limit. Approve?</p>
-            <p class="msg you">Approve.</p>
-            <p class="msg agent">Done. Refund sent and Dana's reply is out.</p>
-          </div>
-          <div class="ask" data-ask>
-            <p class="mono-label">Ask it something</p>
-            <div class="ask-btns">
-              <button type="button" data-q="Who hasn't paid?" data-a="Two invoices are past due: a catering order for $640 (12 days) and a lesson package for $85 (5 days). Want me to send friendly reminders?">Who hasn't paid?</button>
-              <button type="button" data-q="What's on tomorrow?" data-a="Tuesday: two new-hire forms are due, the produce delivery lands at 7, and you meet your accountant at 2. The pre-read is in your inbox.">What's on tomorrow?</button>
-              <button type="button" data-q="How did we do this week?" data-a="Week to date: sales up 6%, labor at 26.5%, two refunds. Your full scorecard lands Friday at 5.">How did we do this week?</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <figure class="flow" data-flow>
+        <figcaption class="sr-only">An illustration of agents at work. Email, sales data and the calendar flow to a reply agent, a scorecard agent and a scheduling agent. They pass information to each other and to a coordinator, which brings one decision to you. Once you approve, a reply is sent, the report lands on your phone and the week is booked.</figcaption>
+        <div class="flow-canvas" data-flow-canvas aria-hidden="true"></div>
+      </figure>
 
       <div class="work-foot">
-        <p class="work-note">An example only: sample data, not a real business.</p>
-        <button type="button" class="work-replay" data-replay hidden>Play it again</button>
+        <ul class="flow-key" aria-hidden="true">
+          <li><i class="k-info"></i>Information</li>
+          <li><i class="k-ask"></i>Your decision</li>
+          <li><i class="k-ship"></i>Work shipped</li>
+        </ul>
+        <p class="work-note">An illustration, not a real business.</p>
       </div>
     </div>
   </section>
