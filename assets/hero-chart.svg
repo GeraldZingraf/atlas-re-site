@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000" role="img" aria-hidden="true">
+  <!--
+    The map behind Atlas on agent-atlas.co: a navigator's chart seen from above.
+  -->
+  
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="16"/></filter>
+    <filter id="small" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4"/></filter>
+    <clipPath id="sheet"><rect x="70" y="90" width="700" height="860"/></clipPath>
+  </defs>
+
+  <!-- the table -->
+  <rect width="800" height="1000" fill="#0B1016"/>
+
+  <!-- a parchment sheet underneath, for depth -->
+  <g transform="rotate(6 420 520)">
+    <rect x="96" y="120" width="680" height="840" fill="#06090D" opacity=".7" filter="url(#shadow)"/>
+    <rect x="90" y="110" width="680" height="840" fill="#8E7F63"/>
+    <g stroke="#5E513A" stroke-opacity=".5" fill="none">
+      <path d="M90 300 H770 M90 500 H770 M90 700 H770 M300 110 V950 M520 110 V950"/>
+    </g>
+  </g>
+
+  <!-- the chart, seen from above -->
+  <g transform="rotate(-5 420 520)">
+    <rect x="80" y="104" width="700" height="860" fill="#000" opacity=".75" filter="url(#shadow)"/>
+    <rect x="70" y="90" width="700" height="860" fill="#142030"/>
+
+    <g clip-path="url(#sheet)">
+      <!-- lat / long grid -->
+      <g stroke="#6E9A93" stroke-opacity=".14" stroke-width="1">
+        <path d="M70 230 H770 M70 370 H770 M70 510 H770 M70 650 H770 M70 790 H770"/>
+        <path d="M210 90 V950 M350 90 V950 M490 90 V950 M630 90 V950"/>
+      </g>
+
+      <!-- left coast -->
+      <path d="M70 372 C120 380 150 410 176 446 C206 486 186 520 214 552 C244 586 222 628 196 660 C176 686 150 704 118 716 C98 724 82 730 70 734 Z" fill="#1B2B3D"/>
+      <g fill="none" stroke="#6E9A93" stroke-opacity=".38" stroke-width="1">
+        <path d="M70 404 C110 410 134 436 154 466 C178 502 164 528 186 556 C206 584 190 618 170 644 C150 668 120 684 70 700"/>
+        <path d="M70 440 C100 446 118 466 132 490 C150 520 140 540 156 562 C170 584 158 610 140 628 C120 646 96 656 70 664"/>
+        <path d="M70 482 C92 488 104 506 112 524 C122 548 116 566 124 584 C128 600 110 612 70 620"/>
+      </g>
+      <path d="M70 372 C120 380 150 410 176 446 C206 486 186 520 214 552 C244 586 222 628 196 660 C176 686 150 704 118 716 C98 724 82 730 70 734" fill="none" stroke="#EFE6D2" stroke-opacity=".55" stroke-width="1.6"/>
+
+      <!-- top-right land, with the harbor -->
+      <path d="M520 90 C540 120 580 132 606 150 C624 162 632 174 652 172 C676 170 690 152 716 160 C740 168 756 196 770 214 L770 90 Z" fill="#1B2B3D"/>
+      <g fill="none" stroke="#6E9A93" stroke-opacity=".38" stroke-width="1">
+        <path d="M560 90 C574 108 600 118 620 130 C640 142 660 146 680 138 C704 130 728 146 770 180"/>
+        <path d="M610 90 C626 104 646 110 664 112 C690 114 716 120 770 146"/>
+      </g>
+      <path d="M520 90 C540 120 580 132 606 150 C624 162 632 174 652 172 C676 170 690 152 716 160 C740 168 756 196 770 214" fill="none" stroke="#EFE6D2" stroke-opacity=".55" stroke-width="1.6"/>
+
+      <!-- islands -->
+      <g>
+        <path d="M454 604 C480 584 532 590 548 614 C564 640 538 666 504 668 C470 670 440 650 444 628 C446 618 448 610 454 604 Z" fill="#1B2B3D" stroke="#EFE6D2" stroke-opacity=".55" stroke-width="1.4"/>
+        <path d="M470 612 C490 600 526 604 536 622 C544 640 524 656 502 656 C480 656 460 642 464 626 Z" fill="none" stroke="#6E9A93" stroke-opacity=".4"/>
+        <path d="M488 622 C502 614 520 618 524 628 C526 638 512 646 500 645 C488 644 480 634 488 622 Z" fill="none" stroke="#6E9A93" stroke-opacity=".4"/>
+        <path d="M276 420 C292 406 322 410 330 428 C338 446 318 460 298 458 C278 456 266 436 276 420 Z" fill="#1B2B3D" stroke="#EFE6D2" stroke-opacity=".55" stroke-width="1.4"/>
+        <path d="M290 426 C302 418 318 422 320 432 C322 442 308 448 298 446 C288 444 282 434 290 426 Z" fill="none" stroke="#6E9A93" stroke-opacity=".4"/>
+        <path d="M640 520 C652 512 670 516 672 528 C674 540 660 546 648 544 C636 542 632 528 640 520 Z" fill="#1B2B3D" stroke="#EFE6D2" stroke-opacity=".5" stroke-width="1.2"/>
+        <circle cx="404" cy="760" r="5" fill="#1B2B3D" stroke="#EFE6D2" stroke-opacity=".5"/>
+        <circle cx="420" cy="772" r="3" fill="#1B2B3D" stroke="#EFE6D2" stroke-opacity=".5"/>
+      </g>
+
+      <!-- depth soundings -->
+      <g class="snd">
+        <text x="250" y="760">12</text><text x="300" y="812">18</text><text x="236" y="880">9</text>
+        <text x="420" y="690">24</text><text x="372" y="620">21</text><text x="600" y="600">31</text>
+        <text x="680" y="660">36</text><text x="620" y="760">40</text><text x="700" y="860">44</text>
+        <text x="420" y="430">17</text><text x="466" y="370">22</text><text x="610" y="400">27</text>
+        <text x="700" y="320">19</text><text x="380" y="300">15</text><text x="470" y="210">8</text>
+        <text x="540" y="880">38</text><text x="140" y="820">7</text><text x="360" y="900">26</text>
+      </g>
+
+      <!-- place names -->
+      <text class="name" x="88" y="560" font-size="15" transform="rotate(-80 88 560)">The Back Office</text>
+      <text class="name" x="452" y="702" font-size="13">Inbox Isle</text>
+      <text class="name" x="600" y="124" font-size="14">Free Time</text>
+
+      <!-- compass rose -->
+      <g transform="translate(228 236)">
+        <circle r="96" fill="none" stroke="#EFE6D2" stroke-opacity=".28" stroke-width="1.2"/>
+        <circle r="86" fill="none" stroke="#EFE6D2" stroke-opacity=".18"/>
+        <circle r="40" fill="none" stroke="#EFE6D2" stroke-opacity=".18"/>
+        <g stroke="#EFE6D2" stroke-opacity=".3" stroke-width="1">
+          <path d="M0 -96 V-86 M0 86 V96 M-96 0 H-86 M86 0 H96"/>
+          <path d="M67.9 -67.9 L60.8 -60.8 M-67.9 67.9 L-60.8 60.8 M67.9 67.9 L60.8 60.8 M-67.9 -67.9 L-60.8 -60.8"/>
+          <path d="M36.7 -88.7 L32.9 -79.5 M-36.7 88.7 L-32.9 79.5 M88.7 36.7 L79.5 32.9 M-88.7 -36.7 L-79.5 -32.9 M88.7 -36.7 L79.5 -32.9 M-88.7 36.7 L-79.5 32.9 M36.7 88.7 L32.9 79.5 M-36.7 -88.7 L-32.9 -79.5"/>
+        </g>
+        <g fill="#EFE6D2" fill-opacity=".14" stroke="#EFE6D2" stroke-opacity=".4" stroke-width="1">
+          <path d="M0 0 L42 -42 L8 -8 Z"/><path d="M0 0 L42 42 L8 8 Z"/><path d="M0 0 L-42 42 L-8 8 Z"/><path d="M0 0 L-42 -42 L-8 -8 Z"/>
+          <path d="M0 0 L80 0 L10 -10 Z"/><path d="M0 0 L0 80 L-10 10 Z"/><path d="M0 0 L-80 0 L-10 10 Z"/>
+          <path d="M0 0 L80 0 L10 10 Z" fill-opacity=".3"/><path d="M0 0 L0 80 L10 10 Z" fill-opacity=".3"/><path d="M0 0 L-80 0 L-10 -10 Z" fill-opacity=".3"/>
+        </g>
+        <path d="M0 0 L0 -82 L10 -10 Z" fill="#E0A458"/>
+        <path d="M0 0 L0 -82 L-10 -10 Z" fill="#B97F3A"/>
+        <circle r="5" fill="#142030" stroke="#E0A458" stroke-width="2"/>
+        <text x="0" y="-104" text-anchor="middle" font-family="Georgia, serif" font-size="18" fill="#E0A458">N</text>
+      </g>
+    </g>
+
+    <!-- chart border with the alternating scale bars -->
+    <rect x="88" y="108" width="664" height="824" fill="none" stroke="#EFE6D2" stroke-opacity=".4" stroke-width="1.2"/>
+    <rect x="98" y="118" width="644" height="804" fill="none" stroke="#EFE6D2" stroke-opacity=".4" stroke-width=".8"/>
+    <rect x="93" y="113" width="654" height="814" fill="none" stroke="#EFE6D2" stroke-opacity=".22" stroke-width="8" stroke-dasharray="20 20"/>
+  </g>
+
+  <!-- a pencil on the table -->
+  <g transform="rotate(-28 120 960)">
+    <rect x="30" y="952" width="200" height="12" rx="2" fill="#000" opacity=".5" filter="url(#small)"/>
+    <rect x="24" y="944" width="200" height="12" rx="2" fill="#6E9A93"/>
+    <rect x="24" y="944" width="200" height="4" fill="#86B0A9"/>
+    <path d="M224 944 L250 950 L224 956 Z" fill="#D8B98A"/>
+    <path d="M244 948.6 L250 950 L244 951.4 Z" fill="#0B1016"/>
+    <rect x="10" y="944" width="16" height="12" fill="#B97F3A"/>
+  </g>
+</svg>

@@ -11,13 +11,13 @@
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Agent Atlas">
-<meta property="og:title" content="Agent Atlas: we take the late nights off your desk">
+<meta property="og:title" content="Agent Atlas: we take the late nights off your shoulders">
 <meta property="og:description" content="A small AI partner for owner-run businesses. Your first win is free, and yours to keep.">
 <meta property="og:url" content="https://agent-atlas.co/">
 <meta property="og:image" content="https://agent-atlas.co/assets/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="A navigator's chart with a brass route from your week to hours back, each stop handed off, under the line: We take the late nights off your desk.">
+<meta property="og:image:alt" content="Atlas holding up a brass armillary sphere on a navigator's chart, beside the line: We take the late nights off your shoulders.">
 <meta name="twitter:card" content="summary_large_image">
 
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -27,13 +27,8 @@
 <link rel="preload" href="/assets/fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/jetbrains-mono-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/atlas-figure.png" as="image">
 <link rel="stylesheet" href="/assets/site.css">
-<noscript><style>
-  .chart .route-draw { stroke-dashoffset: 0 !important; stroke-dasharray: none !important; }
-  .chart .stop .tag, .chart .stop .tick { opacity: 1 !important; }
-  .chart .stop .dot { fill: #E0A458 !important; }
-  .chart .stop .name { fill-opacity: .95 !important; }
-</style></noscript>
 <script src="/assets/site.js" defer></script>
 </head>
 <body>
@@ -67,7 +62,7 @@
   <section class="hero split" id="top" aria-labelledby="hero-title">
     <p class="mono-label">AI partners for owner-run businesses.</p>
     <h1 class="hero-title" id="hero-title">
-      <span class="sr-only">We take the late nights off your desk.</span>
+      <span class="sr-only">We take the late nights off your shoulders.</span>
       <span aria-hidden="true">
         <span class="line">We take the</span>
         <span class="reel"><span class="reel-track" data-reel>
@@ -80,10 +75,10 @@
           <span>paperwork</span>
           <span>late nights</span>
         </span></span>
-        <span class="line">off your desk.</span>
+        <span class="line">off your shoulders.</span>
       </span>
     </h1>
-    <p class="hero-lede">Show us your week. Within a few days we'll hand you something that runs on your own files, free, and yours to keep.</p>
+    <p class="hero-lede">You hold up the whole business. Show us your week, and within a few days we'll hand you something that lightens the load: built on your own files, free, and yours to keep.</p>
     <div class="hero-cta">
       <a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">
         Get your free first win <span class="arrow" aria-hidden="true">↗</span>
@@ -94,94 +89,18 @@
     <a class="scroll-cue mono-label" href="#how-it-works">How it works</a>
 
     <!--
-      HERO CHART. Pinned on the right on desktop, under the text on phones.
-      The route and its stops are animated by site.js.
+      HERO ART. Atlas holding up the sphere, standing on the chart. Pinned on the
+      right and bleeding off the page on desktop, under the text on phones.
+      Atlas: "Vignet met Atlas die de wereld op zijn schouders draagt",
+      c. 1681-1740, Rijksmuseum RP-P-BI-4471, CC0 (via Wikimedia Commons),
+      recoloured for this site.
     -->
-    <div class="hero-art">
-    <figure class="chart-frame">
-      <figcaption class="sr-only">A chart of an owner's week. A route runs from "your week" past the weekly report, follow-ups, meeting prep and paperwork, each marked handed off, and ends at "hours back".</figcaption>
-      <svg class="chart chart-tall" data-chart viewBox="0 0 600 900" aria-hidden="true" focusable="false">
-        <defs>
-          <mask id="t-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="600" height="900">
-            <path class="route-draw" d="M110 820 C170 770 240 740 300 700 S220 600 220 540 S300 440 350 410 S300 310 270 260 S400 150 470 112" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
-          </mask>
-        </defs>
-        <rect width="600" height="900" fill="#142030"/>
-        <g stroke="#6E9A93" stroke-opacity=".13">
-          <path d="M0 150 H600 M0 300 H600 M0 450 H600 M0 600 H600 M0 750 H600"/>
-          <path d="M150 0 V900 M300 0 V900 M450 0 V900"/>
-        </g>
-
-        <path class="land" d="M0 690 C40 692 70 730 78 780 C86 830 60 866 72 900 L0 900 Z"/>
-        <g class="contour"><path d="M0 724 C26 728 44 756 50 790 C56 826 40 860 46 900"/></g>
-        <path class="coast" d="M0 690 C40 692 70 730 78 780 C86 830 60 866 72 900"/>
-
-        <path class="land" d="M360 0 C380 36 420 58 466 66 C510 74 548 58 600 76 L600 0 Z"/>
-        <g class="contour"><path d="M420 0 C436 22 462 34 492 38 C530 42 560 34 600 46"/></g>
-        <path class="coast" d="M360 0 C380 36 420 58 466 66 C510 74 548 58 600 76"/>
-
-        <path class="land coast" d="M470 540 C488 526 520 530 528 548 C536 566 516 580 494 578 C472 576 458 558 470 540 Z"/>
-        <g class="contour"><path d="M482 546 C494 538 512 540 516 552 C520 564 506 570 494 569 C482 568 474 556 482 546 Z"/></g>
-        <path class="land coast" d="M64 400 C76 390 98 392 104 406 C110 420 94 430 80 428 C66 426 56 412 64 400 Z"/>
-        <circle class="land coast" cx="200" cy="660" r="5"/>
-
-        <g class="snd" font-size="18">
-          <text x="250" y="776">9</text><text x="420" y="800">31</text><text x="520" y="700">38</text><text x="110" y="560">12</text>
-          <text x="330" y="560">22</text><text x="526" y="486">27</text><text x="120" y="320">8</text><text x="420" y="250">19</text>
-          <text x="330" y="160">14</text><text x="520" y="200">25</text><text x="380" y="880">40</text>
-        </g>
-        <text class="place" x="472" y="610" font-size="22">Inbox Isle</text>
-        <text class="place" x="470" y="34" font-size="22">Free Time</text>
-
-        <g transform="translate(130 160) scale(.72)">
-          <circle r="96" class="ring"/><circle r="86" class="ring faint"/><circle r="40" class="ring faint"/>
-          <g class="rose">
-            <path d="M0 0 L42 -42 L8 -8 Z"/><path d="M0 0 L42 42 L8 8 Z"/><path d="M0 0 L-42 42 L-8 8 Z"/><path d="M0 0 L-42 -42 L-8 -8 Z"/>
-            <path d="M0 0 L80 0 L10 -10 Z"/><path d="M0 0 L0 80 L-10 10 Z"/><path d="M0 0 L-80 0 L-10 10 Z"/>
-            <path d="M0 0 L80 0 L10 10 Z" class="shade"/><path d="M0 0 L0 80 L10 10 Z" class="shade"/><path d="M0 0 L-80 0 L-10 -10 Z" class="shade"/>
-          </g>
-          <path d="M0 0 L0 -82 L10 -10 Z" fill="#E0A458"/><path d="M0 0 L0 -82 L-10 -10 Z" fill="#B97F3A"/>
-          <circle r="5" fill="#142030" stroke="#E0A458" stroke-width="2"/>
-          <text y="-106" text-anchor="middle" class="north" font-size="24">N</text>
-        </g>
-
-        <path class="route" d="M110 820 C170 770 240 740 300 700 S220 600 220 540 S300 440 350 410 S300 310 270 260 S400 150 470 112" mask="url(#t-mask)"/>
-
-        <g class="stop start" data-at="110,820"><g transform="translate(110 820)">
-          <circle r="13" class="ringdot"/><circle r="5.5" class="core"/>
-          <text class="name" x="28" y="8" font-size="19">YOUR WEEK</text>
-        </g></g>
-        <g class="stop" data-at="300,700"><g transform="translate(300 700)">
-          <circle r="11" class="dot"/><path class="tick" d="M-5.5 0 l3.6 4 l7.4 -8.5"/>
-          <text class="name" x="26" y="-4" font-size="19">WEEKLY REPORT</text>
-          <g class="tag" transform="translate(26 22)"><rect x="0" y="-15" width="148" height="30" rx="15"/><text x="74" y="6" text-anchor="middle" font-size="16">HANDED OFF</text></g>
-        </g></g>
-        <g class="stop" data-at="220,540"><g transform="translate(220 540)">
-          <circle r="11" class="dot"/><path class="tick" d="M-5.5 0 l3.6 4 l7.4 -8.5"/>
-          <text class="name" x="-26" y="-4" text-anchor="end" font-size="19">FOLLOW-UPS</text>
-          <g class="tag" transform="translate(-174 22)"><rect x="0" y="-15" width="148" height="30" rx="15"/><text x="74" y="6" text-anchor="middle" font-size="16">HANDED OFF</text></g>
-        </g></g>
-        <g class="stop" data-at="350,410"><g transform="translate(350 410)">
-          <circle r="11" class="dot"/><path class="tick" d="M-5.5 0 l3.6 4 l7.4 -8.5"/>
-          <text class="name" x="26" y="-4" font-size="19">MEETING PREP</text>
-          <g class="tag" transform="translate(26 22)"><rect x="0" y="-15" width="148" height="30" rx="15"/><text x="74" y="6" text-anchor="middle" font-size="16">HANDED OFF</text></g>
-        </g></g>
-        <g class="stop" data-at="270,260"><g transform="translate(270 260)">
-          <circle r="11" class="dot"/><path class="tick" d="M-5.5 0 l3.6 4 l7.4 -8.5"/>
-          <text class="name" x="-26" y="-4" text-anchor="end" font-size="19">PAPERWORK</text>
-          <g class="tag" transform="translate(-174 22)"><rect x="0" y="-15" width="148" height="30" rx="15"/><text x="74" y="6" text-anchor="middle" font-size="16">HANDED OFF</text></g>
-        </g></g>
-        <g class="stop end" data-at="470,112"><g transform="translate(470 112)">
-          <circle r="19" class="ringdot"/>
-          <path class="star" d="M0 -15 L4.5 -4.5 L15 0 L4.5 4.5 L0 15 L-4.5 4.5 L-15 0 L-4.5 -4.5 Z"/>
-          <text class="name" x="-34" y="7" text-anchor="end" font-size="22">HOURS BACK</text>
-        </g></g>
-
-        <rect x="14" y="14" width="572" height="872" class="frame"/>
-        <rect x="26" y="26" width="548" height="848" class="frame thin"/>
-        <rect x="20" y="20" width="560" height="860" class="scale"/>
-      </svg>
-    </figure>
+    <div class="hero-art" aria-hidden="true">
+      <img class="hero-chart" src="/assets/hero-chart.svg" alt="" width="800" height="1000">
+      <div class="atlas" data-atlas>
+        <img class="atlas-img" src="/assets/atlas-figure.png" alt="" width="1223" height="1759" fetchpriority="high">
+        <div class="atlas-lift" data-lift></div>
+      </div>
     </div>
   </section>
 
@@ -393,7 +312,7 @@
 
   <!-- 6. Closing call to action -->
   <section class="cta split" id="start" aria-labelledby="cta-title">
-    <h2 id="cta-title">What's still on your desk at <em>9&nbsp;p.m.</em>?</h2>
+    <h2 id="cta-title">What are you still carrying at <em>9&nbsp;p.m.</em>?</h2>
     <p>Show us one thing you'd hand off tonight if you could. We'll come back with it running.</p>
     <div class="hero-cta">
       <a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">

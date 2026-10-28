@@ -1,4 +1,4 @@
-// agent-atlas.co: the word reel, the hero chart, the card deck, the stickers, the split-flap board.
+// agent-atlas.co: the word reel and Atlas, the card deck, the stickers, the split-flap board.
 // Every animation here is decoration: the real text is already in the page.
 (() => {
   "use strict";
@@ -9,87 +9,40 @@
   const year = document.querySelector("[data-year]");
   if (year) year.textContent = String(new Date().getFullYear());
 
-  /* ---------- Hero: the cycling word, ending on "late nights" ---------- */
+  /* ---------- Hero: the cycling word, and each chore lifting off Atlas's sphere ---------- */
   const reel = document.querySelector("[data-reel]");
+  const lift = document.querySelector("[data-lift]");
+  const atlas = document.querySelector("[data-atlas]");
+
+  const liftOff = (word, step) => {
+    if (!lift || reduce) return;
+    const tag = document.createElement("span");
+    tag.className = "lift-tag";
+    tag.append(word, " · ");
+    const done = document.createElement("b");
+    done.textContent = "handed off";
+    tag.append(done);
+    tag.style.setProperty("--drift", `${Math.round(Math.random() * 140 - 40)}px`);
+    tag.style.setProperty("--tilt", `${(Math.random() * 10 - 5).toFixed(1)}deg`);
+    lift.appendChild(tag);
+    tag.addEventListener("animationend", () => tag.remove());
+    // Atlas stands a little taller as the load gets lighter.
+    if (atlas) atlas.style.setProperty("--relief", String(step * 2));
+  };
+
   if (reel && !reduce) {
-    const last = reel.children.length - 1;
+    const words = Array.from(reel.children).map((w) => w.textContent.trim());
+    const last = words.length - 1;
     let i = 0;
     reel.style.setProperty("--i", "0");
+    setTimeout(() => liftOff(words[0], 1), 900);
     const step = () => {
       i += 1;
       reel.style.setProperty("--i", String(i));
+      setTimeout(() => liftOff(words[i], i + 1), 650);
       if (i < last) setTimeout(step, i === last - 1 ? 2100 : 1700);
     };
     setTimeout(step, 1500);
-  }
-
-  /* ---------- Hero: the route draws itself and each stop is handed off ---------- */
-  const charts = Array.from(document.querySelectorAll("[data-chart]"));
-  const finishChart = (svg) => {
-    const draw = svg.querySelector(".route-draw");
-    if (draw) { draw.style.strokeDasharray = "none"; draw.style.strokeDashoffset = "0"; }
-    svg.querySelectorAll(".stop").forEach((s) => s.classList.add("done"));
-  };
-  const playChart = (svg) => {
-    const draw = svg.querySelector(".route-draw");
-    let len = 0;
-    try { len = draw.getTotalLength(); } catch (_) { len = 0; }
-    if (!len) { finishChart(svg); return; }
-    draw.style.strokeDasharray = String(len);
-    draw.style.strokeDashoffset = String(len);
-
-    // Where along the route each stop sits, so it's ticked off as the line arrives.
-    const stops = Array.from(svg.querySelectorAll(".stop")).map((g) => {
-      const [x, y] = g.dataset.at.split(",").map(Number);
-      let at = 0;
-      let best = Infinity;
-      for (let l = 0; l <= len; l += 4) {
-        const p = draw.getPointAtLength(l);
-        const d = (p.x - x) ** 2 + (p.y - y) ** 2;
-        if (d < best) { best = d; at = l; }
-      }
-      return { g, at };
-    });
-
-    const duration = 5200;
-    const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
-    // Driven by the clock rather than paint frames, so it always finishes,
-    // even if the tab was in the background.
-    const t0 = performance.now();
-    const frame = () => {
-      const t = Math.min(1, (performance.now() - t0) / duration);
-      const drawn = ease(t) * len;
-      draw.style.strokeDashoffset = String(len - drawn);
-      stops.forEach((s) => { if (drawn >= s.at - 2) s.g.classList.add("done"); });
-      if (t < 1) setTimeout(frame, 16);
-    };
-    frame();
-  };
-
-  if (charts.length) {
-    if (reduce) {
-      charts.forEach(finishChart);
-    } else {
-      let played = false;
-      const playWhenSeen = () => {
-        if (played) return;
-        const visible = charts.find((c) => c.getClientRects().length > 0);
-        if (!visible) return;
-        const box = visible.getBoundingClientRect();
-        if (box.top < window.innerHeight - 60 && box.bottom > 0) {
-          played = true;
-          window.removeEventListener("scroll", playWhenSeen);
-          window.removeEventListener("resize", playWhenSeen);
-          charts.forEach((c) => { if (c !== visible) finishChart(c); });
-          setTimeout(() => playChart(visible), 500);
-        }
-      };
-      window.addEventListener("scroll", playWhenSeen, { passive: true });
-      window.addEventListener("resize", playWhenSeen);
-      window.addEventListener("load", playWhenSeen);
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(playWhenSeen);
-      playWhenSeen();
-    }
   }
 
   /* ---------- How it works: the deck ---------- */
