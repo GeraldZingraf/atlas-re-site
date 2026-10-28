@@ -464,12 +464,12 @@
     const label = (n, wide) => (!wide && n.sl ? n.sl : n.l);
 
     const build = () => {
-      const wide = canvas.clientWidth >= 640;
+      const wide = canvas.clientWidth >= 860;
       const key = wide ? "w" : "t";
       if (layout === key && svg) return;
       layout = key;
       canvas.textContent = "";
-      svg = mk("svg", { viewBox: wide ? "0 0 1010 380" : "0 0 400 1075" }, canvas);
+      svg = mk("svg", { viewBox: wide ? "0 0 1010 380" : "0 0 400 1075", class: wide ? "wide" : "tall" }, canvas);
       const gEdges = mk("g", {}, svg);
       const gNodes = mk("g", {}, svg);
       svg.packets = mk("g", {}, svg);
@@ -691,7 +691,7 @@
       window.addEventListener("resize", () => {
         clearTimeout(rt);
         rt = setTimeout(() => {
-          const next = canvas.clientWidth >= 640 ? "w" : "t";
+          const next = canvas.clientWidth >= 860 ? "w" : "t";
           if (next !== layout) { layout = null; build(); loopStart = null; }
         }, 200);
       });
