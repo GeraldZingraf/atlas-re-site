@@ -107,22 +107,22 @@
   <section class="how band" id="how-it-works" aria-labelledby="how-title">
     <div class="how-stage">
     <div class="stickers" aria-hidden="true">
-      <div class="sticker keep" data-say="Follow-up sent." data-fx="buzz"
+      <div class="sticker keep" data-fx="buzz" data-open="reach-me" data-chip="Text me"
            style="--x:11%; --y:30%; --r:-9deg; --mx:2%; --my:30px"><img class="sticker-art" src="/assets/stickers/phone.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
-      <div class="sticker" data-say="Route charted." data-fx="wiggle"
-           style="--x:3%; --y:52%; --r:7deg"><img class="sticker-art" src="/assets/stickers/map.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
+      <div class="sticker keep" data-fx="wiggle" data-open="game-atlas" data-chip="Play"
+           style="--x:3%; --y:52%; --r:7deg; --mx:calc(50% - 36px); --my:22px"><img class="sticker-art" src="/assets/stickers/map.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
       <div class="sticker" data-say="Pre-read's in your inbox." data-fx="pop"
            style="--x:14%; --y:70%; --r:-4deg"><img class="sticker-art" src="/assets/stickers/preread.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
       <div class="sticker keep" data-say="Still warm. Nothing's on fire." data-fx="hop"
            style="--x:5%; --y:86%; --r:6deg; --mx:4%; --my:calc(100% - 104px)"><img class="sticker-art" src="/assets/stickers/coffee.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
       <div class="sticker" data-say="Scorecard's ready." data-fx="pop"
            style="--x:79%; --y:28%; --r:8deg"><img class="sticker-art" src="/assets/stickers/spreadsheet.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
-      <div class="sticker keep" data-say="Heading: home by six." data-fx="spin"
+      <div class="sticker keep" data-say="Back on course." data-fx="run"
            style="--x:89%; --y:48%; --r:-6deg; --mx:calc(100% - 78px); --my:24px"><img class="sticker-art" src="/assets/stickers/compass.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
-      <div class="sticker keep" data-say="Friday's clear." data-fx="flip" data-open="handed-off"
+      <div class="sticker keep" data-fx="flip" data-open="handed-off" data-chip="A week"
            style="--x:76%; --y:66%; --r:-7deg; --mx:calc(100% - 82px); --my:calc(100% - 112px)"><img class="sticker-art" src="/assets/stickers/calendar.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
-      <div class="sticker" data-say="Time back on the clock." data-fx="spin"
-           style="--x:88%; --y:84%; --r:9deg"><img class="sticker-art" src="/assets/stickers/stopwatch.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
+      <div class="sticker keep" data-fx="spin" data-open="game-race" data-chip="Race"
+           style="--x:88%; --y:84%; --r:9deg; --mx:calc(50% - 36px); --my:calc(100% - 108px)"><img class="sticker-art" src="/assets/stickers/stopwatch.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
     </div>
 
     <div class="section-head">
@@ -185,6 +185,7 @@
       <p class="sr-only" aria-live="polite" data-live></p>
     </div>
     <p class="deck-hint" aria-hidden="true"><span class="desk">← → keys or the arrows · click or drag the stickers</span><span class="touch">swipe the card · tap the stickers</span></p>
+    <p class="play-links">Try it: <button type="button" data-open-dialog="game-atlas">Hold up the world</button> · <button type="button" data-open-dialog="game-race">Race the Agent</button> · <button type="button" data-open-dialog="handed-off">An example week</button></p>
     </div>
 
     <!-- The three phases, left to right -->
@@ -325,7 +326,7 @@
       <a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">
         Get your free first win <span class="arrow" aria-hidden="true">↗</span>
       </a>
-      <p class="fine">We're your AI partners for your business.</p>
+      <p class="fine">Rather we reach out? <button type="button" class="text-link" data-open-dialog="reach-me">Leave your number or email</button>.</p>
     </div>
   </section>
 </main>
@@ -388,6 +389,157 @@
       </div>
       <p class="board-note"><strong>This is an example, not client data.</strong> It's the kind of week we set out to build: the recurring work handled before you sit down, with a person on your team approving anything that leaves the business.</p>
     </div>
+</dialog>
+
+<dialog class="pop game" id="game-atlas" aria-labelledby="ga-title">
+  <button type="button" class="dialog-close" data-close aria-label="Close">×</button>
+  <div class="pop-head">
+    <p class="mono-label">Game · 30 seconds</p>
+    <h2 id="ga-title">Hold up the world</h2>
+  </div>
+  <div class="ga-stage" data-ga>
+    <div class="ga-hud" aria-live="off">
+      <span class="ga-time" data-ga-time>0:30</span>
+      <span>Handed off <b data-ga-score>0</b></span>
+      <span class="ga-load" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+    </div>
+    <div class="ga-field" data-ga-field>
+      <div class="ga-atlas" data-ga-atlas><img src="/assets/atlas-figure.png" alt="" width="1223" height="1759" draggable="false"></div>
+    </div>
+    <div class="pop-panel" data-ga-intro>
+      <p>Chores keep landing on Atlas's shoulders. Tap them to hand them off before the load gets too heavy.</p>
+      <button type="button" class="btn" data-ga-start>Start</button>
+    </div>
+    <div class="pop-panel" data-ga-end hidden>
+      <p class="pop-big" data-ga-result></p>
+      <p data-ga-sub></p>
+      <div class="pop-actions">
+        <a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">Get your free first win <span class="arrow" aria-hidden="true">↗</span></a>
+        <button type="button" class="text-link" data-ga-start>Play again</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="pop game" id="game-race" aria-labelledby="gr-title">
+  <button type="button" class="dialog-close" data-close aria-label="Close">×</button>
+  <div class="pop-head">
+    <p class="mono-label">Game · You vs. an agent</p>
+    <h2 id="gr-title">Race the Agent</h2>
+  </div>
+  <div class="gr-stage" data-gr>
+    <div class="gr-bar">
+      <span class="mono-label" data-gr-who>Your turn</span>
+      <span class="gr-clock" data-gr-clock>0.0 s</span>
+    </div>
+    <ul class="gr-list" data-gr-list>
+        <li class="gr-msg" data-act="reply" data-note="Rescheduled, reply drafted">
+          <div class="gr-text"><b>Dana R.</b><span>Can I move Thursday's booking to Friday?</span></div>
+          <div class="gr-acts">
+            <button type="button" data-pick="reply">Reply</button>
+            <button type="button" data-pick="file">File</button>
+            <button type="button" data-pick="flag">Flag</button>
+          </div>
+          <span class="gr-done" aria-hidden="true"></span>
+        </li>
+        <li class="gr-msg" data-act="file" data-note="Filed, due Fri">
+          <div class="gr-text"><b>Produce supplier</b><span>Invoice #2231, due Friday</span></div>
+          <div class="gr-acts">
+            <button type="button" data-pick="reply">Reply</button>
+            <button type="button" data-pick="file">File</button>
+            <button type="button" data-pick="flag">Flag</button>
+          </div>
+          <span class="gr-done" aria-hidden="true"></span>
+        </li>
+        <li class="gr-msg" data-act="flag" data-note="Over your limit, flagged">
+          <div class="gr-text"><b>A customer</b><span>I'd like a refund of $140</span></div>
+          <div class="gr-acts">
+            <button type="button" data-pick="reply">Reply</button>
+            <button type="button" data-pick="file">File</button>
+            <button type="button" data-pick="flag">Flag</button>
+          </div>
+          <span class="gr-done" aria-hidden="true"></span>
+        </li>
+        <li class="gr-msg" data-act="reply" data-note="Tracking sent">
+          <div class="gr-text"><b>Marcus T.</b><span>Where's my order? It's been a week.</span></div>
+          <div class="gr-acts">
+            <button type="button" data-pick="reply">Reply</button>
+            <button type="button" data-pick="file">File</button>
+            <button type="button" data-pick="flag">Flag</button>
+          </div>
+          <span class="gr-done" aria-hidden="true"></span>
+        </li>
+        <li class="gr-msg" data-act="file" data-note="Filed to accounts">
+          <div class="gr-text"><b>Your bank</b><span>Your monthly statement is ready</span></div>
+          <div class="gr-acts">
+            <button type="button" data-pick="reply">Reply</button>
+            <button type="button" data-pick="file">File</button>
+            <button type="button" data-pick="flag">Flag</button>
+          </div>
+          <span class="gr-done" aria-hidden="true"></span>
+        </li>
+        <li class="gr-msg" data-act="flag" data-note="On your calendar, flagged">
+          <div class="gr-text"><b>Health dept.</b><span>Inspection visit next Tuesday</span></div>
+          <div class="gr-acts">
+            <button type="button" data-pick="reply">Reply</button>
+            <button type="button" data-pick="file">File</button>
+            <button type="button" data-pick="flag">Flag</button>
+          </div>
+          <span class="gr-done" aria-hidden="true"></span>
+        </li>
+    </ul>
+    <p class="gr-key"><b>Reply</b> answer it · <b>File</b> put it away · <b>Flag</b> needs the owner</p>
+    <div class="pop-panel" data-gr-intro>
+      <p>Six messages just landed. Sort each one: reply, file, or flag it for the owner. Then watch an agent do the same pile.</p>
+      <button type="button" class="btn" data-gr-start>Start the clock</button>
+    </div>
+    <div class="pop-panel" data-gr-end hidden>
+      <p class="pop-big" data-gr-result></p>
+      <p>And it never sleeps. Picture that every morning, before you're up.</p>
+      <div class="pop-actions">
+        <a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">Get your free first win <span class="arrow" aria-hidden="true">↗</span></a>
+        <button type="button" class="text-link" data-gr-start>Race again</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="pop contact" id="reach-me" aria-labelledby="rm-title">
+  <button type="button" class="dialog-close" data-close aria-label="Close">×</button>
+  <div class="pop-head">
+    <p class="mono-label">We'll come to you</p>
+    <h2 id="rm-title">Text me. Or email me.</h2>
+    <p class="pop-sub">Leave a number or an email and one of us will reach out. Two real people, no sales team.</p>
+  </div>
+  <form class="rm-form" name="contact" method="POST" data-netlify="true" netlify-honeypot="company" data-contact novalidate>
+    <input type="hidden" name="form-name" value="contact">
+    <p class="rm-trap" hidden><label>Leave this empty: <input name="company" tabindex="-1" autocomplete="off"></label></p>
+    <fieldset class="rm-via">
+      <legend>How should we reach you?</legend>
+      <label class="chip"><input type="radio" name="via" value="text" checked><span>Text me</span></label>
+      <label class="chip"><input type="radio" name="via" value="email"><span>Email me</span></label>
+    </fieldset>
+    <label class="rm-label" for="rm-name">Your name</label>
+    <input class="rm-input" id="rm-name" name="name" autocomplete="name" maxlength="80" required>
+    <div data-via-field="text">
+      <label class="rm-label" for="rm-phone">Mobile number</label>
+      <input class="rm-input" id="rm-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="24">
+      <label class="rm-consent"><input type="checkbox" name="sms_ok" value="yes"> <span>It's OK to text me about Agent Atlas. Reply STOP any time.</span></label>
+    </div>
+    <div data-via-field="email" hidden>
+      <label class="rm-label" for="rm-email">Email</label>
+      <input class="rm-input" id="rm-email" name="email" type="email" autocomplete="email" maxlength="120">
+    </div>
+    <label class="rm-label" for="rm-note">What eats your week? <span>Optional</span></label>
+    <input class="rm-input" id="rm-note" name="note" maxlength="200" placeholder="e.g. Scheduling and the weekly numbers">
+    <p class="rm-error" role="alert" data-rm-error hidden></p>
+    <button type="submit" class="btn rm-send">Reach out to me</button>
+    <p class="rm-fine">We only use this to get in touch with you. No lists, no spam. <a href="/privacy.html">Privacy</a></p>
+  </form>
+  <div class="pop-panel rm-done" data-rm-done hidden>
+    <p class="pop-big">Got it.</p>
+    <p data-rm-done-text>We'll be in touch soon.</p>
+  </div>
 </dialog>
 
 <footer class="foot band">

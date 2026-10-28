@@ -7,6 +7,8 @@
   const isDesktop = () => window.matchMedia("(min-width: 720px)").matches;
 
   let openDialog = () => {};
+  const onOpen = {};
+  const onClose = {};
 
   const year = document.querySelector("[data-year]");
   if (year) year.textContent = String(new Date().getFullYear());
@@ -188,8 +190,62 @@
   const stickers = Array.from(document.querySelectorAll(".sticker"));
 
   // Click or tap: the sticker does its trick and says one short line.
+  // Keep the speech bubble on screen: anchor it to the sticker's inner side.
+  const say = (el) => {
+    if (!el.dataset.say) return;
+    const box = el.getBoundingClientRect();
+    const mid = box.left + box.width / 2;
+    el.classList.toggle("say-left", mid < window.innerWidth * 0.3);
+    el.classList.toggle("say-right", mid > window.innerWidth * 0.7);
+    el.classList.add("saying");
+    clearTimeout(el.sayTimer);
+    el.sayTimer = setTimeout(() => el.classList.remove("saying"), 2400);
+  };
+
+  // The compass takes a lap of the screen, spinning, then comes home.
+  const runLap = (el) => {
+    if (el.running) return;
+    const art = el.querySelector(".sticker-art");
+    const r = art.getBoundingClientRect();
+    if (reduce || !art.animate) { say(el); return; }
+    el.running = true;
+    const runner = art.cloneNode(true);
+    runner.className = "compass-runner";
+    runner.style.width = `${r.width}px`;
+    runner.style.height = `${r.height}px`;
+    document.body.appendChild(runner);
+    el.classList.add("away");
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    const w = r.width;
+    const pad = 16;
+    const stops = [
+      [r.left, r.top],
+      [W - w - pad, 84],
+      [W - w - pad * 2, H * 0.55],
+      [W - w - pad, H - w - pad],
+      [W * 0.5 - w / 2, H - w - pad * 2],
+      [pad, H - w - pad],
+      [pad * 2, H * 0.45],
+      [pad, 84],
+      [W * 0.4, H * 0.25],
+      [r.left, r.top],
+    ];
+    const lap = runner.animate(
+      stops.map(([x, y], i) => ({ transform: `translate(${x}px, ${y}px) rotate(${i * 140}deg)` })),
+      { duration: 3800, easing: "ease-in-out" },
+    );
+    lap.onfinish = () => {
+      runner.remove();
+      el.classList.remove("away");
+      el.running = false;
+      say(el);
+    };
+  };
+
   const react = (el) => {
     el.classList.add("is-touched");
+    if (el.dataset.fx === "run") { el.classList.remove("nudge"); runLap(el); return; }
     if (el.dataset.open) {
       const art = el.querySelector(".sticker-art");
       const fx = `fx-${el.dataset.fx || "pop"}`;
@@ -211,14 +267,7 @@
       art.classList.add(fx);
       art.addEventListener("animationend", () => art.classList.remove(fx), { once: true });
     }
-    // Keep the speech bubble on screen: anchor it to the sticker's inner side.
-    const box = el.getBoundingClientRect();
-    const mid = box.left + box.width / 2;
-    el.classList.toggle("say-left", mid < window.innerWidth * 0.3);
-    el.classList.toggle("say-right", mid > window.innerWidth * 0.7);
-    el.classList.add("saying");
-    clearTimeout(el.sayTimer);
-    el.sayTimer = setTimeout(() => el.classList.remove("saying"), 2400);
+    say(el);
   };
 
   stickers.forEach((el) => {
@@ -229,6 +278,12 @@
     bubble.className = "sticker-say";
     bubble.textContent = el.dataset.say || "";
     el.appendChild(bubble);
+    if (el.dataset.chip) {
+      const chip = document.createElement("span");
+      chip.className = "sticker-chip";
+      chip.textContent = el.dataset.chip;
+      el.appendChild(chip);
+    }
 
     let ox = 0;
     let oy = 0;
@@ -331,35 +386,35 @@
     // The map. Each node has a wide position [x, y] and a phone position.
     const N = [
       // systems they already use
-      { id: "s-mail", k: "source", i: "mail", l: "Email", w: [70, 60], t: [50, 60] },
-      { id: "s-text", k: "source", i: "text", l: "Texts", w: [70, 130], t: [150, 60] },
-      { id: "s-rev", k: "source", i: "star", l: "Reviews", w: [70, 200], t: [250, 60] },
-      { id: "s-pos", k: "source", i: "chart", l: "Sales", w: [70, 270], t: [350, 60] },
-      { id: "s-inv", k: "source", i: "box", l: "Inventory", sl: "Stock", w: [70, 340], t: [50, 150] },
-      { id: "s-cal", k: "source", i: "cal", l: "Calendar", w: [70, 410], t: [150, 150] },
-      { id: "s-time", k: "source", i: "clock", l: "Timeclock", w: [70, 480], t: [250, 150] },
-      { id: "s-acct", k: "source", i: "ledger", l: "Accounting", sl: "Books", w: [70, 550], t: [350, 150] },
+      { id: "s-mail", k: "source", i: "mail", l: "Email", w: [55, 50], t: [50, 60] },
+      { id: "s-text", k: "source", i: "text", l: "Texts", w: [150, 90], t: [150, 60] },
+      { id: "s-rev", k: "source", i: "star", l: "Reviews", w: [55, 130], t: [250, 60] },
+      { id: "s-pos", k: "source", i: "chart", l: "Sales", w: [150, 170], t: [350, 60] },
+      { id: "s-inv", k: "source", i: "box", l: "Inventory", sl: "Stock", w: [55, 210], t: [50, 150] },
+      { id: "s-cal", k: "source", i: "cal", l: "Calendar", w: [150, 250], t: [150, 150] },
+      { id: "s-time", k: "source", i: "clock", l: "Timeclock", w: [55, 290], t: [250, 150] },
+      { id: "s-acct", k: "source", i: "ledger", l: "Accounting", sl: "Books", w: [150, 330], t: [350, 150] },
       // agents
-      { id: "a-reply", k: "agent", i: "mail", l: "Reply agent", sl: "Replies", w: [290, 75], t: [50, 300] },
-      { id: "a-rev", k: "agent", i: "star", l: "Reviews agent", sl: "Reviews", w: [410, 150], t: [150, 300] },
-      { id: "a-score", k: "agent", i: "chart", l: "Scorecard agent", sl: "Numbers", w: [290, 225], t: [250, 300] },
-      { id: "a-order", k: "agent", i: "cart", l: "Ordering agent", sl: "Orders", w: [410, 300], t: [350, 300] },
-      { id: "a-prep", k: "agent", i: "doc", l: "Meeting-prep agent", sl: "Prep", w: [290, 375], t: [50, 400] },
-      { id: "a-sched", k: "agent", i: "cal", l: "Scheduling agent", sl: "Shifts", w: [410, 450], t: [150, 400] },
-      { id: "a-pay", k: "agent", i: "clock", l: "Payroll agent", sl: "Payroll", w: [290, 525], t: [250, 400] },
-      { id: "a-coll", k: "agent", i: "coin", l: "Collections agent", sl: "Collect", w: [410, 590], t: [350, 400] },
+      { id: "a-reply", k: "agent", i: "mail", l: "Replies", sl: "Replies", w: [330, 50], t: [50, 300] },
+      { id: "a-rev", k: "agent", i: "star", l: "Reviews", sl: "Reviews", w: [440, 90], t: [150, 300] },
+      { id: "a-score", k: "agent", i: "chart", l: "Scorecard", sl: "Numbers", w: [330, 130], t: [250, 300] },
+      { id: "a-order", k: "agent", i: "cart", l: "Ordering", sl: "Orders", w: [440, 170], t: [350, 300] },
+      { id: "a-prep", k: "agent", i: "doc", l: "Meeting prep", sl: "Prep", w: [330, 210], t: [50, 400] },
+      { id: "a-sched", k: "agent", i: "cal", l: "Scheduling", sl: "Shifts", w: [440, 250], t: [150, 400] },
+      { id: "a-pay", k: "agent", i: "clock", l: "Payroll", sl: "Payroll", w: [330, 290], t: [250, 400] },
+      { id: "a-coll", k: "agent", i: "coin", l: "Collections", sl: "Collect", w: [440, 330], t: [350, 400] },
       // coordinator and you
-      { id: "hub", k: "hub", l: "Coordinator", w: [610, 320], t: [160, 560] },
-      { id: "you", k: "decision", i: "person", l: "You decide", w: [775, 320], t: [240, 690] },
+      { id: "hub", k: "hub", l: "Coordinator", w: [612, 190], t: [160, 560] },
+      { id: "you", k: "decision", i: "person", l: "You decide", w: [748, 262], t: [240, 690] },
       // work shipped
-      { id: "o-reply", k: "output", i: "send", l: "Replies sent", sl: "Replied", w: [935, 60], t: [70, 820] },
-      { id: "o-rev", k: "output", i: "star", l: "Reviews answered", sl: "Reviewed", w: [935, 130], t: [70, 890] },
-      { id: "o-refund", k: "output", i: "coin", l: "Refund issued", sl: "Refund", w: [935, 200], t: [330, 820] },
-      { id: "o-order", k: "output", i: "cart", l: "Order placed", sl: "Ordered", w: [935, 270], t: [330, 890] },
-      { id: "o-shifts", k: "output", i: "cal", l: "Shifts posted", sl: "Shifts", w: [935, 340], t: [330, 960] },
-      { id: "o-pay", k: "output", i: "check", l: "Payroll ready", sl: "Payroll", w: [935, 410], t: [330, 1030] },
-      { id: "o-remind", k: "output", i: "bell", l: "Reminders sent", sl: "Chased", w: [935, 480], t: [70, 960] },
-      { id: "o-report", k: "output", i: "phone", l: "Report to you", sl: "Report", w: [935, 550], t: [70, 1030] },
+      { id: "o-reply", k: "output", i: "send", l: "Replies sent", sl: "Replied", w: [860, 50], t: [70, 820] },
+      { id: "o-rev", k: "output", i: "star", l: "Reviews answered", sl: "Reviewed", w: [950, 90], t: [70, 890] },
+      { id: "o-refund", k: "output", i: "coin", l: "Refund issued", sl: "Refund", w: [860, 210], t: [330, 820] },
+      { id: "o-order", k: "output", i: "cart", l: "Order placed", sl: "Ordered", w: [950, 250], t: [330, 890] },
+      { id: "o-shifts", k: "output", i: "cal", l: "Shifts posted", sl: "Shifts", w: [860, 290], t: [330, 960] },
+      { id: "o-pay", k: "output", i: "check", l: "Payroll ready", sl: "Payroll", w: [950, 330], t: [330, 1030] },
+      { id: "o-remind", k: "output", i: "bell", l: "Reminders sent", sl: "Chased", w: [860, 130], t: [70, 960] },
+      { id: "o-report", k: "output", i: "phone", l: "Report to you", sl: "Report", w: [950, 170], t: [70, 1030] },
     ];
     const FEEDS = [
       ["s-mail", "a-reply"], ["s-text", "a-reply"], ["s-rev", "a-rev"], ["s-pos", "a-score"], ["s-pos", "a-order"],
@@ -411,7 +466,7 @@
       if (layout === key && svg) return;
       layout = key;
       canvas.textContent = "";
-      svg = mk("svg", { viewBox: wide ? "0 0 1010 640" : "0 0 400 1075" }, canvas);
+      svg = mk("svg", { viewBox: wide ? "0 0 1010 380" : "0 0 400 1075" }, canvas);
       const gEdges = mk("g", {}, svg);
       const gNodes = mk("g", {}, svg);
       svg.packets = mk("g", {}, svg);
@@ -694,7 +749,337 @@
   openDialog = (id) => {
     const dlg = document.getElementById(id);
     if (!dlg || dlg.open) return;
+    if (onOpen[id]) onOpen[id]();
     dlg.showModal();
-    if (dlg.contains(board)) runBoard();
+    if (board && dlg.contains(board)) runBoard();
   };
+  document.querySelectorAll("dialog").forEach((dlg) => {
+    dlg.addEventListener("close", () => { if (onClose[dlg.id]) onClose[dlg.id](); });
+  });
+
+  /* ---------- Buttons that open a pop-up directly (keyboard friendly) ---------- */
+  document.querySelectorAll("[data-open-dialog]").forEach((b) => {
+    b.addEventListener("click", () => openDialog(b.dataset.openDialog));
+  });
+
+  /* ---------- Game: Hold up the world ---------- */
+  const ga = document.querySelector("[data-ga]");
+  if (ga) {
+    const field = ga.querySelector("[data-ga-field]");
+    const atlasEl = ga.querySelector("[data-ga-atlas]");
+    const timeEl = ga.querySelector("[data-ga-time]");
+    const scoreEl = ga.querySelector("[data-ga-score]");
+    const bars = Array.from(ga.querySelectorAll(".ga-load i"));
+    const intro = ga.querySelector("[data-ga-intro]");
+    const end = ga.querySelector("[data-ga-end]");
+    const resultEl = ga.querySelector("[data-ga-result]");
+    const subEl = ga.querySelector("[data-ga-sub]");
+    const CHORES = [
+      "Payroll", "Follow-ups", "Weekly report", "Angry review", "Schedule", "Invoices",
+      "Supplier order", "New hire forms", "Meeting prep", "Refund", "Taxes", "Inventory count",
+      "Customer email", "Staff texts", "Bank rec",
+    ];
+    const LENGTH = 30000;
+    const MAX_LOAD = 8;
+    let st = null;
+    const fmt = (ms) => `0:${String(Math.max(0, Math.ceil(ms / 1000))).padStart(2, "0")}`;
+
+    // Where the sphere is, in field coordinates (it moves as Atlas sinks).
+    const geom = () => {
+      const f = field.getBoundingClientRect();
+      const a = atlasEl.getBoundingClientRect();
+      return {
+        cx: a.left - f.left + a.width * 0.559,
+        top: a.top - f.top + a.height * 0.235 - a.width * 0.347,
+        r: a.width * 0.347,
+        w: f.width,
+      };
+    };
+    const put = (c) => { c.el.style.transform = `translate(${c.x}px, ${c.y}px)`; };
+
+    const updateLoad = () => {
+      const load = st.pile.length;
+      bars.forEach((b, i) => {
+        b.classList.toggle("on", i < load);
+        b.classList.toggle("hot", i < load && load >= MAX_LOAD - 2);
+      });
+      atlasEl.style.setProperty("--sink", String(load * 6));
+      atlasEl.style.setProperty("--tilt", `${load >= 3 ? (load - 2) * 1.4 : 0}deg`);
+      atlasEl.classList.toggle("strain", load >= 5 && !reduce);
+    };
+
+    const clearField = () => {
+      field.querySelectorAll(".ga-chip").forEach((n) => n.remove());
+      atlasEl.classList.remove("strain", "dropped");
+      atlasEl.style.setProperty("--sink", "0");
+      atlasEl.style.setProperty("--tilt", "0deg");
+      bars.forEach((b) => b.classList.remove("on", "hot"));
+    };
+
+    const stop = () => { if (st) { st.running = false; clearTimeout(st.timer); } };
+
+    const finish = (held) => {
+      stop();
+      const elapsed = Math.min(LENGTH, performance.now() - st.t0);
+      if (!held) atlasEl.classList.add("dropped");
+      resultEl.textContent = held ? "Atlas held on." : "The world dropped.";
+      const chores = `${st.score} ${st.score === 1 ? "chore" : "chores"}`;
+      subEl.textContent = held
+        ? `You handed off ${chores} in 30 seconds. Imagine every week feeling that light.`
+        : `You handed off ${chores} before it got too heavy, ${Math.round(elapsed / 1000)} seconds in. That's a normal Tuesday for most owners.`;
+      setTimeout(() => { end.hidden = false; }, held ? 300 : 900);
+    };
+
+    const handOff = (chip) => {
+      if (!st || !st.running) return;
+      let c = st.falling.find((x) => x.el === chip);
+      if (c) st.falling = st.falling.filter((x) => x !== c);
+      else {
+        c = st.pile.find((x) => x.el === chip);
+        if (!c) return;
+        st.pile = st.pile.filter((x) => x !== c);
+      }
+      st.score += 1;
+      scoreEl.textContent = String(st.score);
+      chip.textContent = `✓ ${chip.textContent}`;
+      chip.classList.add("gone");
+      chip.style.transform = `translate(${c.x + 50}px, ${c.y - 150}px) rotate(8deg)`;
+      setTimeout(() => chip.remove(), 750);
+      updateLoad();
+    };
+    field.addEventListener("pointerdown", (e) => {
+      const chip = e.target.closest(".ga-chip");
+      if (!chip) return;
+      e.preventDefault();
+      handOff(chip);
+    });
+    field.addEventListener("keydown", (e) => {
+      const chip = e.target.closest(".ga-chip");
+      if (chip && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); handOff(chip); }
+    });
+
+    const spawn = (g) => {
+      const el = document.createElement("button");
+      el.type = "button";
+      el.className = "ga-chip";
+      el.textContent = CHORES[Math.floor(Math.random() * CHORES.length)];
+      field.appendChild(el);
+      const cw = el.offsetWidth;
+      const x = Math.max(6, Math.min(g.w - cw - 6, g.cx - cw / 2 + (Math.random() * 2 - 1) * g.r * 0.75));
+      const c = { el, x, y: -34, w: cw, jit: Math.random() * 30 - 15 };
+      put(c);
+      st.falling.push(c);
+    };
+
+    const tick = () => {
+      if (!st || !st.running) return;
+      const now = performance.now();
+      const dt = Math.min(0.05, (now - st.last) / 1000);
+      st.last = now;
+      const elapsed = now - st.t0;
+      const p = elapsed / LENGTH;
+      timeEl.textContent = fmt(LENGTH - elapsed);
+      const g = geom();
+
+      if (now >= st.nextSpawn) {
+        spawn(g);
+        st.nextSpawn = now + (1250 - 780 * p) * (0.75 + Math.random() * 0.5);
+      }
+      const speed = 70 + 95 * p;
+      st.falling = st.falling.filter((c) => {
+        c.y += speed * dt;
+        const landAt = g.top - 28 - st.pile.length * 22;
+        if (c.y >= landAt) {
+          st.pile.push(c);
+          c.el.classList.add("landed");
+          updateLoad();
+          return false;
+        }
+        put(c);
+        return true;
+      });
+      // The pile sits on the sphere and moves with Atlas.
+      st.pile.forEach((c, i) => {
+        c.x = Math.max(4, Math.min(g.w - c.w - 4, g.cx - c.w / 2 + c.jit));
+        c.y = g.top - 28 - i * 22;
+        put(c);
+      });
+
+      if (st.pile.length >= MAX_LOAD) { finish(false); return; }
+      if (elapsed >= LENGTH) { finish(true); return; }
+      st.timer = setTimeout(tick, 16);
+    };
+
+    const start = () => {
+      stop();
+      clearField();
+      intro.hidden = true;
+      end.hidden = true;
+      scoreEl.textContent = "0";
+      timeEl.textContent = "0:30";
+      const now = performance.now();
+      st = { running: true, t0: now, last: now, nextSpawn: now + 300, score: 0, falling: [], pile: [] };
+      updateLoad();
+      tick();
+    };
+    const resetGame = () => {
+      stop();
+      clearField();
+      st = null;
+      intro.hidden = false;
+      end.hidden = true;
+      scoreEl.textContent = "0";
+      timeEl.textContent = "0:30";
+    };
+    ga.querySelectorAll("[data-ga-start]").forEach((b) => b.addEventListener("click", start));
+    onOpen["game-atlas"] = resetGame;
+    onClose["game-atlas"] = resetGame;
+  }
+
+  /* ---------- Game: Race the Agent ---------- */
+  const gr = document.querySelector("[data-gr]");
+  if (gr) {
+    const items = Array.from(gr.querySelectorAll(".gr-msg"));
+    const clock = gr.querySelector("[data-gr-clock]");
+    const who = gr.querySelector("[data-gr-who]");
+    const intro = gr.querySelector("[data-gr-intro]");
+    const end = gr.querySelector("[data-gr-end]");
+    const resultEl = gr.querySelector("[data-gr-result]");
+    const DONE = { reply: "Replied", file: "Filed", flag: "Flagged for you" };
+    let phase = "idle";
+    let t0 = 0;
+    let penalty = 0;
+    let clockTimer = null;
+    let timers = [];
+    const later = (ms, fn) => timers.push(setTimeout(fn, ms));
+
+    const showClock = (s) => { clock.textContent = `${s.toFixed(1)} s`; };
+    const runClock = () => {
+      clearInterval(clockTimer);
+      clockTimer = setInterval(() => showClock((performance.now() - t0) / 1000 + penalty), 50);
+    };
+    const clearItems = () => items.forEach((li) => {
+      li.classList.remove("done", "wrong");
+      li.querySelector(".gr-done").textContent = "";
+    });
+    const resetRace = () => {
+      phase = "idle";
+      timers.forEach(clearTimeout);
+      timers = [];
+      clearInterval(clockTimer);
+      clearItems();
+      gr.classList.remove("agent");
+      who.textContent = "Your turn";
+      showClock(0);
+      intro.hidden = false;
+      end.hidden = true;
+    };
+    const agentTurn = (yours) => {
+      phase = "agent";
+      clearInterval(clockTimer);
+      later(900, () => {
+        clearItems();
+        gr.classList.add("agent");
+        who.textContent = "The agent's turn";
+        const total = 1600 + Math.random() * 500;
+        t0 = performance.now();
+        penalty = 0;
+        runClock();
+        items.forEach((li, i) => later(((i + 1) * total) / items.length, () => {
+          li.classList.add("done");
+          li.querySelector(".gr-done").textContent = li.dataset.note;
+        }));
+        later(total + 40, () => {
+          clearInterval(clockTimer);
+          const agent = total / 1000;
+          showClock(agent);
+          phase = "over";
+          later(700, () => {
+            resultEl.textContent = `You ${yours.toFixed(1)} s. The agent ${agent.toFixed(1)} s.`;
+            end.hidden = false;
+          });
+        });
+      });
+    };
+    gr.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-pick]");
+      if (!b || phase !== "you") return;
+      const li = b.closest(".gr-msg");
+      if (li.classList.contains("done")) return;
+      if (b.dataset.pick === li.dataset.act) {
+        li.classList.add("done");
+        li.querySelector(".gr-done").textContent = DONE[b.dataset.pick];
+        if (items.every((x) => x.classList.contains("done"))) {
+          agentTurn((performance.now() - t0) / 1000 + penalty);
+        }
+      } else {
+        penalty += 1;
+        li.classList.remove("wrong");
+        void li.offsetWidth;
+        li.classList.add("wrong");
+      }
+    });
+    const start = () => {
+      resetRace();
+      intro.hidden = true;
+      phase = "you";
+      t0 = performance.now();
+      penalty = 0;
+      runClock();
+    };
+    gr.querySelectorAll("[data-gr-start]").forEach((b) => b.addEventListener("click", start));
+    onOpen["game-race"] = resetRace;
+    onClose["game-race"] = resetRace;
+  }
+
+  /* ---------- "Text me. Or email me." ---------- */
+  const contact = document.querySelector("[data-contact]");
+  if (contact) {
+    const dlg = contact.closest("dialog");
+    const done = dlg.querySelector("[data-rm-done]");
+    const doneText = dlg.querySelector("[data-rm-done-text]");
+    const errorEl = contact.querySelector("[data-rm-error]");
+    const send = contact.querySelector(".rm-send");
+    const fields = Array.from(contact.querySelectorAll("[data-via-field]"));
+    const via = () => contact.querySelector('[name="via"]:checked').value;
+    const syncVia = () => fields.forEach((f) => { f.hidden = f.dataset.viaField !== via(); });
+    contact.addEventListener("change", syncVia);
+    syncVia();
+
+    const fail = (msg) => { errorEl.textContent = msg; errorEl.hidden = false; };
+    contact.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorEl.hidden = true;
+      const data = new FormData(contact);
+      const name = String(data.get("name") || "").trim();
+      if (name.length < 2) return fail("Please add your name.");
+      if (via() === "text") {
+        const digits = String(data.get("phone") || "").replace(/\D/g, "");
+        if (digits.length < 10) return fail("Please add a mobile number we can text.");
+        if (!data.get("sms_ok")) return fail("Please tick the box so we're allowed to text you.");
+        data.delete("email");
+      } else {
+        const email = String(data.get("email") || "").trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("Please add an email address we can reach.");
+        data.delete("phone");
+        data.delete("sms_ok");
+      }
+      send.disabled = true;
+      try {
+        const res = await fetch("/", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams(data).toString(),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        contact.hidden = true;
+        doneText.textContent = `Thanks, ${name.split(" ")[0]}. One of us will ${via() === "text" ? "text" : "email"} you soon.`;
+        done.hidden = false;
+      } catch (_) {
+        fail("That didn't go through. Try again in a minute, or use the booking button instead.");
+      } finally {
+        send.disabled = false;
+      }
+    });
+  }
 })();
