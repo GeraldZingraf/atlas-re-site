@@ -115,8 +115,8 @@
            style="--x:14%; --y:70%; --r:-4deg"><img class="sticker-art" src="/assets/stickers/preread.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
       <div class="sticker keep" data-fx="hop" data-open="brew" data-chip="Brew"
            style="--x:5%; --y:86%; --r:6deg; --mx:4%; --my:calc(100% - 104px)"><img class="sticker-art" src="/assets/stickers/coffee.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
-      <div class="sticker" data-say="Scorecard's ready." data-fx="pop"
-           style="--x:79%; --y:28%; --r:8deg"><img class="sticker-art" src="/assets/stickers/spreadsheet.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
+      <div class="sticker" data-fx="pop" data-open="memo" data-chip="Listen"
+           style="--x:79%; --y:28%; --r:8deg"><img class="sticker-art" src="/assets/stickers/microphone.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
       <div class="sticker keep" data-say="Back on course." data-fx="run"
            style="--x:89%; --y:48%; --r:-6deg; --mx:calc(100% - 78px); --my:24px"><img class="sticker-art" src="/assets/stickers/compass.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
       <div class="sticker keep" data-fx="flip" data-open="handed-off" data-chip="A week"
@@ -569,6 +569,47 @@
   </div>
   <div class="pop-actions pr-actions" data-pr-end hidden><a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">Get your free first win <span class="arrow" aria-hidden="true">↗</span></a><button type="button" class="text-link" data-pr-again>Watch again</button></div>
   <p class="pop-note">An illustration with sample data.</p>
+</dialog>
+
+<dialog class="pop memo" id="memo" aria-labelledby="mm-title">
+  <button type="button" class="dialog-close" data-close aria-label="Close">×</button>
+  <div class="pop-head">
+    <p class="mono-label">Voice memo</p>
+    <h2 id="mm-title">Say it once. It's handled.</h2>
+  </div>
+  <div class="mm-stage" data-memo>
+    <div class="mm-rec">
+      <span class="mm-dot" aria-hidden="true"></span>
+      <span class="mm-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      <span class="mm-time" data-mm-time>0:00</span>
+    </div>
+    <p class="mm-words" data-mm-words><span class="mw">Remind</span> <span class="mw">me</span> <span class="mw">to</span> <span class="mw" data-k="a">reorder</span> <span class="mw" data-k="a">napkins,</span> <span class="mw" data-k="b">tell</span> <span class="mw" data-k="b">Dana</span> <span class="mw" data-k="b">she's</span> <span class="mw" data-k="b">on</span> <span class="mw" data-k="b">Saturday,</span> <span class="mw">and</span> <span class="mw" data-k="c">push</span> <span class="mw" data-k="c">the</span> <span class="mw" data-k="c">supplier</span> <span class="mw" data-k="c">call</span> <span class="mw" data-k="c">to</span> <span class="mw" data-k="c">Thursday.</span></p>
+    <ol class="mm-cards">
+      <li class="mm-card" data-k="a">
+        <span class="mm-agent">Ordering agent</span>
+        <b>Napkins added to Friday's order</b>
+        <span class="mm-meta">6 cases, same supplier as last time</span>
+        <span class="mm-status">Drafted</span>
+      </li>
+      <li class="mm-card" data-k="b">
+        <span class="mm-agent">Scheduling agent</span>
+        <b>Text to Dana: "You're on Saturday, 8 to 4."</b>
+        <span class="mm-meta">Shift added to the schedule</span>
+        <span class="mm-status wait">Waiting for your OK</span>
+      </li>
+      <li class="mm-card" data-k="c">
+        <span class="mm-agent">Calendar</span>
+        <b>Supplier call moved to Thursday, 10:00</b>
+        <span class="mm-meta">Invite updated, supplier notified</span>
+        <span class="mm-status">Done</span>
+      </li>
+    </ol>
+    <div class="pop-actions mm-end" data-mm-end hidden>
+      <a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">Get your free first win <span class="arrow" aria-hidden="true">↗</span></a>
+      <button type="button" class="text-link" data-mm-again>Play again</button>
+    </div>
+  </div>
+  <p class="pop-note">An illustration. In real life you'd just send a voice note by text.</p>
 </dialog>
 
 <dialog class="pop contact" id="reach-me" aria-labelledby="rm-title">

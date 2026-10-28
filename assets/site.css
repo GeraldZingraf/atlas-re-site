@@ -615,6 +615,56 @@ html:has(dialog[open]) { overflow: hidden; }
   .pr-scrap { width: 136px; font-size: 11.5px; }
 }
 
+/* Voice memo: say it once, it's handled */
+.mm-stage { margin-top: 14px; }
+.mm-rec {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 999px;
+  background: var(--chart); border: 1px solid rgba(239, 230, 210, .14);
+}
+.mm-dot { width: 12px; height: 12px; border-radius: 50%; background: #E0715A; flex: none; }
+.mm-stage.live .mm-dot { animation: rec 1s ease-in-out infinite; }
+@keyframes rec { 50% { opacity: .3; } }
+.mm-wave { flex: 1; display: flex; align-items: center; gap: 3px; height: 34px; }
+.mm-wave i { flex: 1; height: 4px; border-radius: 2px; background: rgba(239, 230, 210, .3); transition: height .12s; }
+.mm-stage.live .mm-wave i { background: var(--brass); }
+.mm-time { font: 700 14px/1 var(--mono); color: var(--muted); }
+.mm-words { margin-top: 16px; min-height: 3.4em; font: 400 clamp(20px, 3.6vw, 26px)/1.35 var(--serif); }
+.mw { opacity: .14; transition: opacity .2s, background-color .3s, color .3s; border-radius: 3px; }
+.mw.heard { opacity: 1; }
+.mw.mark[data-k] { color: var(--ink); }
+.mw.mark[data-k="a"] { background: #E0A458; }
+.mw.mark[data-k="b"] { background: #8FBFB7; }
+.mw.mark[data-k="c"] { background: #E9D6A8; }
+.mm-cards { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 8px; }
+.mm-card {
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center;
+  padding: 10px 12px 10px 14px; border-radius: 10px;
+  background: var(--chart); border: 1px solid rgba(239, 230, 210, .12);
+  border-left: 4px solid var(--k, var(--brass));
+  opacity: 0; transform: translateX(-14px);
+  transition: opacity .4s var(--ease), transform .4s var(--ease);
+}
+.mm-card[data-k="a"] { --k: #E0A458; }
+.mm-card[data-k="b"] { --k: #8FBFB7; }
+.mm-card[data-k="c"] { --k: #E9D6A8; }
+.mm-card.in { opacity: 1; transform: none; }
+.mm-agent { grid-column: 1; font: 600 10.5px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--sea); }
+.mm-card b { grid-column: 1; font: 600 14.5px/1.3 var(--sans); margin-top: 3px; }
+.mm-meta { grid-column: 1; font-size: 12.5px; color: var(--muted); }
+.mm-status {
+  grid-column: 2; grid-row: 1 / span 3;
+  padding: 6px 9px; border-radius: 999px; white-space: nowrap;
+  font: 600 10.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+  background: var(--brass); color: var(--ink);
+}
+.mm-status.wait { background: transparent; color: var(--brass); border: 1px solid var(--brass); }
+.mm-end { margin-top: 16px; }
+@media (max-width: 480px) {
+  .mm-card { grid-template-columns: 1fr; }
+  .mm-status { grid-column: 1; grid-row: auto; justify-self: start; margin-top: 6px; }
+}
+
 /* Little labels on stickers that do something */
 .sticker-chip {
   position: absolute; right: -6px; bottom: 2px;
@@ -997,6 +1047,7 @@ html:has(dialog[open]) { overflow: hidden; }
   .sticker-art { animation: none !important; }
   .caret { display: none; }
   .pop[open] { animation: none; }
+  .mm-stage.live .mm-dot { animation: none; }
   .br-cup i { animation: none; }
   .pr-scrap, .pr-doc { transition: none; }
   .board-dialog[open] { animation: none; }

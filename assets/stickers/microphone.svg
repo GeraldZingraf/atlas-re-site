@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" aria-hidden="true">
+<defs><filter id="die" x="-25%" y="-25%" width="150%" height="150%">
+<feMorphology in="SourceAlpha" operator="dilate" radius="8" result="d"/>
+<feFlood flood-color="#FBF7EE"/><feComposite in2="d" operator="in" result="w"/>
+<feMerge><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g filter="url(#die)">
+<g transform="rotate(-8 100 100)">
+<path d="M52 92 a48 48 0 0 0 96 0" fill="none" stroke="#0B1016" stroke-width="12" stroke-linecap="round"/>
+<path d="M52 92 a48 48 0 0 0 96 0" fill="none" stroke="#24384C" stroke-width="6" stroke-linecap="round"/>
+<rect x="94" y="138" width="12" height="26" fill="#24384C" stroke="#0B1016" stroke-width="4"/>
+<rect x="66" y="160" width="68" height="14" rx="7" fill="#24384C" stroke="#0B1016" stroke-width="4"/>
+<rect x="70" y="26" width="60" height="104" rx="30" fill="#E0A458" stroke="#0B1016" stroke-width="4" stroke-linejoin="round"/>
+<g stroke="#0B1016" stroke-width="3" stroke-linecap="round" opacity=".55">
+<path d="M80 52 H120 M78 66 H122 M78 80 H122 M80 94 H120"/>
+</g>
+<rect x="70" y="100" width="60" height="10" fill="#B97F3A" stroke="#0B1016" stroke-width="4"/>
+<path d="M90 36 q-10 6 -10 20" fill="none" stroke="#F6D7A8" stroke-width="5" stroke-linecap="round"/>
+<path d="M34 64 q-10 22 0 44 M20 54 q-16 32 0 64" fill="none" stroke="#6E9A93" stroke-width="5" stroke-linecap="round"/>
+<path d="M166 64 q10 22 0 44 M180 54 q16 32 0 64" fill="none" stroke="#6E9A93" stroke-width="5" stroke-linecap="round"/>
+</g>
+</g>
+</svg>

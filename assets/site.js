@@ -1249,4 +1249,68 @@
     onClose.preread = resetPr;
   }
 
+
+  /* ---------- Microphone: say it once, it's handled ---------- */
+  const memo = document.querySelector("[data-memo]");
+  if (memo) {
+    const bars = Array.from(memo.querySelectorAll(".mm-wave i"));
+    const words = Array.from(memo.querySelectorAll(".mw"));
+    const cards = Array.from(memo.querySelectorAll(".mm-card"));
+    const timeEl = memo.querySelector("[data-mm-time]");
+    const end = memo.querySelector("[data-mm-end]");
+    const WORD_MS = 200;
+    let steps = [];
+    let waveTimer = null;
+    const at = (ms, fn) => steps.push(setTimeout(fn, ms));
+
+    const quiet = () => {
+      clearInterval(waveTimer);
+      memo.classList.remove("live");
+      bars.forEach((b) => { b.style.height = "4px"; });
+    };
+    const resetMemo = () => {
+      steps.forEach(clearTimeout);
+      steps = [];
+      quiet();
+      words.forEach((w) => w.classList.remove("heard", "mark"));
+      cards.forEach((c) => c.classList.remove("in"));
+      end.hidden = true;
+      timeEl.textContent = "0:00";
+    };
+    const finalState = () => {
+      words.forEach((w) => w.classList.add("heard", "mark"));
+      cards.forEach((c) => c.classList.add("in"));
+      timeEl.textContent = "0:07";
+      end.hidden = false;
+    };
+    const playMemo = () => {
+      resetMemo();
+      if (reduce) { finalState(); return; }
+      // Listening: a moving waveform, a running clock, the words as they're said.
+      memo.classList.add("live");
+      const t0 = performance.now();
+      waveTimer = setInterval(() => {
+        const t = (performance.now() - t0) / 1000;
+        timeEl.textContent = `0:0${Math.min(7, Math.floor(t * 2))}`;
+        bars.forEach((b, i) => {
+          const h = 6 + Math.abs(Math.sin(t * 7 + i * 0.55) * Math.sin(t * 3.1 + i * 0.21)) * 26 + Math.random() * 4;
+          b.style.height = `${h.toFixed(1)}px`;
+        });
+      }, 70);
+      words.forEach((w, i) => at(300 + i * WORD_MS, () => w.classList.add("heard")));
+      const heardAll = 300 + words.length * WORD_MS + 250;
+      at(heardAll, quiet);
+      // Understanding: each ask lights up, then goes to the agent that owns it.
+      ["a", "b", "c"].forEach((k, i) => {
+        at(heardAll + 300 + i * 450, () => {
+          words.filter((w) => w.dataset.k === k).forEach((w) => w.classList.add("mark"));
+        });
+        at(heardAll + 650 + i * 450, () => cards[i].classList.add("in"));
+      });
+      at(heardAll + 650 + 3 * 450 + 400, () => { end.hidden = false; });
+    };
+    memo.querySelector("[data-mm-again]").addEventListener("click", playMemo);
+    onOpen.memo = () => { resetMemo(); steps.push(setTimeout(playMemo, 350)); };
+    onClose.memo = resetMemo;
+  }
 })();
