@@ -14,17 +14,25 @@
   const lift = document.querySelector("[data-lift]");
   const atlas = document.querySelector("[data-atlas]");
 
+  const spots = [[2, 4], [30, 30], [8, 58], [34, 84], [18, 14], [0, 40], [26, 66], [6, 88]];
   const liftOff = (word, step) => {
     if (!lift || reduce) return;
     const tag = document.createElement("span");
     tag.className = "lift-tag";
-    tag.append(word, " · ");
     const done = document.createElement("b");
     done.textContent = "handed off";
-    tag.append(done);
-    tag.style.setProperty("--drift", `${Math.round(Math.random() * 140 - 40)}px`);
-    tag.style.setProperty("--tilt", `${(Math.random() * 10 - 5).toFixed(1)}deg`);
+    const what = document.createElement("span");
+    what.textContent = word;
+    tag.append(done, what);
+    // Pop up in turn at spots spread across the open chart, so they never stack.
+    const [x, y] = spots[(step - 1) % spots.length];
+    tag.style.setProperty("--x", `${x}%`);
+    tag.style.setProperty("--y", `${y}%`);
     lift.appendChild(tag);
+    // Keep the whole tag inside the open area, however narrow the screen.
+    const room = lift.clientWidth - tag.offsetWidth;
+    if (room <= 0) tag.style.setProperty("--x", "0%");
+    else if ((x / 100) * lift.clientWidth > room) tag.style.setProperty("--x", `${(room / lift.clientWidth) * 100}%`);
     tag.addEventListener("animationend", () => tag.remove());
     // Atlas stands a little taller as the load gets lighter.
     if (atlas) atlas.style.setProperty("--relief", String(step * 2));
