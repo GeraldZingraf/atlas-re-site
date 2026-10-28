@@ -1082,4 +1082,169 @@
       }
     });
   }
+
+  /* ---------- Coffee: while your coffee brewed ---------- */
+  const brew = document.querySelector("[data-brew]");
+  if (brew) {
+    const SVGNS = "http://www.w3.org/2000/svg";
+    const ticks = brew.querySelector(".br-ticks");
+    for (let i = 0; i < 12; i++) {
+      const a = (i * Math.PI) / 6;
+      const l = document.createElementNS(SVGNS, "line");
+      l.setAttribute("x1", String(Math.sin(a) * 44));
+      l.setAttribute("y1", String(-Math.cos(a) * 44));
+      l.setAttribute("x2", String(Math.sin(a) * 50));
+      l.setAttribute("y2", String(-Math.cos(a) * 50));
+      ticks.appendChild(l);
+    }
+    const hour = brew.querySelector("[data-br-hour]");
+    const min = brew.querySelector("[data-br-min]");
+    const timeEl = brew.querySelector("[data-br-time]");
+    const counts = Array.from(brew.querySelectorAll("[data-br-count]"));
+    const checks = Array.from(brew.querySelectorAll("[data-br-check]"));
+    const end = brew.querySelector("[data-br-end]");
+    const DUR = 4600;
+    let timer = null;
+    let wait = null;
+
+    // f runs 0 to 1 across the night, 6 p.m. to 6 a.m.
+    const show = (f) => {
+      const mins = 18 * 60 + f * 12 * 60;
+      const h24 = Math.floor(mins / 60) % 24;
+      const m = Math.floor(mins % 60);
+      hour.style.transform = `rotate(${(mins / 720) * 360}deg)`;
+      min.style.transform = `rotate(${(mins % 60) * 6}deg)`;
+      timeEl.textContent = `${((h24 + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${h24 < 12 ? "a.m." : "p.m."}`;
+      counts.forEach((b, i) => {
+        const start = 0.05 + i * 0.1;
+        const k = Math.max(0, Math.min(1, (f - start) / 0.5));
+        const v = Math.round(Number(b.dataset.brCount) * k);
+        b.textContent = String(v);
+        b.closest("li").classList.toggle("lit", v > 0);
+      });
+      checks.forEach((li, i) => li.classList.toggle("lit", f >= 0.72 + i * 0.12));
+    };
+    const stopBrew = () => { clearTimeout(timer); clearTimeout(wait); };
+    const playBrew = () => {
+      stopBrew();
+      end.hidden = true;
+      if (reduce) { show(1); end.hidden = false; return; }
+      show(0);
+      const t0 = performance.now();
+      const step = () => {
+        const f = Math.min(1, (performance.now() - t0) / DUR);
+        show(f);
+        if (f < 1) timer = setTimeout(step, 30);
+        else wait = setTimeout(() => { end.hidden = false; }, 350);
+      };
+      step();
+    };
+    brew.querySelector("[data-br-again]").addEventListener("click", playBrew);
+    onOpen.brew = () => { show(0); end.hidden = true; wait = setTimeout(playBrew, 400); };
+    onClose.brew = stopBrew;
+  }
+
+  /* ---------- Pre-read: messy to meeting-ready ---------- */
+  const pr = document.querySelector("[data-pr]");
+  if (pr) {
+    const lines = Array.from(pr.querySelectorAll("[data-pr-line]"));
+    const end = pr.closest("dialog").querySelector("[data-pr-end]");
+    let steps = [];
+    const at = (ms, fn) => steps.push(setTimeout(fn, ms));
+    const stopPr = () => { steps.forEach(clearTimeout); steps = []; };
+    const resetPr = () => {
+      stopPr();
+      pr.classList.remove("scatter", "gather", "merged");
+      lines.forEach((l) => l.classList.remove("shown"));
+      end.hidden = true;
+    };
+    const playPr = () => {
+      resetPr();
+      if (reduce) {
+        pr.classList.add("merged");
+        lines.forEach((l) => l.classList.add("shown"));
+        end.hidden = false;
+        return;
+      }
+      void pr.offsetWidth;
+      at(80, () => pr.classList.add("scatter"));
+      at(1300, () => { pr.classList.remove("scatter"); pr.classList.add("gather"); });
+      at(2350, () => { pr.classList.remove("gather"); pr.classList.add("merged"); });
+      lines.forEach((l, i) => at(2900 + i * 520, () => l.classList.add("shown")));
+      at(2900 + lines.length * 520 + 300, () => { end.hidden = false; });
+    };
+    pr.closest("dialog").querySelector("[data-pr-again]").addEventListener("click", playPr);
+    onOpen.preread = () => { resetPr(); steps.push(setTimeout(playPr, 300)); };
+    onClose.preread = resetPr;
+  }
+
+  /* ---------- Spreadsheet: spot the mistake ---------- */
+  const sp = document.querySelector("[data-sp]");
+  if (sp) {
+    const cells = Array.from(sp.querySelectorAll(".sp-cell"));
+    const wrongCell = sp.querySelector("[data-wrong]");
+    const clock = sp.querySelector("[data-sp-clock]");
+    const intro = sp.querySelector("[data-sp-intro]");
+    const agent = sp.querySelector("[data-sp-agent]");
+    const end = sp.querySelector("[data-sp-end]");
+    const resultEl = sp.querySelector("[data-sp-result]");
+    const LIMIT = 15;
+    let running = false;
+    let t0 = 0;
+    let tick = null;
+    let later = [];
+
+    const resetSp = () => {
+      running = false;
+      clearInterval(tick);
+      later.forEach(clearTimeout);
+      later = [];
+      cells.forEach((c) => c.classList.remove("miss", "found", "reveal"));
+      sp.classList.remove("over");
+      agent.hidden = true;
+      end.hidden = true;
+      intro.hidden = false;
+      clock.textContent = `${LIMIT.toFixed(1)} s`;
+    };
+    const finish = (found, secs) => {
+      running = false;
+      clearInterval(tick);
+      sp.classList.add("over");
+      wrongCell.classList.add(found ? "found" : "reveal");
+      resultEl.textContent = found ? `You found it in ${secs.toFixed(1)} s.` : "Time's up.";
+      later.push(setTimeout(() => {
+        agent.textContent = "";
+        const who = document.createElement("b");
+        who.textContent = "Agent · 0.4 s  ";
+        agent.append(who, "Thursday's labor is 31%, not 27%: $1,302 ÷ $4,200. The 27% was copied from Wednesday's row.");
+        agent.hidden = false;
+      }, reduce ? 0 : 450));
+      later.push(setTimeout(() => { end.hidden = false; }, reduce ? 0 : 1000));
+    };
+    const startSp = () => {
+      resetSp();
+      intro.hidden = true;
+      running = true;
+      t0 = performance.now();
+      tick = setInterval(() => {
+        const left = LIMIT - (performance.now() - t0) / 1000;
+        clock.textContent = `${Math.max(0, left).toFixed(1)} s`;
+        if (left <= 0) finish(false, LIMIT);
+      }, 50);
+    };
+    sp.addEventListener("click", (e) => {
+      const cell = e.target.closest(".sp-cell");
+      if (!cell || !running) return;
+      if (cell === wrongCell) {
+        finish(true, (performance.now() - t0) / 1000);
+      } else {
+        cell.classList.remove("miss");
+        void cell.offsetWidth;
+        cell.classList.add("miss");
+      }
+    });
+    sp.querySelectorAll("[data-sp-start]").forEach((b) => b.addEventListener("click", startSp));
+    onOpen.spot = resetSp;
+    onClose.spot = resetSp;
+  }
 })();

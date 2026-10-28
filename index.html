@@ -111,11 +111,11 @@
            style="--x:11%; --y:30%; --r:-9deg; --mx:2%; --my:30px"><img class="sticker-art" src="/assets/stickers/phone.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
       <div class="sticker keep" data-fx="wiggle" data-open="game-atlas" data-chip="Play"
            style="--x:3%; --y:52%; --r:7deg; --mx:calc(50% - 36px); --my:22px"><img class="sticker-art" src="/assets/stickers/map.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
-      <div class="sticker" data-say="Pre-read's in your inbox." data-fx="pop"
+      <div class="sticker" data-fx="pop" data-open="preread" data-chip="Watch"
            style="--x:14%; --y:70%; --r:-4deg"><img class="sticker-art" src="/assets/stickers/preread.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
-      <div class="sticker keep" data-say="Still warm. Nothing's on fire." data-fx="hop"
+      <div class="sticker keep" data-fx="hop" data-open="brew" data-chip="Brew"
            style="--x:5%; --y:86%; --r:6deg; --mx:4%; --my:calc(100% - 104px)"><img class="sticker-art" src="/assets/stickers/coffee.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
-      <div class="sticker" data-say="Scorecard's ready." data-fx="pop"
+      <div class="sticker" data-fx="pop" data-open="spot" data-chip="Find it"
            style="--x:79%; --y:28%; --r:8deg"><img class="sticker-art" src="/assets/stickers/spreadsheet.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
       <div class="sticker keep" data-say="Back on course." data-fx="run"
            style="--x:89%; --y:48%; --r:-6deg; --mx:calc(100% - 78px); --my:24px"><img class="sticker-art" src="/assets/stickers/compass.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
@@ -185,7 +185,7 @@
       <p class="sr-only" aria-live="polite" data-live></p>
     </div>
     <p class="deck-hint" aria-hidden="true"><span class="desk">← → keys or the arrows · click or drag the stickers</span><span class="touch">swipe the card · tap the stickers</span></p>
-    <p class="play-links">Try it: <button type="button" data-open-dialog="game-atlas">Hold up the world</button> · <button type="button" data-open-dialog="game-race">Race the Agent</button> · <button type="button" data-open-dialog="handed-off">An example week</button></p>
+    <p class="play-links">Try it: <button type="button" data-open-dialog="game-atlas">Hold up the world</button> · <button type="button" data-open-dialog="game-race">Race the Agent</button> · <button type="button" data-open-dialog="spot">Spot the mistake</button> · <button type="button" data-open-dialog="brew">While your coffee brewed</button> · <button type="button" data-open-dialog="preread">Messy to meeting-ready</button> · <button type="button" data-open-dialog="handed-off">An example week</button></p>
     </div>
 
     <!-- The three phases, left to right -->
@@ -500,6 +500,102 @@
         <a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">Get your free first win <span class="arrow" aria-hidden="true">↗</span></a>
         <button type="button" class="text-link" data-gr-start>Race again</button>
       </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="pop brew" id="brew" aria-labelledby="br-title">
+  <button type="button" class="dialog-close" data-close aria-label="Close">×</button>
+  <div class="pop-head">
+    <p class="mono-label">Overnight</p>
+    <h2 id="br-title">While your coffee brewed</h2>
+  </div>
+  <div class="br-stage" data-brew>
+    <div class="br-clock" aria-hidden="true">
+      <svg viewBox="-60 -60 120 120">
+        <circle r="54" class="br-face"/>
+        <g class="br-ticks"></g>
+        <line class="br-hour" x1="0" y1="0" x2="0" y2="-28" data-br-hour/>
+        <line class="br-min" x1="0" y1="0" x2="0" y2="-42" data-br-min/>
+        <circle r="3.5" class="br-pin"/>
+      </svg>
+      <p class="br-time" data-br-time>6:00 p.m.</p>
+      <div class="br-cup"><img src="/assets/stickers/coffee.svg" alt="" width="200" height="200"><i></i><i></i><i></i></div>
+    </div>
+    <ul class="br-list" aria-live="polite">
+      <li><b data-br-count="14">0</b> emails sorted</li>
+      <li><b data-br-count="6">0</b> replies drafted</li>
+      <li><b data-br-count="3">0</b> reviews answered</li>
+      <li><b data-br-count="2">0</b> invoices chased</li>
+      <li data-br-check><span class="br-tick"></span> Scorecard built</li>
+      <li data-br-check><span class="br-tick"></span> Supplier order ready</li>
+    </ul>
+    <div class="br-end" data-br-end hidden>
+      <p class="pop-big">Morning. It's all done.</p>
+      <p>One thing is waiting for you: a $140 refund to approve.</p>
+      <div class="pop-actions"><a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">Get your free first win <span class="arrow" aria-hidden="true">↗</span></a><button type="button" class="text-link" data-br-again>Brew again</button></div>
+    </div>
+  </div>
+  <p class="pop-note">An illustration with sample numbers.</p>
+</dialog>
+
+<dialog class="pop preread" id="preread" aria-labelledby="pr-title">
+  <button type="button" class="dialog-close" data-close aria-label="Close">×</button>
+  <div class="pop-head">
+    <p class="mono-label">Messy to meeting-ready</p>
+    <h2 id="pr-title">Your pre-read, assembled</h2>
+  </div>
+  <div class="pr-stage" data-pr>
+    <div class="pr-scrap s1" style="--sx:-150%; --sy:-60%; --sr:-12deg"><b>sales_week43.csv</b><code>Mon,3800<br>Tue,3650<br>Wed,4010<br>Thu,4200<br>Fri,5480…</code></div>
+    <div class="pr-scrap s2" style="--sx:120%; --sy:-80%; --sr:9deg"><b>Re: price update</b><span>"…produce up 8% from the 1st…"</span></div>
+    <div class="pr-scrap s3" style="--sx:-170%; --sy:70%; --sr:7deg"><b>timeclock.csv</b><code>Thu 06:00–22:30<br>2 shifts · 1 double</code></div>
+    <div class="pr-scrap s4 hand" style="--sx:150%; --sy:60%; --sr:-8deg"><span>last wk: staffing Thurs?? ask Dana</span></div>
+    <div class="pr-scrap s5" style="--sx:-20%; --sy:-150%; --sr:-4deg"><b>★★☆☆☆ review</b><span>"Slow service Thursday night"</span></div>
+    <div class="pr-scrap s6" style="--sx:30%; --sy:150%; --sr:5deg"><b>inventory.xlsx</b><code>produce 38% used<br>dairy 61% used</code></div>
+    <article class="pr-doc" data-pr-doc>
+      <p class="pr-doc-head">Leadership pre-read <span>Week 43</span></p>
+      <ul class="pr-lines">
+        <li data-pr-line>Sales up <mark>6%</mark> on last week. Best day: Saturday.</li>
+        <li data-pr-line>Thursday labor hit <mark>31%</mark>, over the 27% target. A double shift.</li>
+        <li data-pr-line>Thursday's one bad review mentions <mark>slow service</mark>. Same night.</li>
+        <li data-pr-line>Produce prices go up <mark>8%</mark> from the 1st.</li>
+      </ul>
+      <p class="pr-decide" data-pr-line><b>To decide:</b> Thursday staffing fix? Price check on a second produce supplier?</p>
+    </article>
+  </div>
+  <div class="pop-actions pr-actions" data-pr-end hidden><a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">Get your free first win <span class="arrow" aria-hidden="true">↗</span></a><button type="button" class="text-link" data-pr-again>Watch again</button></div>
+  <p class="pop-note">An illustration with sample data.</p>
+</dialog>
+
+<dialog class="pop spot" id="spot" aria-labelledby="sp-title">
+  <button type="button" class="dialog-close" data-close aria-label="Close">×</button>
+  <div class="pop-head">
+    <p class="mono-label">Game · 15 seconds</p>
+    <h2 id="sp-title">Spot the mistake</h2>
+  </div>
+  <div class="sp-stage" data-sp>
+    <div class="sp-bar"><span class="mono-label">Last week's scorecard</span><span class="sp-clock" data-sp-clock>15.0 s</span></div>
+    <table class="sp-table">
+      <thead><tr><th scope="col">Day</th><th scope="col">Sales</th><th scope="col">Labor</th><th scope="col">Labor %</th></tr></thead>
+      <tbody>
+          <tr><th scope="row">Mon</th><td><button type="button" class="sp-cell">$3,800</button></td><td><button type="button" class="sp-cell">$1,026</button></td><td><button type="button" class="sp-cell">27%</button></td></tr>
+          <tr><th scope="row">Tue</th><td><button type="button" class="sp-cell">$3,650</button></td><td><button type="button" class="sp-cell">$949</button></td><td><button type="button" class="sp-cell">26%</button></td></tr>
+          <tr><th scope="row">Wed</th><td><button type="button" class="sp-cell">$4,010</button></td><td><button type="button" class="sp-cell">$1,083</button></td><td><button type="button" class="sp-cell">27%</button></td></tr>
+          <tr><th scope="row">Thu</th><td><button type="button" class="sp-cell">$4,200</button></td><td><button type="button" class="sp-cell">$1,302</button></td><td><button type="button" class="sp-cell" data-wrong>27%</button></td></tr>
+          <tr><th scope="row">Fri</th><td><button type="button" class="sp-cell">$5,480</button></td><td><button type="button" class="sp-cell">$1,425</button></td><td><button type="button" class="sp-cell">26%</button></td></tr>
+          <tr><th scope="row">Sat</th><td><button type="button" class="sp-cell">$6,120</button></td><td><button type="button" class="sp-cell">$1,530</button></td><td><button type="button" class="sp-cell">25%</button></td></tr>
+          <tr><th scope="row">Sun</th><td><button type="button" class="sp-cell">$4,900</button></td><td><button type="button" class="sp-cell">$1,323</button></td><td><button type="button" class="sp-cell">27%</button></td></tr>
+      </tbody>
+    </table>
+    <p class="sp-agent" data-sp-agent hidden></p>
+    <div class="pop-panel" data-sp-intro>
+      <p>Here's last week's scorecard. One number is wrong. Tap it before the clock runs out.</p>
+      <button type="button" class="btn" data-sp-start>Start</button>
+    </div>
+    <div class="sp-end" data-sp-end hidden>
+      <p class="pop-big" data-sp-result></p>
+      <p>Your agent checks every number, every week, before it reaches you.</p>
+      <div class="pop-actions"><a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">Get your free first win <span class="arrow" aria-hidden="true">↗</span></a><button type="button" class="text-link" data-sp-start>Try again</button></div>
     </div>
   </div>
 </dialog>
