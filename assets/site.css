@@ -192,39 +192,6 @@ section { scroll-margin-top: calc(var(--nav-h) + 8px); }
   width: 100%; height: 100%;
   filter: drop-shadow(0 0 24px rgba(11, 16, 22, .9)) drop-shadow(0 20px 40px rgba(0, 0, 0, .5));
 }
-/* chores popping up as handed off, in the open water left of Atlas.
-   The zone's right edge tracks Atlas's body: about 52% of the panel height
-   in from the right (figure aspect .695 x 72% of its width). */
-.lift-zone {
-  position: absolute; z-index: 2;
-  left: 4%; top: 50%; height: 40%;
-  right: calc(min(128vw, 680px) * .52 - 8vw + 6px);
-}
-.lift-tag {
-  position: absolute; left: var(--x, 0%); top: var(--y, 0%);
-  display: flex; flex-direction: column; gap: 5px;
-  padding: 7px 10px 8px; border-radius: 9px;
-  background: rgba(11, 16, 22, .92); color: var(--parchment);
-  border: 1px solid rgba(224, 164, 88, .7);
-  font: 600 10px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase;
-  white-space: nowrap;
-  box-shadow: 0 14px 30px -12px rgba(0, 0, 0, .9);
-  opacity: 0;
-  animation: pop-up 3.4s cubic-bezier(.3, .6, .3, 1) forwards;
-}
-.lift-tag b { color: var(--brass); font-size: 9px; font-weight: 700; letter-spacing: .16em; }
-.lift-tag b::before {
-  content: ""; display: inline-block; width: 7px; height: 3.5px; margin: 0 7px 2px 1px;
-  border-left: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor;
-  transform: rotate(-45deg);
-}
-@keyframes pop-up {
-  0% { opacity: 0; transform: translateY(10px) scale(.85); }
-  12% { opacity: 1; transform: translateY(0) scale(1.04); }
-  20% { transform: translateY(0) scale(1); }
-  75% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(-26px) scale(1); }
-}
 
 /* ---------- How it works: the deck ---------- */
 .how {
@@ -547,8 +514,6 @@ section { scroll-margin-top: calc(var(--nav-h) + 8px); }
   .nav .btn .long { display: inline; }
   .nav .btn .short { display: none; }
   .hero-art { height: min(90vw, 760px); }
-  .lift-zone { right: calc(min(90vw, 760px) * .52 - 8vw + 6px); }
-  .lift-tag { font-size: 11px; padding: 8px 12px 9px; border-radius: 10px; }
   .sticker { width: clamp(96px, 9vw, 136px); cursor: grab; touch-action: none; left: var(--x); top: var(--y); }
   .sticker:not(.keep) { display: block; }
   .sticker.is-dragging {
@@ -587,8 +552,6 @@ section { scroll-margin-top: calc(var(--nav-h) + 8px); }
     mask-image: linear-gradient(90deg, transparent 0, #000 18%);
   }
   .atlas { right: -6%; bottom: -8%; height: 100%; }
-  .lift-zone { left: 10%; top: 42%; height: 46%; right: calc(50vh - 3vw + 4px); }
-  .lift-tag { font-size: 12px; }
   .who, .faq, .cta { padding-top: 136px; }
   .cta { min-height: 88vh; display: flex; flex-direction: column; justify-content: center; padding-bottom: 136px; }
   .foot { padding: 40px; }
@@ -602,5 +565,4 @@ section { scroll-margin-top: calc(var(--nav-h) + 8px); }
   }
   .sticker-art { animation: none !important; }
   .caret { display: none; }
-  .lift-tag { display: none; }
 }

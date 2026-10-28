@@ -9,45 +9,17 @@
   const year = document.querySelector("[data-year]");
   if (year) year.textContent = String(new Date().getFullYear());
 
-  /* ---------- Hero: the cycling word, and each chore lifting off Atlas's sphere ---------- */
+  /* ---------- Hero: the cycling word; Atlas stands a little taller with each one ---------- */
   const reel = document.querySelector("[data-reel]");
-  const lift = document.querySelector("[data-lift]");
   const atlas = document.querySelector("[data-atlas]");
-
-  const spots = [[2, 4], [30, 30], [8, 58], [34, 84], [18, 14], [0, 40], [26, 66], [6, 88]];
-  const liftOff = (word, step) => {
-    if (!lift || reduce) return;
-    const tag = document.createElement("span");
-    tag.className = "lift-tag";
-    const done = document.createElement("b");
-    done.textContent = "handed off";
-    const what = document.createElement("span");
-    what.textContent = word;
-    tag.append(done, what);
-    // Pop up in turn at spots spread across the open chart, so they never stack.
-    const [x, y] = spots[(step - 1) % spots.length];
-    tag.style.setProperty("--x", `${x}%`);
-    tag.style.setProperty("--y", `${y}%`);
-    lift.appendChild(tag);
-    // Keep the whole tag inside the open area, however narrow the screen.
-    const room = lift.clientWidth - tag.offsetWidth;
-    if (room <= 0) tag.style.setProperty("--x", "0%");
-    else if ((x / 100) * lift.clientWidth > room) tag.style.setProperty("--x", `${(room / lift.clientWidth) * 100}%`);
-    tag.addEventListener("animationend", () => tag.remove());
-    // Atlas stands a little taller as the load gets lighter.
-    if (atlas) atlas.style.setProperty("--relief", String(step * 2));
-  };
-
   if (reel && !reduce) {
-    const words = Array.from(reel.children).map((w) => w.textContent.trim());
-    const last = words.length - 1;
+    const last = reel.children.length - 1;
     let i = 0;
     reel.style.setProperty("--i", "0");
-    setTimeout(() => liftOff(words[0], 1), 900);
     const step = () => {
       i += 1;
       reel.style.setProperty("--i", String(i));
-      setTimeout(() => liftOff(words[i], i + 1), 650);
+      if (atlas) atlas.style.setProperty("--relief", String(i * 2));
       if (i < last) setTimeout(step, i === last - 1 ? 2100 : 1700);
     };
     setTimeout(step, 1500);
