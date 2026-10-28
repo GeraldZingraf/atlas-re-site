@@ -134,14 +134,14 @@
           if (done) return;
           const item = nodes[n];
           if (!item) { timer = setTimeout(finish, 500); return; }
-          c += 1 + (Math.random() < 0.3 ? 1 : 0);
+          c += 1 + (Math.random() < 0.6 ? 1 : 0);
           item.node.textContent = item.text.slice(0, c);
           item.node.parentNode.appendChild(caret);
-          if (c >= item.text.length) { n += 1; c = 0; timer = setTimeout(tick, 140); return; }
+          if (c >= item.text.length) { n += 1; c = 0; timer = setTimeout(tick, 70); return; }
           const ch = item.text[c - 1];
-          timer = setTimeout(tick, /[.,:]/.test(ch) ? 120 : 14 + Math.random() * 16);
+          timer = setTimeout(tick, /[.,:]/.test(ch) ? 60 : 10 + Math.random() * 8);
         };
-        timer = setTimeout(tick, 260);
+        timer = setTimeout(tick, 160);
       };
       return { start, finish };
     };
@@ -235,38 +235,105 @@
     startWhenSeen();
   }
 
-  /* ---------- Stickers: drag them, they settle where you drop them ---------- */
-  document.querySelectorAll(".sticker").forEach((el) => {
+  /* ---------- Stickers: they drift, react when clicked, and can be dragged ---------- */
+  const stickers = Array.from(document.querySelectorAll(".sticker"));
+
+  // Click or tap: the sticker does its trick and says one short line.
+  const react = (el) => {
+    el.classList.add("is-touched");
+    el.classList.remove("nudge");
+    const art = el.querySelector(".sticker-art");
+    const fx = `fx-${el.dataset.fx || "pop"}`;
+    if (!reduce) {
+      art.classList.remove(fx);
+      void art.offsetWidth; // restart the animation on repeat clicks
+      art.classList.add(fx);
+      art.addEventListener("animationend", () => art.classList.remove(fx), { once: true });
+    }
+    // Keep the speech bubble on screen: anchor it to the sticker's inner side.
+    const box = el.getBoundingClientRect();
+    const mid = box.left + box.width / 2;
+    el.classList.toggle("say-left", mid < window.innerWidth * 0.3);
+    el.classList.toggle("say-right", mid > window.innerWidth * 0.7);
+    el.classList.add("saying");
+    clearTimeout(el.sayTimer);
+    el.sayTimer = setTimeout(() => el.classList.remove("saying"), 2400);
+  };
+
+  stickers.forEach((el) => {
+    // Each one drifts on its own rhythm until someone touches it.
+    el.style.setProperty("--dur", `${(4.5 + Math.random() * 3).toFixed(2)}s`);
+    el.style.setProperty("--delay", `${(-Math.random() * 6).toFixed(2)}s`);
+    const bubble = document.createElement("span");
+    bubble.className = "sticker-say";
+    bubble.textContent = el.dataset.say || "";
+    el.appendChild(bubble);
+
     let ox = 0;
     let oy = 0;
     let sx = 0;
     let sy = 0;
+    let px = 0;
+    let py = 0;
+    let down = false;
     let dragging = false;
+
     el.addEventListener("pointerdown", (e) => {
-      if (!isDesktop()) return;
-      e.preventDefault();
-      dragging = true;
-      try { el.setPointerCapture(e.pointerId); } catch (_) { /* pointer already gone */ }
+      down = true;
+      px = e.clientX;
+      py = e.clientY;
       sx = e.clientX - ox;
       sy = e.clientY - oy;
-      el.classList.add("is-dragging");
+      if (isDesktop()) {
+        e.preventDefault();
+        try { el.setPointerCapture(e.pointerId); } catch (_) { /* pointer already gone */ }
+      }
     });
     el.addEventListener("pointermove", (e) => {
-      if (!dragging) return;
+      if (!down || !isDesktop()) return;
+      if (!dragging && Math.hypot(e.clientX - px, e.clientY - py) < 6) return;
+      if (!dragging) {
+        dragging = true;
+        el.classList.add("is-dragging", "is-touched");
+        el.classList.remove("saying", "nudge");
+      }
       ox = e.clientX - sx;
       oy = e.clientY - sy;
       el.style.setProperty("--dx", `${ox}px`);
       el.style.setProperty("--dy", `${oy}px`);
     });
-    const drop = () => {
-      if (!dragging) return;
+    el.addEventListener("pointerup", () => {
+      if (!down) return;
+      down = false;
+      if (dragging) {
+        dragging = false;
+        el.classList.remove("is-dragging");
+        el.style.setProperty("--r", `${(Math.random() * 18 - 9).toFixed(1)}deg`);
+      } else {
+        react(el);
+      }
+    });
+    el.addEventListener("pointercancel", () => {
+      down = false;
       dragging = false;
       el.classList.remove("is-dragging");
-      el.style.setProperty("--r", `${(Math.random() * 18 - 9).toFixed(1)}deg`);
-    };
-    el.addEventListener("pointerup", drop);
-    el.addEventListener("pointercancel", drop);
+    });
   });
+
+  // Every few seconds, one untouched sticker gives a little wiggle to invite a click.
+  if (!reduce && stickers.length) {
+    const how = document.querySelector(".how");
+    setInterval(() => {
+      if (document.hidden || !how) return;
+      const box = how.getBoundingClientRect();
+      if (box.bottom < 0 || box.top > window.innerHeight) return;
+      const idle = stickers.filter((s) => !s.classList.contains("is-touched") && s.getClientRects().length > 0);
+      if (!idle.length) return;
+      const pick = idle[Math.floor(Math.random() * idle.length)];
+      pick.classList.add("nudge");
+      setTimeout(() => pick.classList.remove("nudge"), 950);
+    }, 3200);
+  }
 
   /* ---------- The board: split flaps ---------- */
   const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:-";
