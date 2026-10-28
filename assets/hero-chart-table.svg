@@ -1,0 +1,229 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000" role="img" aria-label="An open nautical chart on a wooden table at night, lit by one warm lamp, rain on the window behind it">
+  <!--
+    Hero stand-in for agent-atlas.co. Swap it for a photo by replacing the
+    <img> inside .hero-art in index.html with a <picture> (AVIF + WebP + JPG).
+  -->
+  <style>
+    .rain { animation: fall 2.6s linear infinite; }
+    .flame { transform-origin: 600px 490px; animation: flicker 4.2s ease-in-out infinite; }
+    .glow { animation: breathe 6s ease-in-out infinite; }
+    @keyframes fall { from { transform: translateY(-220px); } to { transform: translateY(0); } }
+    @keyframes flicker {
+      0%, 100% { transform: scale(1, 1); }
+      30% { transform: scale(.97, 1.03); }
+      55% { transform: scale(1.02, .98); }
+      80% { transform: scale(.99, 1.02); }
+    }
+    @keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: .9; } }
+    @media (prefers-reduced-motion: reduce) {
+      .rain, .flame, .glow { animation: none; }
+    }
+  </style>
+  <defs>
+    <radialGradient id="lampGlow" cx="600" cy="470" r="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFC877" stop-opacity=".55"/>
+      <stop offset=".18" stop-color="#E0A458" stop-opacity=".30"/>
+      <stop offset=".5" stop-color="#E0A458" stop-opacity=".09"/>
+      <stop offset="1" stop-color="#E0A458" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="flameHalo" cx="600" cy="472" r="70" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE3A8" stop-opacity=".95"/>
+      <stop offset=".4" stop-color="#FFC060" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#E0A458" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="pool" cx="470" cy="760" r="420" gradientUnits="userSpaceOnUse" gradientTransform="translate(0 300) scale(1 .62)">
+      <stop offset="0" stop-color="#E0A458" stop-opacity=".40"/>
+      <stop offset=".55" stop-color="#E0A458" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#E0A458" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vignette" cx="420" cy="560" r="640" gradientUnits="userSpaceOnUse">
+      <stop offset=".55" stop-color="#0B1016" stop-opacity="0"/>
+      <stop offset="1" stop-color="#0B1016" stop-opacity=".9"/>
+    </radialGradient>
+    <clipPath id="glass"><rect x="96" y="46" width="608" height="470"/></clipPath>
+    <clipPath id="leftPage"><path d="M118 650 Q250 626 380 668 L378 915 Q240 880 92 905 Z"/></clipPath>
+    <clipPath id="rightPage"><path d="M380 668 Q510 624 650 640 L674 896 Q520 878 378 915 Z"/></clipPath>
+    <pattern id="rainTile" width="160" height="220" patternUnits="userSpaceOnUse">
+      <g stroke="#9DBDB7" stroke-linecap="round" fill="none">
+        <path d="M12 8 l-5 46" stroke-opacity=".22" stroke-width="1.2"/>
+        <path d="M44 70 l-4 34" stroke-opacity=".16" stroke-width="1"/>
+        <path d="M70 18 l-6 58" stroke-opacity=".26" stroke-width="1.3"/>
+        <path d="M98 120 l-5 44" stroke-opacity=".18" stroke-width="1"/>
+        <path d="M126 40 l-4 36" stroke-opacity=".2" stroke-width="1.1"/>
+        <path d="M150 150 l-6 52" stroke-opacity=".24" stroke-width="1.2"/>
+        <path d="M24 150 l-5 40" stroke-opacity=".16" stroke-width="1"/>
+        <path d="M60 176 l-3 28" stroke-opacity=".2" stroke-width="1"/>
+        <path d="M112 196 l-4 22" stroke-opacity=".14" stroke-width="1"/>
+        <path d="M138 96 l-3 26" stroke-opacity=".14" stroke-width="1"/>
+      </g>
+    </pattern>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="softer" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
+  </defs>
+
+  <!-- Wall -->
+  <rect width="800" height="1000" fill="#0B1016"/>
+
+  <!-- Window: night outside, harbor lights, rain -->
+  <g clip-path="url(#glass)">
+    <rect x="96" y="46" width="608" height="470" fill="#0F1A26"/>
+    <path d="M96 330 Q300 318 460 326 T704 322 L704 516 L96 516 Z" fill="#0C141D"/>
+    <g fill="#6E9A93" filter="url(#soft)" opacity=".55">
+      <circle cx="170" cy="322" r="3"/><circle cx="236" cy="326" r="2.4"/><circle cx="318" cy="320" r="2.8"/>
+      <circle cx="404" cy="324" r="2"/><circle cx="676" cy="318" r="2.6"/>
+    </g>
+    <g fill="#E0A458" filter="url(#soft)" opacity=".35">
+      <circle cx="282" cy="328" r="2.2"/><circle cx="452" cy="322" r="2.4"/>
+    </g>
+    <g class="rain"><rect x="96" y="-180" width="608" height="740" fill="url(#rainTile)"/></g>
+    <g fill="#B9D2CD" fill-opacity=".18">
+      <circle cx="150" cy="120" r="2.2"/><circle cx="214" cy="200" r="1.6"/><circle cx="262" cy="96" r="2.6"/>
+      <circle cx="330" cy="236" r="1.8"/><circle cx="388" cy="150" r="2.2"/><circle cx="452" cy="260" r="1.5"/>
+      <circle cx="506" cy="92" r="2"/><circle cx="560" cy="210" r="2.4"/><circle cx="640" cy="140" r="1.8"/>
+      <circle cx="676" cy="280" r="2.2"/><circle cx="182" cy="380" r="2"/><circle cx="246" cy="450" r="1.6"/>
+      <circle cx="356" cy="410" r="2.2"/><circle cx="470" cy="470" r="1.8"/><circle cx="660" cy="430" r="2"/>
+    </g>
+    <path d="M262 98 q-2 30 1 52" stroke="#B9D2CD" stroke-opacity=".14" stroke-width="2" fill="none"/>
+    <path d="M560 212 q2 40 -1 70" stroke="#B9D2CD" stroke-opacity=".12" stroke-width="2" fill="none"/>
+  </g>
+  <!-- Window frame and mullions -->
+  <g fill="none" stroke="#18222E">
+    <rect x="90" y="40" width="620" height="482" stroke-width="12"/>
+    <path d="M400 46 V516 M96 282 H704" stroke-width="9"/>
+  </g>
+  <rect x="70" y="520" width="660" height="16" fill="#151E28"/>
+  <rect x="70" y="520" width="660" height="2" fill="#2A3644"/>
+
+  <!-- Table -->
+  <path d="M-20 572 H820 V1000 H-20 Z" fill="#1E140D"/>
+  <path d="M-20 572 H820 V580 H-20 Z" fill="#2B1D12"/>
+  <g fill="none" stroke="#33231570" stroke-width="2">
+    <path d="M-20 620 Q200 610 420 626 T820 618"/>
+    <path d="M-20 690 Q240 676 470 700 T820 686"/>
+    <path d="M-20 780 Q180 768 400 792 T820 776"/>
+    <path d="M-20 880 Q260 864 480 890 T820 872"/>
+    <path d="M-20 960 Q220 948 460 972 T820 954"/>
+  </g>
+  <rect x="-20" y="572" width="840" height="428" fill="url(#pool)"/>
+
+  <!-- Lamp shadow -->
+  <ellipse cx="540" cy="612" rx="110" ry="16" fill="#07090C" opacity=".6" filter="url(#soft)"/>
+
+  <!-- The atlas, open -->
+  <g transform="rotate(-4 380 780)">
+    <path d="M104 640 Q250 612 380 656 Q512 612 664 628 L690 906 Q520 890 380 928 Q240 892 78 916 Z" fill="#20303A"/>
+    <path d="M104 640 Q250 612 380 656 Q512 612 664 628 L690 906 Q520 890 380 928 Q240 892 78 916 Z" fill="none" stroke="#2F4450" stroke-width="2"/>
+    <!-- page edges -->
+    <path d="M90 908 Q240 884 378 921 Q522 884 682 900" fill="none" stroke="#8E7A55" stroke-width="2"/>
+    <path d="M86 912 Q240 888 378 925 Q522 888 686 903" fill="none" stroke="#7A6848" stroke-width="2"/>
+
+    <!-- left page -->
+    <path d="M118 650 Q250 626 380 668 L378 915 Q240 880 92 905 Z" fill="#A8946E"/>
+    <g clip-path="url(#leftPage)">
+      <g stroke="#7A6644" stroke-opacity=".35" stroke-width="1" fill="none">
+        <path d="M100 700 Q250 676 390 716"/><path d="M100 760 Q250 736 390 776"/>
+        <path d="M100 820 Q250 796 390 836"/><path d="M100 880 Q250 856 390 896"/>
+        <path d="M170 620 L150 930"/><path d="M250 620 L236 930"/><path d="M330 620 L322 930"/>
+      </g>
+      <!-- coastline and sea hatching -->
+      <path d="M92 760 Q140 740 170 770 T230 800 Q262 830 240 866 T262 930 L80 930 Z" fill="#9FB3A3" fill-opacity=".55"/>
+      <path d="M92 760 Q140 740 170 770 T230 800 Q262 830 240 866 T262 930" fill="none" stroke="#5C4A30" stroke-width="1.6"/>
+      <!-- contour island -->
+      <g fill="none" stroke="#6F5A38" stroke-width="1.2">
+        <path d="M262 712 C300 690 352 702 360 736 C368 772 330 790 296 784 C258 778 236 740 262 712 Z" fill="#B49A6B" fill-opacity=".5"/>
+        <path d="M274 720 C302 704 342 712 348 738 C352 764 324 776 298 772 C270 768 254 740 274 720 Z"/>
+        <path d="M286 728 C306 718 334 724 336 740 C338 756 318 764 300 761 C282 758 272 740 286 728 Z"/>
+        <path d="M298 736 C310 730 324 734 324 742 C324 750 312 754 304 752 C294 750 290 742 298 736 Z" fill="#8C6E42" fill-opacity=".45"/>
+      </g>
+      <g fill="#5C4A30" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="13" opacity=".7">
+        <text x="150" y="700" transform="rotate(-6 150 700)">Mare Incognitum</text>
+      </g>
+      <path d="M140 860 L160 860 M150 850 L150 870" stroke="#5C4A30" stroke-width="1.4"/>
+    </g>
+
+    <!-- right page -->
+    <path d="M380 668 Q510 624 650 640 L674 896 Q520 878 378 915 Z" fill="#B09B74"/>
+    <g clip-path="url(#rightPage)">
+      <g stroke="#7A6644" stroke-opacity=".35" stroke-width="1" fill="none">
+        <path d="M370 716 Q510 676 680 694"/><path d="M370 776 Q510 736 680 754"/>
+        <path d="M370 836 Q510 796 680 814"/><path d="M370 896 Q510 856 680 874"/>
+        <path d="M450 620 L462 930"/><path d="M540 620 L556 930"/><path d="M620 620 L640 930"/>
+      </g>
+      <!-- second landmass with contours -->
+      <g fill="none" stroke="#6F5A38" stroke-width="1.2">
+        <path d="M560 660 C610 650 668 668 680 700 L680 760 C650 770 620 750 600 736 C572 716 540 690 560 660 Z" fill="#B49A6B" fill-opacity=".45"/>
+        <path d="M584 672 C616 666 652 680 662 702 C640 716 618 708 600 698 C584 690 572 680 584 672 Z"/>
+      </g>
+      <!-- compass rose, foreshortened -->
+      <g transform="translate(486 800) scale(1 .66)">
+        <circle r="62" fill="none" stroke="#6F5A38" stroke-width="1.4"/>
+        <circle r="54" fill="none" stroke="#6F5A38" stroke-width=".8"/>
+        <g fill="#6F5A38">
+          <path d="M0 -76 L9 -9 L0 0 Z"/><path d="M0 76 L-9 9 L0 0 Z"/>
+          <path d="M76 0 L9 9 L0 0 Z"/><path d="M-76 0 L-9 -9 L0 0 Z"/>
+        </g>
+        <g fill="#C2AD82" stroke="#6F5A38" stroke-width="1">
+          <path d="M0 -76 L-9 -9 L0 0 Z"/><path d="M0 76 L9 9 L0 0 Z"/>
+          <path d="M76 0 L9 -9 L0 0 Z"/><path d="M-76 0 L-9 9 L0 0 Z"/>
+        </g>
+        <g fill="#8C6E42" opacity=".8">
+          <path d="M36 -36 L5 -2 L2 -5 Z"/><path d="M-36 36 L-5 2 L-2 5 Z"/>
+          <path d="M36 36 L2 5 L5 2 Z"/><path d="M-36 -36 L-2 -5 L-5 -2 Z"/>
+        </g>
+        <circle r="4" fill="#8C3A1E"/>
+      </g>
+    </g>
+
+    <!-- spine shadow -->
+    <path d="M372 668 Q380 790 376 915 L384 915 Q388 790 388 668 Z" fill="#3A2C1A" opacity=".55" filter="url(#soft)"/>
+
+    <!-- the route, across both pages -->
+    <path d="M150 872 C200 830 220 800 268 790 S352 806 396 780 S470 720 528 724 S602 708 640 676" fill="none" stroke="#8C3A1E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linecap="round"/>
+    <g fill="#8C3A1E"><circle cx="150" cy="872" r="4"/><circle cx="396" cy="780" r="3"/><circle cx="640" cy="676" r="5"/></g>
+    <circle cx="640" cy="676" r="10" fill="none" stroke="#8C3A1E" stroke-width="1.4"/>
+
+    <!-- brass dividers lying on the chart -->
+    <g stroke-linecap="round">
+      <path d="M574 760 L520 878" stroke="#3B2A14" stroke-width="6"/>
+      <path d="M574 760 L612 872" stroke="#3B2A14" stroke-width="6"/>
+      <path d="M574 760 L520 878" stroke="#D49A50" stroke-width="3.4"/>
+      <path d="M574 760 L612 872" stroke="#C88C44" stroke-width="3.4"/>
+      <circle cx="574" cy="758" r="7" fill="#E0A458" stroke="#3B2A14" stroke-width="2"/>
+    </g>
+  </g>
+
+  <!-- A pencil -->
+  <g transform="rotate(-18 200 958)">
+    <rect x="96" y="950" width="190" height="11" rx="2" fill="#8C3A1E"/>
+    <rect x="96" y="950" width="190" height="4" fill="#A54A2A"/>
+    <path d="M286 950 L310 955.5 L286 961 Z" fill="#D8B98A"/>
+    <path d="M304 954 L310 955.5 L304 957 Z" fill="#2A1C10"/>
+    <rect x="84" y="950" width="14" height="11" fill="#9A8C70"/>
+  </g>
+
+  <!-- The lamp -->
+  <g>
+    <path d="M556 352 Q600 300 644 352" fill="none" stroke="#3B2A14" stroke-width="3"/>
+    <ellipse cx="600" cy="604" rx="62" ry="12" fill="#3B2A14"/>
+    <path d="M545 602 Q538 562 576 548 L624 548 Q662 562 655 602 Z" fill="#6E4C24"/>
+    <path d="M552 590 Q548 566 578 556" fill="none" stroke="#E0A458" stroke-opacity=".7" stroke-width="3" stroke-linecap="round"/>
+    <rect x="572" y="532" width="56" height="16" rx="3" fill="#4F3519"/>
+    <rect x="572" y="532" width="56" height="3" fill="#C88C44" opacity=".7"/>
+    <!-- glass chimney -->
+    <path d="M574 532 C522 500 524 424 576 396 L582 362 L618 362 L624 396 C676 424 678 500 626 532 Z" fill="#FFD9A0" fill-opacity=".1" stroke="#FFE4BC" stroke-opacity=".38" stroke-width="2"/>
+    <path d="M548 470 C546 440 560 418 578 406" fill="none" stroke="#FFF1DA" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>
+    <rect x="574" y="346" width="52" height="16" rx="3" fill="#4F3519"/>
+    <rect x="588" y="336" width="24" height="12" rx="2" fill="#3B2A14"/>
+    <!-- wick holder -->
+    <rect x="592" y="494" width="16" height="38" fill="#4F3519"/>
+    <circle cx="600" cy="472" r="70" fill="url(#flameHalo)"/>
+    <g class="flame">
+      <path d="M600 436 C614 456 618 478 600 492 C582 478 586 456 600 436 Z" fill="#FFC060"/>
+      <path d="M600 452 C608 464 609 478 600 486 C591 478 592 464 600 452 Z" fill="#FFF0C8"/>
+    </g>
+  </g>
+
+  <!-- Warm light over everything -->
+  <rect class="glow" width="800" height="1000" fill="url(#lampGlow)" style="mix-blend-mode:screen"/>
+  <rect width="800" height="1000" fill="url(#vignette)"/>
+</svg>

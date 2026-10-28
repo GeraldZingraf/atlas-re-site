@@ -4,71 +4,336 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Agent Atlas</title>
-<meta name="description" content="Agent Atlas is building something new.">
-<meta name="robots" content="noindex">
-<link rel="icon" href="/favicon.png">
-<style>
-  :root {
-    --bg: #0f1219;
-    --panel: #171b27;
-    --ink: #eef1f7;
-    --ink-soft: #a6adbd;
-    --rule: #2a3040;
-    --accent: #7c5cff;
-    --accent-2: #2bb6b0;
-  }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.6;
-    display: grid;
-    place-items: center;
-    padding: 32px;
-  }
-  main {
-    width: 100%;
-    max-width: 560px;
-    background: var(--panel);
-    border: 1px solid var(--rule);
-    border-radius: 14px;
-    padding: 44px 40px;
-    text-align: center;
-  }
-  .mark {
-    width: 46px;
-    height: 46px;
-    margin: 0 auto 26px;
-    border-radius: 11px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  }
-  h1 {
-    margin: 0 0 14px;
-    font-size: clamp(1.7rem, 5vw, 2.15rem);
-    letter-spacing: -0.02em;
-    line-height: 1.15;
-  }
-  p { margin: 0 auto; max-width: 44ch; color: var(--ink-soft); }
-  p + p { margin-top: 14px; }
-  @media (prefers-color-scheme: light) {
-    :root {
-      --bg: #f4f6fa;
-      --panel: #ffffff;
-      --ink: #171b27;
-      --ink-soft: #5b6474;
-      --rule: #dfe4ec;
-    }
-  }
-</style>
+<meta name="description" content="Agent Atlas is a small AI partner for owner-run businesses. Show us your week, and within a few days we'll hand you something that runs on your own files, free.">
+<meta name="theme-color" content="#0B1016">
+<meta name="color-scheme" content="dark">
+<link rel="canonical" href="https://agent-atlas.co/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Agent Atlas">
+<meta property="og:title" content="Agent Atlas: we take the late nights off your desk">
+<meta property="og:description" content="A small AI partner for owner-run businesses. Your first win is free, and yours to keep.">
+<meta property="og:url" content="https://agent-atlas.co/">
+<meta property="og:image" content="https://agent-atlas.co/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="An open chart on a table at night, lit by a warm lamp, next to the line: We take the late nights off your desk.">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<link rel="preload" href="/assets/fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/hero-chart-table.svg" as="image" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site.css">
+<script src="/assets/site.js" defer></script>
 </head>
 <body>
-  <main>
-    <div class="mark" aria-hidden="true"></div>
-    <h1>Agent Atlas</h1>
-    <p>We are building something new. This page is a placeholder while the next project takes shape.</p>
-  </main>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <a class="wordmark" href="#top" aria-label="Agent Atlas, back to top">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="24" fill="none" stroke="#E0A458" stroke-width="3.5"/>
+      <path d="M32 8 L37 32 L32 32 Z" fill="#E0A458"/><path d="M32 8 L27 32 L32 32 Z" fill="#B97F3A"/>
+      <path d="M32 56 L27 32 L32 32 Z" fill="#EFE6D2"/><path d="M32 56 L37 32 L32 32 Z" fill="#C9BFA9"/>
+    </svg>
+    <span>agent atlas<span class="dot">.</span></span>
+  </a>
+  <nav aria-label="Main">
+    <ul class="nav-links">
+      <li><a href="#how-it-works">How it works</a></li>
+      <li><a href="#who-we-are">Who we are</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+  </nav>
+  <a class="btn btn-sm" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">
+    <span class="long">Get your free first win</span><span class="short">Free first win</span>
+    <span class="arrow" aria-hidden="true">↗</span>
+  </a>
+</header>
+
+<!--
+  HERO IMAGE SLOT. This is an SVG stand-in drawn for the site. To use a photo,
+  replace the <img> below with:
+  <picture>
+    <source srcset="/assets/hero.avif" type="image/avif">
+    <source srcset="/assets/hero.webp" type="image/webp">
+    <img src="/assets/hero.jpg" alt="" width="1600" height="2000" fetchpriority="high">
+  </picture>
+  Keep the image portrait (about 4:5) with the lamp right of center.
+-->
+<div class="hero-art" aria-hidden="true">
+  <img src="/assets/hero-chart-table.svg" alt="" width="800" height="1000" fetchpriority="high">
+</div>
+
+<main id="main">
+
+  <!-- 1. Hero -->
+  <section class="hero split" id="top" aria-labelledby="hero-title">
+    <p class="mono-label">AI partners for owner-run businesses.</p>
+    <h1 class="hero-title" id="hero-title">
+      <span class="sr-only">We take the late nights off your desk.</span>
+      <span aria-hidden="true">
+        <span class="line">We take the</span>
+        <span class="reel"><span class="reel-track" data-reel>
+          <span>weekly report</span>
+          <span>follow-ups</span>
+          <span>meeting prep</span>
+          <span>scorecard</span>
+          <span>customer emails</span>
+          <span>scheduling</span>
+          <span>paperwork</span>
+          <span>late nights</span>
+        </span></span>
+        <span class="line">off your desk.</span>
+      </span>
+    </h1>
+    <p class="hero-lede">Show us your week. Within a few days we'll hand you something that runs on your own files, free, and yours to keep.</p>
+    <div class="hero-cta">
+      <a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">
+        Get your free first win <span class="arrow" aria-hidden="true">↗</span>
+      </a>
+      <p class="fine">One conversation. Under two hours of your time. No logins.</p>
+    </div>
+    <a class="scroll-cue mono-label" href="#how-it-works">How it works</a>
+  </section>
+
+  <!-- 2. How it works: the deck -->
+  <section class="how band" id="how-it-works" aria-labelledby="how-title">
+    <div class="stickers" aria-hidden="true">
+      <img class="sticker keep" src="/assets/stickers/phone.svg" alt="" width="200" height="200" draggable="false" loading="lazy"
+           style="--x:11%; --y:15%; --r:-9deg; --mx:2%; --my:30px">
+      <img class="sticker" src="/assets/stickers/map.svg" alt="" width="200" height="200" draggable="false" loading="lazy"
+           style="--x:3%; --y:42%; --r:7deg">
+      <img class="sticker" src="/assets/stickers/preread.svg" alt="" width="200" height="200" draggable="false" loading="lazy"
+           style="--x:15%; --y:62%; --r:-4deg">
+      <img class="sticker keep" src="/assets/stickers/coffee.svg" alt="" width="200" height="200" draggable="false" loading="lazy"
+           style="--x:5%; --y:80%; --r:6deg; --mx:4%; --my:calc(100% - 104px)">
+      <img class="sticker" src="/assets/stickers/spreadsheet.svg" alt="" width="200" height="200" draggable="false" loading="lazy"
+           style="--x:78%; --y:13%; --r:8deg">
+      <img class="sticker keep" src="/assets/stickers/compass.svg" alt="" width="200" height="200" draggable="false" loading="lazy"
+           style="--x:88%; --y:38%; --r:-6deg; --mx:calc(100% - 78px); --my:24px">
+      <img class="sticker" src="/assets/stickers/calendar.svg" alt="" width="200" height="200" draggable="false" loading="lazy"
+           style="--x:75%; --y:60%; --r:-7deg">
+      <img class="sticker" src="/assets/stickers/stopwatch.svg" alt="" width="200" height="200" draggable="false" loading="lazy"
+           style="--x:87%; --y:79%; --r:9deg">
+    </div>
+
+    <div class="section-head">
+      <p class="mono-label">How it works</p>
+      <h2 id="how-title">From one conversation to your hours back.</h2>
+    </div>
+
+    <div class="deck" data-deck data-left="4" role="region" aria-roledescription="carousel" aria-label="How it works">
+      <div class="deck-stack" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div class="card" data-card>
+        <div class="card-bar">
+          <span class="mono-label">agent atlas</span>
+          <div class="pager">
+            <button type="button" data-prev aria-label="Previous card">‹</button>
+            <span class="count" aria-hidden="true"><span data-cur>1</span> / 6</span>
+            <button type="button" data-next aria-label="Next card">›</button>
+          </div>
+        </div>
+        <ol class="slides">
+          <li class="slide is-active" role="group" aria-roledescription="card" aria-label="1 of 6">
+            <div class="full">
+              <p class="hello">Hi. We're Gerald and Michael.</p>
+              <p class="body">We build AI that takes work off an owner's plate, then we keep it running.</p>
+            </div>
+          </li>
+          <li class="slide" role="group" aria-roledescription="card" aria-label="2 of 6">
+            <div class="full">
+              <p><span class="num">01</span><span class="ttl">The free first win.</span></p>
+              <p class="body">One conversation and a few files you already have. A few days later you're using something new, built on your own stuff. You also get a short list of five more things we'd do. Free, and you keep it.</p>
+            </div>
+          </li>
+          <li class="slide" role="group" aria-roledescription="card" aria-label="3 of 6">
+            <div class="full">
+              <p><span class="num">02</span><span class="ttl">The assessment.</span></p>
+              <p class="body">We go deeper: your people, your processes, your tools. We write the plan to get your hours back, then deliver the first wins and measure them against where you started.</p>
+            </div>
+          </li>
+          <li class="slide" role="group" aria-roledescription="card" aria-label="4 of 6">
+            <div class="full">
+              <p><span class="num">03</span><span class="ttl">The monthly work.</span></p>
+              <p class="body">A set number of hours each month. We run what we built, fix what breaks, build what's next on your roadmap, train your team, and upgrade things as AI gets better.</p>
+            </div>
+          </li>
+          <li class="slide" role="group" aria-roledescription="card" aria-label="5 of 6">
+            <div class="full">
+              <p><span class="ttl">It runs where you already work.</span></p>
+              <p class="body">Email, text, the files you already export. Nobody learns a new system. You own everything we build, in your own accounts.</p>
+            </div>
+          </li>
+          <li class="slide" role="group" aria-roledescription="card" aria-label="6 of 6">
+            <div class="full">
+              <p><span class="ttl">Small on purpose.</span></p>
+              <p class="body">You talk to the two of us, never a sales team.</p>
+              <a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">
+                Get your free first win <span class="arrow" aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </li>
+        </ol>
+      </div>
+      <p class="sr-only" aria-live="polite" data-live></p>
+    </div>
+    <p class="deck-hint" aria-hidden="true"><span class="desk">← → keys or the arrows · drag the stickers</span><span class="touch">swipe the card</span></p>
+  </section>
+
+  <!-- 3. The board -->
+  <section class="board-sec band" id="handed-off" aria-labelledby="board-title">
+    <div class="board-wrap">
+      <div class="board-housing">
+        <div class="board-top">
+          <h2 class="board-title" id="board-title">
+            <span class="sr-only">Handed off</span>
+            <span class="flaps big" aria-hidden="true" data-flaps="HANDED OFF"></span>
+          </h2>
+          <p class="mono-label">An example week</p>
+        </div>
+        <table class="board" data-board>
+          <caption class="sr-only">An example week of work handed off. Illustrative only, not client data.</caption>
+          <thead>
+            <tr><th scope="col" class="c-day">DAY</th><th scope="col" class="c-time">TIME</th><th scope="col" class="c-what">WHAT</th><th scope="col" class="c-status">STATUS</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="c-day"><span class="sr-only">Monday</span><span class="flaps" aria-hidden="true" data-flaps="MON" data-len="3"></span></td>
+              <td class="c-time"><span class="sr-only">06:00</span><span class="flaps" aria-hidden="true" data-flaps="06:00" data-len="5"></span></td>
+              <td class="c-what"><span class="sr-only">Weekly scorecard</span><span class="flaps" aria-hidden="true" data-flaps="WEEKLY SCORECARD" data-len="18"></span></td>
+              <td class="c-status"><span class="sr-only">Ready</span><span class="flaps" aria-hidden="true" data-flaps="READY" data-len="8"></span></td>
+            </tr>
+            <tr>
+              <td class="c-day"><span class="sr-only">Monday</span><span class="flaps" aria-hidden="true" data-flaps="MON" data-len="3"></span></td>
+              <td class="c-time"><span class="sr-only">07:30</span><span class="flaps" aria-hidden="true" data-flaps="07:30" data-len="5"></span></td>
+              <td class="c-what"><span class="sr-only">Meeting pre-read</span><span class="flaps" aria-hidden="true" data-flaps="MEETING PRE-READ" data-len="18"></span></td>
+              <td class="c-status"><span class="sr-only">Sent</span><span class="flaps" aria-hidden="true" data-flaps="SENT" data-len="8"></span></td>
+            </tr>
+            <tr>
+              <td class="c-day"><span class="sr-only">Tuesday</span><span class="flaps" aria-hidden="true" data-flaps="TUE" data-len="3"></span></td>
+              <td class="c-time"><span class="sr-only">09:15</span><span class="flaps" aria-hidden="true" data-flaps="09:15" data-len="5"></span></td>
+              <td class="c-what"><span class="sr-only">Follow-ups</span><span class="flaps" aria-hidden="true" data-flaps="FOLLOW-UPS" data-len="18"></span></td>
+              <td class="c-status"><span class="sr-only">4 closed</span><span class="flaps" aria-hidden="true" data-flaps="4 CLOSED" data-len="8"></span></td>
+            </tr>
+            <tr>
+              <td class="c-day"><span class="sr-only">Wednesday</span><span class="flaps" aria-hidden="true" data-flaps="WED" data-len="3"></span></td>
+              <td class="c-time"><span class="sr-only">11:00</span><span class="flaps" aria-hidden="true" data-flaps="11:00" data-len="5"></span></td>
+              <td class="c-what"><span class="sr-only">Customer replies</span><span class="flaps" aria-hidden="true" data-flaps="CUSTOMER REPLIES" data-len="18"></span></td>
+              <td class="c-status"><span class="sr-only">Drafted</span><span class="flaps" aria-hidden="true" data-flaps="DRAFTED" data-len="8"></span></td>
+            </tr>
+            <tr>
+              <td class="c-day"><span class="sr-only">Thursday</span><span class="flaps" aria-hidden="true" data-flaps="THU" data-len="3"></span></td>
+              <td class="c-time"><span class="sr-only">16:45</span><span class="flaps" aria-hidden="true" data-flaps="16:45" data-len="5"></span></td>
+              <td class="c-what"><span class="sr-only">New hire paperwork</span><span class="flaps" aria-hidden="true" data-flaps="NEW HIRE PAPERWORK" data-len="18"></span></td>
+              <td class="c-status"><span class="sr-only">Ready</span><span class="flaps" aria-hidden="true" data-flaps="READY" data-len="8"></span></td>
+            </tr>
+            <tr>
+              <td class="c-day"><span class="sr-only">Friday</span><span class="flaps" aria-hidden="true" data-flaps="FRI" data-len="3"></span></td>
+              <td class="c-time"><span class="sr-only">17:00</span><span class="flaps" aria-hidden="true" data-flaps="17:00" data-len="5"></span></td>
+              <td class="c-what"><span class="sr-only">Week in review</span><span class="flaps" aria-hidden="true" data-flaps="WEEK IN REVIEW" data-len="18"></span></td>
+              <td class="c-status"><span class="sr-only">Sent</span><span class="flaps" aria-hidden="true" data-flaps="SENT" data-len="8"></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="board-note"><strong>This is an example, not client data.</strong> It's the kind of week we set out to build: the recurring work handled before you sit down, with a person on your team approving anything that leaves the business.</p>
+    </div>
+  </section>
+
+  <!-- 4. Who we are -->
+  <section class="who split" id="who-we-are" aria-labelledby="who-title">
+    <p class="mono-label">Who we are</p>
+    <h2 id="who-title">Two people, not a platform.</h2>
+    <p class="intro">You work with the two of us from the first conversation on.</p>
+    <ul class="people">
+      <li class="person">
+        <span class="stamp" aria-hidden="true" style="--r:-7deg">G</span>
+        <div>
+          <h3>Gerald</h3>
+          <span class="mono-label">Operator and builder</span>
+          <p>An operator who builds and runs his own network of AI agents every week. He maps how your business really runs and builds what comes off your desk.</p>
+        </div>
+      </li>
+      <li class="person">
+        <span class="stamp" aria-hidden="true" style="--r:5deg">M</span>
+        <div>
+          <h3>Michael</h3>
+          <span class="mono-label">Sales leader</span>
+          <p>Leads an enterprise sales team in big tech and runs his own AI setup. He knows what it takes for a new tool to get used by a busy team.</p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- 5. FAQ -->
+  <section class="faq split" id="faq" aria-labelledby="faq-title">
+    <p class="mono-label">FAQ</p>
+    <h2 id="faq-title">Fair questions.</h2>
+    <div class="faq-list">
+      <details>
+        <summary>Do we have to change our software?</summary>
+        <p>No. We build on what you already use and the files you already export.</p>
+      </details>
+      <details>
+        <summary>Who owns what you build?</summary>
+        <p>You do. It lives in your accounts. If you stop working with us, it keeps running.</p>
+      </details>
+      <details>
+        <summary>What does the first win cost?</summary>
+        <p>Nothing, and you keep it whether or not we work together after.</p>
+      </details>
+      <details>
+        <summary>What does it cost after that?</summary>
+        <p>The assessment is a fixed fee and the monthly work is a set number of hours. We quote both after the first win, once we know what's worth doing.</p>
+      </details>
+      <details>
+        <summary>Is our data safe?</summary>
+        <p>Your data stays in your accounts. Nothing goes outside your business without a person on your team saying so.</p>
+      </details>
+      <details>
+        <summary>What kinds of businesses do you work with?</summary>
+        <p>Owner-run businesses with a team, recurring paperwork, and an owner who's the bottleneck. If that sounds like your week, we should talk.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- 6. Closing call to action -->
+  <section class="cta split" id="start" aria-labelledby="cta-title">
+    <h2 id="cta-title">What's still on your desk at <em>9&nbsp;p.m.</em>?</h2>
+    <p>Show us one thing you'd hand off tonight if you could. We'll come back with it running.</p>
+    <div class="hero-cta">
+      <a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">
+        Get your free first win <span class="arrow" aria-hidden="true">↗</span>
+      </a>
+      <p class="fine">One conversation. Under two hours of your time. No logins.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot band">
+  <div class="foot-row">
+    <a class="wordmark" href="#top" aria-label="Agent Atlas, back to top">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="24" fill="none" stroke="#E0A458" stroke-width="3.5"/>
+        <path d="M32 8 L37 32 L32 32 Z" fill="#E0A458"/><path d="M32 8 L27 32 L32 32 Z" fill="#B97F3A"/>
+        <path d="M32 56 L27 32 L32 32 Z" fill="#EFE6D2"/><path d="M32 56 L37 32 L32 32 Z" fill="#C9BFA9"/>
+      </svg>
+      <span>agent atlas<span class="dot">.</span></span>
+    </a>
+    <nav aria-label="Footer">
+      <a href="/privacy.html">Privacy</a>
+      <a href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">Contact</a>
+    </nav>
+  </div>
+  <div class="foot-row">
+    <p class="legal">Agent Atlas LLC · © <span data-year>2026</span></p>
+    <p class="mono-label">Small on purpose. You talk to the two of us.</p>
+  </div>
+</footer>
 </body>
 </html>

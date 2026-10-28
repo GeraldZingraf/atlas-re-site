@@ -40,3 +40,29 @@
   to = "/index.html"
   status = 410
   force = true
+
+# ---------------------------------------------------------------------------
+# One-page site (added 2026-10-28). Everything above this line is unchanged.
+# ---------------------------------------------------------------------------
+
+# Fonts never change under the same name, so let browsers keep them.
+[[headers]]
+  for = "/assets/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Images, CSS and JS: cache for a day, then check for a newer copy.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, must-revalidate"
+
+# Basic hardening. The page loads nothing from other sites, so the content
+# security policy only allows this site's own files.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"

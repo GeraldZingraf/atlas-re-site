@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" aria-hidden="true">
+<defs><filter id="die" x="-25%" y="-25%" width="150%" height="150%">
+<feMorphology in="SourceAlpha" operator="dilate" radius="8" result="d"/>
+<feFlood flood-color="#FBF7EE"/><feComposite in2="d" operator="in" result="w"/>
+<feMerge><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g filter="url(#die)">
+
+<ellipse cx="96" cy="164" rx="70" ry="14" fill="#EFE6D2" stroke="#0B1016" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M46 82 H146 V136 a26 26 0 0 1 -26 26 H72 a26 26 0 0 1 -26 -26 Z" fill="#6E9A93" stroke="#0B1016" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M146 96 h10 a18 18 0 0 1 0 36 h-12" fill="none" stroke="#0B1016" stroke-width="14" stroke-linecap="round"/>
+<path d="M146 96 h10 a18 18 0 0 1 0 36 h-12" fill="none" stroke="#6E9A93" stroke-width="6" stroke-linecap="round"/>
+<ellipse cx="96" cy="84" rx="50" ry="8" fill="#5A3A22" stroke="#0B1016" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M72 64 q-10 -14 0 -26 t0 -26 M98 64 q-10 -14 0 -26 t0 -26 M124 64 q-10 -14 0 -26 t0 -26" fill="none" stroke="#E0A458" stroke-width="5" stroke-linecap="round"/>
+<path d="M62 104 v24" stroke="#EFE6D2" stroke-opacity=".5" stroke-width="6" stroke-linecap="round"/>
+</g>
+</svg>

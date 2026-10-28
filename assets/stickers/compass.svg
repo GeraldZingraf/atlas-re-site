@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" aria-hidden="true">
+<defs><filter id="die" x="-25%" y="-25%" width="150%" height="150%">
+<feMorphology in="SourceAlpha" operator="dilate" radius="8" result="d"/>
+<feFlood flood-color="#FBF7EE"/><feComposite in2="d" operator="in" result="w"/>
+<feMerge><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g filter="url(#die)">
+
+<circle cx="100" cy="100" r="76" fill="#E0A458" stroke="#0B1016" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="100" cy="100" r="62" fill="#142030" stroke="#0B1016" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<g fill="#EFE6D2" font-family="Georgia, serif" font-size="16" text-anchor="middle">
+<text x="100" y="56">N</text><text x="100" y="156">S</text><text x="150" y="106">E</text><text x="50" y="106">W</text></g>
+<path d="M100 64 L112 100 L100 100 Z" fill="#B5532E"/><path d="M100 64 L88 100 L100 100 Z" fill="#D86A40"/>
+<path d="M100 136 L88 100 L100 100 Z" fill="#EFE6D2"/><path d="M100 136 L112 100 L100 100 Z" fill="#CFC4AC"/>
+<circle cx="100" cy="100" r="6" fill="#E0A458" stroke="#0B1016" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="92" y="14" width="16" height="14" rx="4" fill="#E0A458" stroke="#0B1016" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+</g>
+</svg>
