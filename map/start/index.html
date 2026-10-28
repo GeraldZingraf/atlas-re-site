@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set up Map Your Month · Agent Atlas</title>
+<meta name="description" content="The 20-minute setup for Map Your Month: connect Claude to your email and calendar, add the Agent Atlas plugin, and say map my month.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0B1016">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/map.css">
+<script src="/assets/map.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav">
+  <a class="wordmark" href="/" aria-label="Agent Atlas home">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="24" fill="none" stroke="#E0A458" stroke-width="3.5"/>
+      <path d="M32 8 L37 32 L32 32 Z" fill="#E0A458"/><path d="M32 8 L27 32 L32 32 Z" fill="#B97F3A"/>
+      <path d="M32 56 L27 32 L32 32 Z" fill="#EFE6D2"/><path d="M32 56 L37 32 L32 32 Z" fill="#C9BFA9"/>
+    </svg>
+    <span>agent atlas<span class="dot">.</span></span>
+  </a>
+  <a class="btn btn-sm" href="https://cal.com/gerald-zingraf-ugk9rh/map-your-month" target="_blank" rel="noopener">
+    <span class="long">Stuck? Book a setup call</span><span class="short">Help</span>
+    <span class="arrow" aria-hidden="true">↗</span>
+  </a>
+</header>
+
+<main id="main" class="mym">
+  <p class="mono-label">Map Your Month · Setup</p>
+  <h1>You're in. Here's the <em>20-minute</em> setup.</h1>
+  <p class="lede">Do this on a computer. It all happens in your own Claude account, and Map Your Month only reads: it never sends, deletes, or changes anything.</p>
+
+  <ol class="mym-steps">
+    <li>
+      <h3>Get Claude <span class="time">3 min</span></h3>
+      <p>Sign in or sign up at <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a>. Connecting your email and calendar needs a paid plan, <b>Pro or higher</b>. Already use ChatGPT? Keep it for your personal life. This runs on Claude.</p>
+    </li>
+    <li>
+      <h3>Turn off training <span class="time">1 min</span></h3>
+      <p>In Claude, open <b>Settings &gt; Privacy</b> and turn off <b>Help improve Claude</b>, so your chats aren't used to train models.</p>
+    </li>
+    <li>
+      <h3>Connect your email and calendar <span class="time">3 min</span></h3>
+      <p>Go to <a href="https://claude.ai/customize/connectors" target="_blank" rel="noopener">claude.ai/customize/connectors</a>.</p>
+      <ul>
+        <li><b>Google:</b> connect <b>Gmail</b> and <b>Google Calendar</b>, and allow access when Google asks.</li>
+        <li><b>Outlook:</b> connect <b>Microsoft 365</b>. If Microsoft says an administrator must approve it, whoever manages your company's Microsoft 365 approves it once.</li>
+      </ul>
+    </li>
+    <li>
+      <h3>Add the Agent Atlas plugin <span class="time">2 min</span></h3>
+      <p>Go to <a href="https://claude.ai/customize/plugins" target="_blank" rel="noopener">claude.ai/customize/plugins</a>, choose <b>Add &gt; Add marketplace</b>, and paste:</p>
+      <div class="copy"><code id="marketplace">GeraldZingraf/agent-atlas-plugins</code><button type="button" data-copy="marketplace">Copy</button></div>
+      <p>Then add the <b>Agent Atlas</b> plugin from the list. On its <b>Connectors</b> tab you can also connect <b>agent-atlas</b>. That's optional: it lets Claude send us your summary in one step, and only when you say yes.</p>
+      <p class="mym-note">If "Add marketplace" isn't there, <a href="/downloads/agent-atlas-plugin.zip" download>download the plugin</a> and use <b>Add &gt; Upload plugin</b> instead.</p>
+    </li>
+    <li>
+      <h3>Say "map my month" <span class="time">10 min</span></h3>
+      <p>Start a new chat. Make sure your email and calendar are switched on (the <kbd>+</kbd> button, then <b>Connectors</b>). Type:</p>
+      <div class="copy"><code id="say">map my month</code><button type="button" data-copy="say">Copy</button></div>
+      <p>Answer three quick questions. Claude reads your last 30 days and writes your report.</p>
+    </li>
+    <li>
+      <h3>Share your summary and book <span class="time">2 min</span></h3>
+      <p>Your report ends with a short summary that has no names and no email content. Send it to us (Claude can do it, with your yes) or paste it into the booking form, then pick a time for your free 30-minute results session. We come with your first win already planned.</p>
+    </li>
+  </ol>
+
+  <section class="mym-help" aria-labelledby="help-title">
+    <h2 id="help-title">Stuck?</h2>
+    <p class="muted">Book a call and we'll do the setup with you on a screen share. On the booking form, choose "Not yet, I need help setting it up."</p>
+    <div class="mym-cta">
+      <a class="btn" href="https://cal.com/gerald-zingraf-ugk9rh/map-your-month" target="_blank" rel="noopener">Book a setup call <span class="arrow" aria-hidden="true">↗</span></a>
+      <a href="mailto:gerald@agent-atlas.co">Or email gerald@agent-atlas.co</a>
+    </div>
+  </section>
+</main>
+
+<footer class="foot band">
+  <div class="foot-row">
+    <a class="wordmark" href="/" aria-label="Agent Atlas home">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="24" fill="none" stroke="#E0A458" stroke-width="3.5"/>
+        <path d="M32 8 L37 32 L32 32 Z" fill="#E0A458"/><path d="M32 8 L27 32 L32 32 Z" fill="#B97F3A"/>
+        <path d="M32 56 L27 32 L32 32 Z" fill="#EFE6D2"/><path d="M32 56 L37 32 L32 32 Z" fill="#C9BFA9"/>
+      </svg>
+      <span>agent atlas<span class="dot">.</span></span>
+    </a>
+    <nav aria-label="Footer">
+      <a href="/privacy.html">Privacy</a>
+      <a href="mailto:gerald@agent-atlas.co">Contact</a>
+    </nav>
+  </div>
+  <div class="foot-row">
+    <p class="legal">Agent Atlas LLC · © <span data-year>2026</span></p>
+    <p class="mono-label">Small on purpose. You talk to the two of us.</p>
+  </div>
+</footer>
+</body>
+</html>

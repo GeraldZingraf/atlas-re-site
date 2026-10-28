@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Map Your Month · Agent Atlas</title>
+<meta name="description" content="A free Claude skill that reads your last 30 days of email and calendar, in your own account, and shows you where your time went and what to take off your plate.">
+<meta name="theme-color" content="#0B1016">
+<meta name="color-scheme" content="dark">
+<link rel="canonical" href="https://agent-atlas.co/map/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Agent Atlas">
+<meta property="og:title" content="Map Your Month: see where your last 30 days went">
+<meta property="og:description" content="A free Claude skill. 20 minutes, in your own Claude account. We never see your email.">
+<meta property="og:url" content="https://agent-atlas.co/map/">
+<meta property="og:image" content="https://agent-atlas.co/assets/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/map.css">
+<script src="/assets/map.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav">
+  <a class="wordmark" href="/" aria-label="Agent Atlas home">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="24" fill="none" stroke="#E0A458" stroke-width="3.5"/>
+      <path d="M32 8 L37 32 L32 32 Z" fill="#E0A458"/><path d="M32 8 L27 32 L32 32 Z" fill="#B97F3A"/>
+      <path d="M32 56 L27 32 L32 32 Z" fill="#EFE6D2"/><path d="M32 56 L37 32 L32 32 Z" fill="#C9BFA9"/>
+    </svg>
+    <span>agent atlas<span class="dot">.</span></span>
+  </a>
+  <a class="btn btn-sm" href="#signup">
+    <span class="long">Get the setup guide</span><span class="short">Start</span>
+    <span class="arrow" aria-hidden="true">↓</span>
+  </a>
+</header>
+
+<main id="main" class="mym">
+  <p class="mono-label">Map Your Month · Free</p>
+  <h1>See where your last <em>30 days</em> went.</h1>
+  <p class="lede">Add our free Map Your Month skill to Claude. In about 20 minutes it reads your email and calendar, read-only, in your own Claude account, and shows you where your time went, what's slipping, and five things worth taking off your plate. <strong>We never see your email.</strong></p>
+
+  <ul class="mym-gets" aria-label="What you get">
+    <li><b>Your month, mapped</b><span>Hours in meetings, the email that eats your week, and who takes the most of your time.</span></li>
+    <li><b>Dropped balls, with replies drafted</b><span>The threads waiting on you, with five replies you can send this afternoon.</span></li>
+    <li><b>The next five</b><span>Five things worth taking off your plate, each with the hours it would give back.</span></li>
+    <li><b>Your Claude chief of staff</b><span>Instructions written from your own inbox. We set it up with you on a free 30-minute call.</span></li>
+  </ul>
+
+  <h2>How it works</h2>
+  <ol class="mym-steps">
+    <li><h3>Get the setup guide <span class="time">1 min</span></h3><p>Leave your email below. The guide opens right away.</p></li>
+    <li><h3>Add the skill to Claude <span class="time">10 min</span></h3><p>Connect your email and calendar to Claude and add our plugin. The guide walks you through each click.</p></li>
+    <li><h3>Say "map my month" <span class="time">10 min</span></h3><p>Answer three questions. Claude reads your last 30 days and writes your report.</p></li>
+    <li><h3>Book your results session <span class="time">30 min</span></h3><p>Share your summary, and we come to the call with your first win already planned. Free, and yours to keep.</p></li>
+  </ol>
+
+  <h2 id="signup">Get the setup guide</h2>
+  <p class="muted">You'll need a paid Claude plan (Pro or higher) and Gmail and Google Calendar, or Microsoft 365.</p>
+  <form class="mym-form" name="map-signup" method="POST" action="/map/start/" data-netlify="true" netlify-honeypot="company_site">
+    <input type="hidden" name="form-name" value="map-signup">
+    <p class="mym-hp"><label>Leave this empty <input name="company_site" tabindex="-1" autocomplete="off"></label></p>
+    <div class="row">
+      <label><span>First name</span><input name="first_name" autocomplete="given-name" required maxlength="60"></label>
+      <label><span>Email</span><input name="email" type="email" autocomplete="email" required maxlength="200"></label>
+    </div>
+    <label><span>Your business <em class="muted">(optional)</em></span><input name="business" maxlength="160" placeholder="e.g. 3 swim schools, 19 restaurants"></label>
+    <button class="btn" type="submit">Show me the setup guide <span class="arrow" aria-hidden="true">→</span></button>
+    <p class="fine">We use your email only to follow up on your Map Your Month. No mailing list. <a href="/privacy.html">Privacy</a></p>
+  </form>
+
+  <section class="mym-help" aria-labelledby="faq-title">
+    <h2 id="faq-title">Questions</h2>
+    <dl class="mym-faq">
+      <dt>Do you see my email?</dt>
+      <dd>No. The skill runs in your own Claude account, on your own email. At the end it offers to send us a summary with no names and no email content, only if you say yes.</dd>
+      <dt>Is it really free?</dt>
+      <dd>Yes. The skill and the results session are free, and you keep everything. You do need a paid Claude plan to connect your email and calendar.</dd>
+      <dt>We already use ChatGPT.</dt>
+      <dd>Keep it for whatever you like in your personal life. This runs on Claude, and if we end up working together, that's where we teach Claude how your business runs.</dd>
+      <dt>Can it send or delete anything?</dt>
+      <dd>No. Map Your Month only reads. It never sends, deletes, or changes anything in your email or calendar.</dd>
+    </dl>
+    <div class="mym-cta">
+      <a class="btn" href="#signup">Get the setup guide <span class="arrow" aria-hidden="true">↑</span></a>
+      <a href="https://cal.com/gerald-zingraf-ugk9rh/map-your-month" target="_blank" rel="noopener">Rather do it together? Book a setup call</a>
+    </div>
+  </section>
+</main>
+
+<footer class="foot band">
+  <div class="foot-row">
+    <a class="wordmark" href="/" aria-label="Agent Atlas home">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="24" fill="none" stroke="#E0A458" stroke-width="3.5"/>
+        <path d="M32 8 L37 32 L32 32 Z" fill="#E0A458"/><path d="M32 8 L27 32 L32 32 Z" fill="#B97F3A"/>
+        <path d="M32 56 L27 32 L32 32 Z" fill="#EFE6D2"/><path d="M32 56 L37 32 L32 32 Z" fill="#C9BFA9"/>
+      </svg>
+      <span>agent atlas<span class="dot">.</span></span>
+    </a>
+    <nav aria-label="Footer">
+      <a href="/privacy.html">Privacy</a>
+      <a href="mailto:gerald@agent-atlas.co">Contact</a>
+    </nav>
+  </div>
+  <div class="foot-row">
+    <p class="legal">Agent Atlas LLC · © <span data-year>2026</span></p>
+    <p class="mono-label">Small on purpose. You talk to the two of us.</p>
+  </div>
+</footer>
+</body>
+</html>
