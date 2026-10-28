@@ -289,7 +289,7 @@ section { scroll-margin-top: calc(var(--nav-h) + 8px); }
 .deck-hint .desk { display: none; }
 
 /* ---------- The three phases, left to right ---------- */
-.how-stage { position: relative; padding-top: 104px; padding-bottom: 124px; }
+.how-stage { position: relative; padding-top: 190px; padding-bottom: 124px; }
 .phases { position: relative; z-index: 3; max-width: 1160px; margin: 72px auto 0; }
 .phases-title { text-align: center; font: 400 clamp(30px, 4.6vw, 44px)/1.1 var(--serif); }
 .phase-row { list-style: none; margin: 32px 0 0; padding: 0; display: grid; gap: 34px; counter-reset: phase; }
