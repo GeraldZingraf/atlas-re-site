@@ -218,23 +218,26 @@
     const W = window.innerWidth;
     const H = window.innerHeight;
     const w = r.width;
-    const pad = 16;
-    const stops = [
-      [r.left, r.top],
-      [W - w - pad, 84],
-      [W - w - pad * 2, H * 0.55],
-      [W - w - pad, H - w - pad],
-      [W * 0.5 - w / 2, H - w - pad * 2],
-      [pad, H - w - pad],
-      [pad * 2, H * 0.45],
-      [pad, 84],
-      [W * 0.4, H * 0.25],
-      [r.left, r.top],
-    ];
-    const lap = runner.animate(
-      stops.map(([x, y], i) => ({ transform: `translate(${x}px, ${y}px) rotate(${i * 140}deg)` })),
-      { duration: 3800, easing: "ease-in-out" },
-    );
+    const pad = 12;
+    const rand = (lo, hi) => lo + Math.random() * (hi - lo);
+    // Darting about at random: hard turns, little loops, near-misses with
+    // the edges, a spin one way then the other, then home.
+    const frames = [{ transform: `translate(${r.left}px, ${r.top}px) rotate(0deg) scale(1)`, offset: 0 }];
+    const hops = 11 + Math.floor(Math.random() * 4);
+    let turn = 0;
+    for (let i = 1; i <= hops; i++) {
+      const edge = Math.random() < 0.35;
+      const x = edge ? (Math.random() < 0.5 ? pad : W - w - pad) : rand(pad, W - w - pad);
+      const y = edge && Math.random() < 0.5 ? (Math.random() < 0.5 ? 70 : H - w - pad) : rand(70, H - w - pad);
+      turn += (Math.random() < 0.5 ? -1 : 1) * rand(90, 420);
+      frames.push({
+        transform: `translate(${x}px, ${y}px) rotate(${turn}deg) scale(${rand(0.85, 1.25).toFixed(2)})`,
+        offset: Math.min(0.94, (i / (hops + 1)) + rand(-0.025, 0.025)),
+        easing: Math.random() < 0.5 ? "cubic-bezier(.7,0,.3,1)" : "cubic-bezier(.2,1.4,.4,1)",
+      });
+    }
+    frames.push({ transform: `translate(${r.left}px, ${r.top}px) rotate(${Math.round(turn / 360) * 360}deg) scale(1)`, offset: 1 });
+    const lap = runner.animate(frames, { duration: 4600 });
     lap.onfinish = () => {
       runner.remove();
       el.classList.remove("away");
@@ -766,113 +769,133 @@
     b.addEventListener("click", () => openDialog(b.dataset.openDialog));
   });
 
-  /* ---------- Game: Hold up the world ---------- */
+  /* ---------- Game: Hold up the world (catch and balance) ---------- */
   const ga = document.querySelector("[data-ga]");
   if (ga) {
     const field = ga.querySelector("[data-ga-field]");
     const atlasEl = ga.querySelector("[data-ga-atlas]");
-    const timeEl = ga.querySelector("[data-ga-time]");
+    const stackEl = ga.querySelector("[data-ga-stack]");
+    const img = atlasEl.querySelector("img");
     const scoreEl = ga.querySelector("[data-ga-score]");
-    const bars = Array.from(ga.querySelectorAll(".ga-load i"));
+    const needle = ga.querySelector("[data-ga-needle]");
+    const speedBar = ga.querySelector("[data-ga-speed]");
+    const hint = ga.querySelector("[data-ga-hint]");
     const intro = ga.querySelector("[data-ga-intro]");
     const end = ga.querySelector("[data-ga-end]");
-    const resultEl = ga.querySelector("[data-ga-result]");
     const subEl = ga.querySelector("[data-ga-sub]");
     const CHORES = [
       "Payroll", "Follow-ups", "Weekly report", "Angry review", "Schedule", "Invoices",
-      "Supplier order", "New hire forms", "Meeting prep", "Refund", "Taxes", "Inventory count",
-      "Customer email", "Staff texts", "Bank rec",
+      "Supplier order", "New hire forms", "Meeting prep", "Refund", "Taxes", "Inventory",
+      "Customer email", "Staff texts", "Bank rec", "Permits",
     ];
-    const LENGTH = 30000;
-    const MAX_LOAD = 8;
+    const TOP_SPEED = 380;      // px/s with nothing on his shoulders
+    const SLOW_PER_CHORE = 26;  // each chore carried takes this off his top speed
+    const CHIP_H = 20;          // how tall each chore sits in the pile
+    const MAX_PILE = 16;        // past this, it always comes down
     let st = null;
-    const fmt = (ms) => `0:${String(Math.max(0, Math.ceil(ms / 1000))).padStart(2, "0")}`;
 
-    // Where the sphere is, in field coordinates (it moves as Atlas sinks).
-    const geom = () => {
-      const f = field.getBoundingClientRect();
-      const a = atlasEl.getBoundingClientRect();
-      return {
-        cx: a.left - f.left + a.width * 0.559,
-        top: a.top - f.top + a.height * 0.235 - a.width * 0.347,
-        r: a.width * 0.347,
-        w: f.width,
-      };
+    // Field and Atlas measurements (Atlas is a small figure at the bottom).
+    const dims = () => {
+      const W = field.clientWidth;
+      const H = field.clientHeight;
+      const aw = atlasEl.offsetWidth;
+      const ah = img.offsetHeight || aw * (1759 / 1223);
+      return { W, H, aw, ah, r: aw * 0.347 };
     };
-    const put = (c) => { c.el.style.transform = `translate(${c.x}px, ${c.y}px)`; };
-
-    const updateLoad = () => {
-      const load = st.pile.length;
-      bars.forEach((b, i) => {
-        b.classList.toggle("on", i < load);
-        b.classList.toggle("hot", i < load && load >= MAX_LOAD - 2);
-      });
-      atlasEl.style.setProperty("--sink", String(load * 6));
-      atlasEl.style.setProperty("--tilt", `${load >= 3 ? (load - 2) * 1.4 : 0}deg`);
-      atlasEl.classList.toggle("strain", load >= 5 && !reduce);
-    };
-
-    const clearField = () => {
-      field.querySelectorAll(".ga-chip").forEach((n) => n.remove());
-      atlasEl.classList.remove("strain", "dropped");
-      atlasEl.style.setProperty("--sink", "0");
-      atlasEl.style.setProperty("--tilt", "0deg");
-      bars.forEach((b) => b.classList.remove("on", "hot"));
-    };
+    const sphere = (d) => ({
+      cx: st.x + d.aw * 0.559,
+      top: d.H + 6 - d.ah + st.sink,
+    });
 
     const stop = () => { if (st) { st.running = false; clearTimeout(st.timer); } };
-
-    const finish = (held) => {
-      stop();
-      const elapsed = Math.min(LENGTH, performance.now() - st.t0);
-      if (!held) atlasEl.classList.add("dropped");
-      resultEl.textContent = held ? "Atlas held on." : "The world dropped.";
-      const chores = `${st.score} ${st.score === 1 ? "chore" : "chores"}`;
-      subEl.textContent = held
-        ? `You handed off ${chores} in 30 seconds. Imagine every week feeling that light.`
-        : `You handed off ${chores} before it got too heavy, ${Math.round(elapsed / 1000)} seconds in. That's a normal Tuesday for most owners.`;
-      setTimeout(() => { end.hidden = false; }, held ? 300 : 900);
+    const clearAll = () => {
+      field.querySelectorAll(".ga-chip").forEach((n) => n.remove());
+      atlasEl.classList.remove("dropped");
+      atlasEl.style.setProperty("--sink", "0");
+      stackEl.style.setProperty("--lean", "0deg");
+      needle.style.left = "50%";
+      needle.classList.remove("warn");
+      speedBar.style.width = "100%";
+      hint.style.opacity = "1";
     };
 
-    const handOff = (chip) => {
+    const keys = { left: false, right: false };
+    const onKey = (e, down) => {
       if (!st || !st.running) return;
-      let c = st.falling.find((x) => x.el === chip);
-      if (c) st.falling = st.falling.filter((x) => x !== c);
-      else {
-        c = st.pile.find((x) => x.el === chip);
-        if (!c) return;
-        st.pile = st.pile.filter((x) => x !== c);
-      }
-      st.score += 1;
-      scoreEl.textContent = String(st.score);
-      chip.textContent = `✓ ${chip.textContent}`;
-      chip.classList.add("gone");
-      chip.style.transform = `translate(${c.x + 50}px, ${c.y - 150}px) rotate(8deg)`;
-      setTimeout(() => chip.remove(), 750);
-      updateLoad();
-    };
-    field.addEventListener("pointerdown", (e) => {
-      const chip = e.target.closest(".ga-chip");
-      if (!chip) return;
+      const k = e.key.toLowerCase();
+      if (k === "arrowleft" || k === "a") keys.left = down;
+      else if (k === "arrowright" || k === "d") keys.right = down;
+      else return;
       e.preventDefault();
-      handOff(chip);
-    });
-    field.addEventListener("keydown", (e) => {
-      const chip = e.target.closest(".ga-chip");
-      if (chip && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); handOff(chip); }
-    });
+    };
+    document.addEventListener("keydown", (e) => onKey(e, true));
+    document.addEventListener("keyup", (e) => onKey(e, false));
 
-    const spawn = (g) => {
-      const el = document.createElement("button");
-      el.type = "button";
+    // Mouse: follow the pointer. Touch: follow the finger while it's down.
+    const aim = (e) => {
+      if (!st || !st.running) return;
+      if (e.pointerType !== "mouse" && e.buttons === 0 && e.type === "pointermove") return;
+      st.target = e.clientX - field.getBoundingClientRect().left;
+    };
+    field.addEventListener("pointerdown", (e) => { aim(e); try { field.setPointerCapture(e.pointerId); } catch (_) { /* gone */ } });
+    field.addEventListener("pointermove", aim);
+    field.addEventListener("pointerup", (e) => { if (e.pointerType !== "mouse" && st) st.target = null; });
+    field.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse" && st) st.target = null; });
+
+    const spawn = (d) => {
+      const el = document.createElement("span");
       el.className = "ga-chip";
       el.textContent = CHORES[Math.floor(Math.random() * CHORES.length)];
       field.appendChild(el);
       const cw = el.offsetWidth;
-      const x = Math.max(6, Math.min(g.w - cw - 6, g.cx - cw / 2 + (Math.random() * 2 - 1) * g.r * 0.75));
-      const c = { el, x, y: -34, w: cw, jit: Math.random() * 30 - 15 };
-      put(c);
+      const c = { el, w: cw, x: 6 + Math.random() * Math.max(1, d.W - cw - 12), y: -CHIP_H - 4 };
+      el.style.transform = `translate(${c.x}px, ${c.y}px)`;
       st.falling.push(c);
+    };
+
+    // Everything comes down: the pile scatters, Atlas drops.
+    const collapse = () => {
+      st.running = false;
+      clearTimeout(st.timer);
+      const f = field.getBoundingClientRect();
+      const lean = Math.sign(st.tilt) || 1;
+      const debris = st.pile.map((c) => {
+        const r = c.el.getBoundingClientRect();
+        field.appendChild(c.el);
+        c.el.classList.remove("held");
+        return {
+          el: c.el,
+          x: r.left - f.left,
+          y: r.top - f.top,
+          vx: (Math.random() - 0.5) * 260 + lean * 140,
+          vy: -80 - Math.random() * 220,
+          rot: 0,
+          vr: (Math.random() - 0.5) * 540,
+        };
+      });
+      st.falling.forEach((c) => c.el.classList.add("missed"));
+      atlasEl.classList.add("dropped");
+      const carried = st.best;
+      let last = performance.now();
+      const t0 = last;
+      const fall = () => {
+        const now = performance.now();
+        const dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        debris.forEach((p) => {
+          p.vy += 900 * dt;
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.rot += p.vr * dt;
+          p.el.style.transform = `translate(${p.x}px, ${p.y}px) rotate(${p.rot}deg)`;
+        });
+        if (now - t0 < 1300) st.timer = setTimeout(fall, 16);
+        else {
+          subEl.textContent = `You carried ${carried} ${carried === 1 ? "chore" : "chores"} before it toppled. That's an owner's week: the more you hold, the slower you move. We take them off your shoulders.`;
+          end.hidden = false;
+        }
+      };
+      fall();
     };
 
     const tick = () => {
@@ -880,60 +903,104 @@
       const now = performance.now();
       const dt = Math.min(0.05, (now - st.last) / 1000);
       st.last = now;
-      const elapsed = now - st.t0;
-      const p = elapsed / LENGTH;
-      timeEl.textContent = fmt(LENGTH - elapsed);
-      const g = geom();
+      st.t += dt;
+      const d = dims();
+      const n = st.pile.length;
 
-      if (now >= st.nextSpawn) {
-        spawn(g);
-        st.nextSpawn = now + (1250 - 780 * p) * (0.75 + Math.random() * 0.5);
+      // Moving: every chore carried slows him down.
+      const vmax = Math.max(70, TOP_SPEED - n * SLOW_PER_CHORE);
+      let want = 0;
+      if (keys.left !== keys.right) want = (keys.right ? 1 : -1) * vmax;
+      else if (st.target != null) {
+        const centre = st.x + d.aw / 2;
+        want = Math.max(-vmax, Math.min(vmax, (st.target - centre) * 7));
       }
-      const speed = 70 + 95 * p;
+      if (want && !st.moved) { st.moved = true; hint.style.opacity = "0"; }
+      st.v += (want - st.v) * Math.min(1, dt * 9);
+      st.x = Math.max(0, Math.min(d.W - d.aw, st.x + st.v * dt));
+      if (st.x === 0 || st.x === d.W - d.aw) st.v *= 0.5;
+      atlasEl.style.setProperty("--x", st.x.toFixed(1));
+      speedBar.style.width = `${(vmax / TOP_SPEED) * 100}%`;
+
+      // Balance: where the pile sits, plus sway from moving, plus a wobble
+      // that grows with every chore. The safe zone narrows as it gets taller.
+      const com = n ? st.pile.reduce((sum, c) => sum + c.off, 0) / n / d.r : 0;
+      const swayWant = (-st.v / TOP_SPEED) * (0.45 + n * 0.06);
+      st.sway += (swayWant - st.sway) * Math.min(1, dt * 3);
+      const wobble = n * 0.014 * Math.sin(st.t * 2.4 + st.phase) + n * 0.008 * Math.sin(st.t * 5.3);
+      st.tilt = com * 0.55 + st.sway + wobble;
+      const limit = Math.max(0.25, 1 - n * 0.04);
+      const share = st.tilt / limit;
+      needle.style.left = `${50 + Math.max(-1, Math.min(1, share)) * 48}%`;
+      needle.classList.toggle("warn", Math.abs(share) > 0.7);
+      stackEl.style.setProperty("--lean", `${(st.tilt * 26).toFixed(2)}deg`);
+
+      if (n > 0 && (Math.abs(st.tilt) > limit || n >= MAX_PILE)) { collapse(); return; }
+
+      // Chores falling: catch them on the pile, or they hit the ground.
+      if (st.t >= st.nextSpawn) {
+        spawn(d);
+        st.nextSpawn = st.t + Math.max(0.55, 1.15 - st.t * 0.012) * (0.8 + Math.random() * 0.4);
+      }
+      const sp = sphere(d);
+      const pileTop = sp.top - n * CHIP_H;
+      const fallSpeed = Math.min(230, 115 + st.t * 4);
       st.falling = st.falling.filter((c) => {
-        c.y += speed * dt;
-        const landAt = g.top - 28 - st.pile.length * 22;
-        if (c.y >= landAt) {
+        const prevBottom = c.y + CHIP_H;
+        c.y += fallSpeed * dt;
+        const bottom = c.y + CHIP_H;
+        const mid = c.x + c.w / 2;
+        if (!c.missed && prevBottom <= pileTop + 4 && bottom >= pileTop && Math.abs(mid - sp.cx) <= d.r + 12) {
+          // Caught: it joins the pile where it landed.
+          c.off = Math.max(-d.r, Math.min(d.r, mid - sp.cx));
+          c.el.classList.add("held");
+          stackEl.appendChild(c.el);
+          c.el.style.transform = `translate(${(c.off - c.w / 2).toFixed(1)}px, ${-(st.pile.length + 1) * CHIP_H}px)`;
           st.pile.push(c);
-          c.el.classList.add("landed");
-          updateLoad();
+          st.best = Math.max(st.best, st.pile.length);
+          scoreEl.textContent = String(st.pile.length);
+          st.sink = Math.min(18, st.pile.length * 1.2);
+          atlasEl.style.setProperty("--sink", st.sink.toFixed(1));
           return false;
         }
-        put(c);
+        if (bottom > pileTop + 10) c.missed = true;
+        if (c.y > d.H) { c.el.remove(); return false; }
+        c.el.style.transform = `translate(${c.x}px, ${c.y}px)`;
         return true;
       });
-      // The pile sits on the sphere and moves with Atlas.
-      st.pile.forEach((c, i) => {
-        c.x = Math.max(4, Math.min(g.w - c.w - 4, g.cx - c.w / 2 + c.jit));
-        c.y = g.top - 28 - i * 22;
-        put(c);
-      });
 
-      if (st.pile.length >= MAX_LOAD) { finish(false); return; }
-      if (elapsed >= LENGTH) { finish(true); return; }
       st.timer = setTimeout(tick, 16);
     };
 
     const start = () => {
       stop();
-      clearField();
+      clearAll();
       intro.hidden = true;
       end.hidden = true;
       scoreEl.textContent = "0";
-      timeEl.textContent = "0:30";
-      const now = performance.now();
-      st = { running: true, t0: now, last: now, nextSpawn: now + 300, score: 0, falling: [], pile: [] };
-      updateLoad();
+      const d = dims();
+      st = {
+        running: true, last: performance.now(), t: 0, nextSpawn: 0.4,
+        x: (d.W - d.aw) / 2, v: 0, target: null, sway: 0, tilt: 0, sink: 0,
+        phase: Math.random() * 6, falling: [], pile: [], best: 0, moved: false,
+      };
+      keys.left = false;
+      keys.right = false;
+      atlasEl.style.setProperty("--x", st.x.toFixed(1));
+      field.focus({ preventScroll: true });
       tick();
     };
     const resetGame = () => {
       stop();
-      clearField();
+      clearAll();
       st = null;
       intro.hidden = false;
       end.hidden = true;
       scoreEl.textContent = "0";
-      timeEl.textContent = "0:30";
+      requestAnimationFrame(() => {
+        const d = dims();
+        atlasEl.style.setProperty("--x", ((d.W - d.aw) / 2).toFixed(1));
+      });
     };
     ga.querySelectorAll("[data-ga-start]").forEach((b) => b.addEventListener("click", start));
     onOpen["game-atlas"] = resetGame;
@@ -1059,12 +1126,12 @@
       if (name.length < 2) return fail("Please add your name.");
       if (via() === "text") {
         const digits = String(data.get("phone") || "").replace(/\D/g, "");
-        if (digits.length < 10) return fail("Please add a mobile number we can text.");
+        if (digits.length < 10) return fail("Please add a mobile number we can text back.");
         if (!data.get("sms_ok")) return fail("Please tick the box so we're allowed to text you.");
         data.delete("email");
       } else {
         const email = String(data.get("email") || "").trim();
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("Please add an email address we can reach.");
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("Please add an email address we can reply to.");
         data.delete("phone");
         data.delete("sms_ok");
       }
@@ -1077,7 +1144,7 @@
         });
         if (!res.ok) throw new Error(String(res.status));
         contact.hidden = true;
-        doneText.textContent = `Thanks, ${name.split(" ")[0]}. One of us will ${via() === "text" ? "text" : "email"} you soon.`;
+        doneText.textContent = `Thanks, ${name.split(" ")[0]}. One of us will ${via() === "text" ? "text" : "email"} you back soon.`;
         done.hidden = false;
       } catch (_) {
         fail("That didn't go through. Try again in a minute, or use the booking button instead.");
@@ -1182,73 +1249,4 @@
     onClose.preread = resetPr;
   }
 
-  /* ---------- Spreadsheet: spot the mistake ---------- */
-  const sp = document.querySelector("[data-sp]");
-  if (sp) {
-    const cells = Array.from(sp.querySelectorAll(".sp-cell"));
-    const wrongCell = sp.querySelector("[data-wrong]");
-    const clock = sp.querySelector("[data-sp-clock]");
-    const intro = sp.querySelector("[data-sp-intro]");
-    const agent = sp.querySelector("[data-sp-agent]");
-    const end = sp.querySelector("[data-sp-end]");
-    const resultEl = sp.querySelector("[data-sp-result]");
-    const LIMIT = 15;
-    let running = false;
-    let t0 = 0;
-    let tick = null;
-    let later = [];
-
-    const resetSp = () => {
-      running = false;
-      clearInterval(tick);
-      later.forEach(clearTimeout);
-      later = [];
-      cells.forEach((c) => c.classList.remove("miss", "found", "reveal"));
-      sp.classList.remove("over");
-      agent.hidden = true;
-      end.hidden = true;
-      intro.hidden = false;
-      clock.textContent = `${LIMIT.toFixed(1)} s`;
-    };
-    const finish = (found, secs) => {
-      running = false;
-      clearInterval(tick);
-      sp.classList.add("over");
-      wrongCell.classList.add(found ? "found" : "reveal");
-      resultEl.textContent = found ? `You found it in ${secs.toFixed(1)} s.` : "Time's up.";
-      later.push(setTimeout(() => {
-        agent.textContent = "";
-        const who = document.createElement("b");
-        who.textContent = "Agent · 0.4 s  ";
-        agent.append(who, "Thursday's labor is 31%, not 27%: $1,302 ÷ $4,200. The 27% was copied from Wednesday's row.");
-        agent.hidden = false;
-      }, reduce ? 0 : 450));
-      later.push(setTimeout(() => { end.hidden = false; }, reduce ? 0 : 1000));
-    };
-    const startSp = () => {
-      resetSp();
-      intro.hidden = true;
-      running = true;
-      t0 = performance.now();
-      tick = setInterval(() => {
-        const left = LIMIT - (performance.now() - t0) / 1000;
-        clock.textContent = `${Math.max(0, left).toFixed(1)} s`;
-        if (left <= 0) finish(false, LIMIT);
-      }, 50);
-    };
-    sp.addEventListener("click", (e) => {
-      const cell = e.target.closest(".sp-cell");
-      if (!cell || !running) return;
-      if (cell === wrongCell) {
-        finish(true, (performance.now() - t0) / 1000);
-      } else {
-        cell.classList.remove("miss");
-        void cell.offsetWidth;
-        cell.classList.add("miss");
-      }
-    });
-    sp.querySelectorAll("[data-sp-start]").forEach((b) => b.addEventListener("click", startSp));
-    onOpen.spot = resetSp;
-    onClose.spot = resetSp;
-  }
 })();

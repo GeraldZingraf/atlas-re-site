@@ -107,7 +107,7 @@
   <section class="how band" id="how-it-works" aria-labelledby="how-title">
     <div class="how-stage">
     <div class="stickers" aria-hidden="true">
-      <div class="sticker keep" data-fx="buzz" data-open="reach-me" data-chip="Text me"
+      <div class="sticker keep" data-fx="buzz" data-open="reach-me" data-chip="Email us"
            style="--x:11%; --y:30%; --r:-9deg; --mx:2%; --my:30px"><img class="sticker-art" src="/assets/stickers/phone.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
       <div class="sticker keep" data-fx="wiggle" data-open="game-atlas" data-chip="Play"
            style="--x:3%; --y:52%; --r:7deg; --mx:calc(50% - 36px); --my:22px"><img class="sticker-art" src="/assets/stickers/map.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
@@ -115,7 +115,7 @@
            style="--x:14%; --y:70%; --r:-4deg"><img class="sticker-art" src="/assets/stickers/preread.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
       <div class="sticker keep" data-fx="hop" data-open="brew" data-chip="Brew"
            style="--x:5%; --y:86%; --r:6deg; --mx:4%; --my:calc(100% - 104px)"><img class="sticker-art" src="/assets/stickers/coffee.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
-      <div class="sticker" data-fx="pop" data-open="spot" data-chip="Find it"
+      <div class="sticker" data-say="Scorecard's ready." data-fx="pop"
            style="--x:79%; --y:28%; --r:8deg"><img class="sticker-art" src="/assets/stickers/spreadsheet.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
       <div class="sticker keep" data-say="Back on course." data-fx="run"
            style="--x:89%; --y:48%; --r:-6deg; --mx:calc(100% - 78px); --my:24px"><img class="sticker-art" src="/assets/stickers/compass.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
@@ -185,7 +185,6 @@
       <p class="sr-only" aria-live="polite" data-live></p>
     </div>
     <p class="deck-hint" aria-hidden="true"><span class="desk">← → keys or the arrows · click or drag the stickers</span><span class="touch">swipe the card · tap the stickers</span></p>
-    <p class="play-links">Try it: <button type="button" data-open-dialog="game-atlas">Hold up the world</button> · <button type="button" data-open-dialog="game-race">Race the Agent</button> · <button type="button" data-open-dialog="spot">Spot the mistake</button> · <button type="button" data-open-dialog="brew">While your coffee brewed</button> · <button type="button" data-open-dialog="preread">Messy to meeting-ready</button> · <button type="button" data-open-dialog="handed-off">An example week</button></p>
     </div>
 
     <!-- The three phases, left to right -->
@@ -326,7 +325,7 @@
       <a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">
         Get your free first win <span class="arrow" aria-hidden="true">↗</span>
       </a>
-      <p class="fine">Rather we reach out? <button type="button" class="text-link" data-open-dialog="reach-me">Leave your number or email</button>.</p>
+      <p class="fine">Not ready to book? <button type="button" class="text-link" data-open-dialog="reach-me">Email us</button>.</p>
     </div>
   </section>
 </main>
@@ -394,24 +393,29 @@
 <dialog class="pop game" id="game-atlas" aria-labelledby="ga-title">
   <button type="button" class="dialog-close" data-close aria-label="Close">×</button>
   <div class="pop-head">
-    <p class="mono-label">Game · 30 seconds</p>
+    <p class="mono-label">Game · Catch and balance</p>
     <h2 id="ga-title">Hold up the world</h2>
   </div>
   <div class="ga-stage" data-ga>
-    <div class="ga-hud" aria-live="off">
-      <span class="ga-time" data-ga-time>0:30</span>
-      <span>Handed off <b data-ga-score>0</b></span>
-      <span class="ga-load" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+    <div class="ga-hud">
+      <span>Carrying <b data-ga-score>0</b></span>
+      <span class="ga-meter"><em>Balance</em><span class="ga-bal"><i data-ga-needle></i></span></span>
+      <span class="ga-meter"><em>Speed</em><span class="ga-speed"><i data-ga-speed></i></span></span>
     </div>
-    <div class="ga-field" data-ga-field>
-      <div class="ga-atlas" data-ga-atlas><img src="/assets/atlas-figure.png" alt="" width="1223" height="1759" draggable="false"></div>
+    <div class="ga-field" data-ga-field tabindex="0" aria-label="Game area. Use the left and right arrow keys to move Atlas.">
+      <div class="ga-atlas" data-ga-atlas>
+        <div class="ga-stack" data-ga-stack></div>
+        <img src="/assets/atlas-figure.png" alt="" width="1223" height="1759" draggable="false">
+      </div>
+      <p class="ga-hint" data-ga-hint>← → or drag</p>
     </div>
     <div class="pop-panel" data-ga-intro>
-      <p>Chores keep landing on Atlas's shoulders. Tap them to hand them off before the load gets too heavy.</p>
+      <p>Chores keep falling. Move Atlas to catch them on his shoulders. Every one he carries slows him down, and the pile has to stay balanced.</p>
+      <p class="ga-how">Arrow keys or A / D, or drag across the game.</p>
       <button type="button" class="btn" data-ga-start>Start</button>
     </div>
     <div class="pop-panel" data-ga-end hidden>
-      <p class="pop-big" data-ga-result></p>
+      <p class="pop-big" data-ga-result>It all came down.</p>
       <p data-ga-sub></p>
       <div class="pop-actions">
         <a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">Get your free first win <span class="arrow" aria-hidden="true">↗</span></a>
@@ -567,70 +571,37 @@
   <p class="pop-note">An illustration with sample data.</p>
 </dialog>
 
-<dialog class="pop spot" id="spot" aria-labelledby="sp-title">
-  <button type="button" class="dialog-close" data-close aria-label="Close">×</button>
-  <div class="pop-head">
-    <p class="mono-label">Game · 15 seconds</p>
-    <h2 id="sp-title">Spot the mistake</h2>
-  </div>
-  <div class="sp-stage" data-sp>
-    <div class="sp-bar"><span class="mono-label">Last week's scorecard</span><span class="sp-clock" data-sp-clock>15.0 s</span></div>
-    <table class="sp-table">
-      <thead><tr><th scope="col">Day</th><th scope="col">Sales</th><th scope="col">Labor</th><th scope="col">Labor %</th></tr></thead>
-      <tbody>
-          <tr><th scope="row">Mon</th><td><button type="button" class="sp-cell">$3,800</button></td><td><button type="button" class="sp-cell">$1,026</button></td><td><button type="button" class="sp-cell">27%</button></td></tr>
-          <tr><th scope="row">Tue</th><td><button type="button" class="sp-cell">$3,650</button></td><td><button type="button" class="sp-cell">$949</button></td><td><button type="button" class="sp-cell">26%</button></td></tr>
-          <tr><th scope="row">Wed</th><td><button type="button" class="sp-cell">$4,010</button></td><td><button type="button" class="sp-cell">$1,083</button></td><td><button type="button" class="sp-cell">27%</button></td></tr>
-          <tr><th scope="row">Thu</th><td><button type="button" class="sp-cell">$4,200</button></td><td><button type="button" class="sp-cell">$1,302</button></td><td><button type="button" class="sp-cell" data-wrong>27%</button></td></tr>
-          <tr><th scope="row">Fri</th><td><button type="button" class="sp-cell">$5,480</button></td><td><button type="button" class="sp-cell">$1,425</button></td><td><button type="button" class="sp-cell">26%</button></td></tr>
-          <tr><th scope="row">Sat</th><td><button type="button" class="sp-cell">$6,120</button></td><td><button type="button" class="sp-cell">$1,530</button></td><td><button type="button" class="sp-cell">25%</button></td></tr>
-          <tr><th scope="row">Sun</th><td><button type="button" class="sp-cell">$4,900</button></td><td><button type="button" class="sp-cell">$1,323</button></td><td><button type="button" class="sp-cell">27%</button></td></tr>
-      </tbody>
-    </table>
-    <p class="sp-agent" data-sp-agent hidden></p>
-    <div class="pop-panel" data-sp-intro>
-      <p>Here's last week's scorecard. One number is wrong. Tap it before the clock runs out.</p>
-      <button type="button" class="btn" data-sp-start>Start</button>
-    </div>
-    <div class="sp-end" data-sp-end hidden>
-      <p class="pop-big" data-sp-result></p>
-      <p>Your agent checks every number, every week, before it reaches you.</p>
-      <div class="pop-actions"><a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">Get your free first win <span class="arrow" aria-hidden="true">↗</span></a><button type="button" class="text-link" data-sp-start>Try again</button></div>
-    </div>
-  </div>
-</dialog>
-
 <dialog class="pop contact" id="reach-me" aria-labelledby="rm-title">
   <button type="button" class="dialog-close" data-close aria-label="Close">×</button>
   <div class="pop-head">
-    <p class="mono-label">We'll come to you</p>
-    <h2 id="rm-title">Text me. Or email me.</h2>
-    <p class="pop-sub">Leave a number or an email and one of us will reach out. Two real people, no sales team.</p>
+    <p class="mono-label">Say hello</p>
+    <h2 id="rm-title">Text us. Or email us.</h2>
+    <p class="pop-sub">Tell us a little about your week and we'll get back to you the way you prefer. Two real people, no sales team.</p>
   </div>
   <form class="rm-form" name="contact" method="POST" data-netlify="true" netlify-honeypot="company" data-contact novalidate>
     <input type="hidden" name="form-name" value="contact">
     <p class="rm-trap" hidden><label>Leave this empty: <input name="company" tabindex="-1" autocomplete="off"></label></p>
     <fieldset class="rm-via">
-      <legend>How should we reach you?</legend>
-      <label class="chip"><input type="radio" name="via" value="text" checked><span>Text me</span></label>
-      <label class="chip"><input type="radio" name="via" value="email"><span>Email me</span></label>
+      <legend>How do you want to talk?</legend>
+      <label class="chip"><input type="radio" name="via" value="email" checked><span>Email us</span></label>
+      <label class="chip"><input type="radio" name="via" value="text"><span>Text us</span></label>
     </fieldset>
     <label class="rm-label" for="rm-name">Your name</label>
     <input class="rm-input" id="rm-name" name="name" autocomplete="name" maxlength="80" required>
-    <div data-via-field="text">
-      <label class="rm-label" for="rm-phone">Mobile number</label>
+    <div data-via-field="text" hidden>
+      <label class="rm-label" for="rm-phone">Your mobile, so we can text back</label>
       <input class="rm-input" id="rm-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="24">
-      <label class="rm-consent"><input type="checkbox" name="sms_ok" value="yes"> <span>It's OK to text me about Agent Atlas. Reply STOP any time.</span></label>
+      <label class="rm-consent"><input type="checkbox" name="sms_ok" value="yes"> <span>It's OK to text me back about Agent Atlas. Reply STOP any time.</span></label>
     </div>
-    <div data-via-field="email" hidden>
-      <label class="rm-label" for="rm-email">Email</label>
+    <div data-via-field="email">
+      <label class="rm-label" for="rm-email">Your email, so we can reply</label>
       <input class="rm-input" id="rm-email" name="email" type="email" autocomplete="email" maxlength="120">
     </div>
-    <label class="rm-label" for="rm-note">What eats your week? <span>Optional</span></label>
-    <input class="rm-input" id="rm-note" name="note" maxlength="200" placeholder="e.g. Scheduling and the weekly numbers">
+    <label class="rm-label" for="rm-note">Your message <span>Optional</span></label>
+    <input class="rm-input" id="rm-note" name="note" maxlength="300" placeholder="e.g. Scheduling and the weekly numbers eat my week">
     <p class="rm-error" role="alert" data-rm-error hidden></p>
-    <button type="submit" class="btn rm-send">Reach out to me</button>
-    <p class="rm-fine">We only use this to get in touch with you. No lists, no spam. <a href="/privacy.html">Privacy</a></p>
+    <button type="submit" class="btn rm-send">Send it to us</button>
+    <p class="rm-fine">We only use this to reply to you. No lists, no spam. <a href="/privacy.html">Privacy</a></p>
   </form>
   <div class="pop-panel rm-done" data-rm-done hidden>
     <p class="pop-big">Got it.</p>

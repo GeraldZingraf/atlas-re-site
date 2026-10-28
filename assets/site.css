@@ -393,46 +393,69 @@ html:has(dialog[open]) { overflow: hidden; }
 .chip input:checked + span { background: var(--brass); border-color: var(--brass); color: var(--ink); font-weight: 600; }
 .chip input:focus-visible + span { outline: 2px solid var(--brass); outline-offset: 2px; }
 
-/* Hold up the world */
+/* Hold up the world: catch and balance */
 .ga-stage { position: relative; margin-top: 14px; }
 .ga-hud { display: flex; justify-content: space-between; align-items: center; gap: 12px; font: 600 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.ga-hud b { color: var(--brass); font-size: 15px; }
-.ga-time { color: var(--parchment); font-size: 15px; }
-.ga-load { display: inline-flex; gap: 3px; }
-.ga-load i { width: 9px; height: 14px; border-radius: 2px; background: rgba(239, 230, 210, .14); }
-.ga-load i.on { background: var(--brass); }
-.ga-load i.hot { background: #E0715A; }
+.ga-hud b { color: var(--brass); font-size: 16px; }
+.ga-meter { display: inline-flex; align-items: center; gap: 7px; }
+.ga-meter em { font-style: normal; font-size: 10px; }
+.ga-bal, .ga-speed {
+  position: relative; display: inline-block; width: 74px; height: 8px; border-radius: 4px;
+  background: rgba(239, 230, 210, .12); overflow: hidden;
+}
+.ga-bal::before { /* the safe middle */
+  content: ""; position: absolute; left: 35%; width: 30%; top: 0; bottom: 0; background: rgba(110, 154, 147, .35);
+}
+.ga-bal i {
+  position: absolute; top: -2px; bottom: -2px; left: 50%; width: 4px; margin-left: -2px; border-radius: 2px;
+  background: var(--parchment); transition: background-color .2s;
+}
+.ga-bal i.warn { background: #E0715A; }
+.ga-speed i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: var(--brass); transition: width .3s var(--ease); }
+
 .ga-field {
-  position: relative; margin-top: 10px; height: min(440px, 62dvh); overflow: hidden;
+  position: relative; margin-top: 10px; height: min(420px, 58dvh); overflow: hidden;
   border-radius: 12px; border: 1px solid var(--faint);
-  background: radial-gradient(ellipse 60% 50% at 50% 70%, rgba(224, 164, 88, .08), transparent 70%), var(--chart);
-  touch-action: manipulation; user-select: none; -webkit-user-select: none;
+  background:
+    linear-gradient(rgba(110, 154, 147, .06) 1px, transparent 1px) 0 0 / 100% 40px,
+    var(--chart);
+  touch-action: none; user-select: none; -webkit-user-select: none;
+  cursor: ew-resize;
+}
+.ga-field:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+.ga-field::after { /* the ground */
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 10px;
+  background: linear-gradient(transparent, rgba(6, 9, 13, .6));
 }
 .ga-atlas {
-  position: absolute; left: 50%; bottom: -12%; width: min(220px, 50%);
-  transform: translateX(-50%) translateY(calc(var(--sink, 0) * 1px)) rotate(var(--tilt, 0deg));
-  transform-origin: 50% 100%;
-  transition: transform .35s var(--ease);
+  position: absolute; left: 0; bottom: -6px; width: 84px; z-index: 2;
+  transform: translateX(calc(var(--x, 0) * 1px)) translateY(calc(var(--sink, 0) * 1px));
 }
-.ga-atlas img { width: 100%; height: auto; pointer-events: none; filter: drop-shadow(0 12px 24px rgba(0, 0, 0, .6)); }
-.ga-atlas.strain { animation: strain .45s ease-in-out infinite; }
-@keyframes strain { 50% { transform: translateX(-50%) translateY(calc(var(--sink, 0) * 1px + 2px)) rotate(calc(var(--tilt, 0deg) * -1)); } }
-.ga-atlas.dropped { animation: none; transform: translateX(-50%) translateY(70px) rotate(-14deg); transition: transform .6s cubic-bezier(.5, 0, .7, .4); }
+.ga-atlas img { display: block; width: 100%; height: auto; pointer-events: none; filter: drop-shadow(0 8px 14px rgba(0, 0, 0, .6)); }
+.ga-atlas.dropped { transition: transform .5s cubic-bezier(.5, 0, .7, .4); transform: translateX(calc(var(--x, 0) * 1px)) translateY(40px) rotate(-12deg); }
+/* the pile sits on top of the sphere and leans as a whole */
+.ga-stack {
+  position: absolute; left: 55.9%; top: 0;
+  width: 0; height: 0; z-index: 3;
+  transform: rotate(var(--lean, 0deg)); transform-origin: 0 0;
+}
 .ga-chip {
   position: absolute; left: 0; top: 0; z-index: 2;
-  padding: 7px 11px; border-radius: 999px;
+  padding: 5px 8px; border-radius: 999px;
   background: var(--ink); color: var(--parchment);
-  border: 1px solid rgba(239, 230, 210, .35);
-  font: 600 12px/1 var(--mono); letter-spacing: .04em; white-space: nowrap;
-  cursor: pointer; touch-action: manipulation;
-  box-shadow: 0 8px 18px -6px rgba(0, 0, 0, .7);
+  border: 1px solid rgba(239, 230, 210, .4);
+  font: 600 11px/1 var(--mono); letter-spacing: .03em; white-space: nowrap;
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, .8);
+  pointer-events: none;
 }
-.ga-chip:hover { border-color: var(--brass); }
-.ga-chip.landed { border-color: rgba(224, 113, 90, .8); }
-.ga-chip.gone {
-  background: var(--brass); color: var(--ink); border-color: var(--brass); pointer-events: none;
-  transition: transform .7s cubic-bezier(.2, .7, .2, 1), opacity .7s; opacity: 0;
+.ga-chip.held { border-color: var(--brass); }
+.ga-chip.missed { opacity: .25; transition: opacity .4s; }
+.ga-hint {
+  position: absolute; left: 50%; top: 14px; transform: translateX(-50%);
+  font: 600 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+  pointer-events: none; transition: opacity .6s;
 }
+.ga-how { font-size: 13px; color: var(--muted) !important; }
 
 /* Race the Agent */
 .gr-stage { position: relative; margin-top: 14px; min-height: 420px; }
@@ -591,38 +614,6 @@ html:has(dialog[open]) { overflow: hidden; }
   .pr-stage { height: 380px; }
   .pr-scrap { width: 136px; font-size: 11.5px; }
 }
-
-/* Spot the mistake */
-.sp-stage { position: relative; margin-top: 14px; min-height: 360px; }
-.sp-bar { display: flex; justify-content: space-between; align-items: center; }
-.sp-clock { font: 700 22px/1 var(--mono); color: var(--brass); }
-.sp-table { width: 100%; margin-top: 10px; border-collapse: separate; border-spacing: 0 4px; }
-.sp-table th { text-align: left; padding: 4px 8px; font: 600 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--sea); }
-.sp-table tbody th { color: var(--muted); }
-.sp-table td { padding: 0 3px; }
-.sp-cell {
-  width: 100%; padding: 8px 10px; border-radius: 7px; cursor: pointer; text-align: right;
-  background: var(--chart); color: var(--parchment); border: 1px solid rgba(239, 230, 210, .12);
-  font: 500 14px/1 var(--mono);
-  transition: border-color .2s, background-color .2s;
-}
-.sp-cell:hover { border-color: rgba(224, 164, 88, .6); }
-.sp-cell.miss { animation: shake .35s; border-color: #E0715A; }
-.sp-cell.found { background: var(--brass); color: var(--ink); border-color: var(--brass); font-weight: 700; }
-.sp-cell.reveal { border-color: #E0715A; background: rgba(224, 113, 90, .18); box-shadow: 0 0 0 3px rgba(224, 113, 90, .25); }
-.sp-stage.over .sp-cell { cursor: default; }
-.sp-agent {
-  margin-top: 10px; padding: 10px 12px; border-radius: 10px;
-  background: rgba(224, 164, 88, .1); border: 1px solid rgba(224, 164, 88, .45);
-  font-size: 14px; line-height: 1.45;
-}
-.sp-agent b { color: var(--brass); font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
-.sp-end { display: grid; justify-items: center; gap: 8px; text-align: center; margin-top: 14px; }
-
-/* Links to the games and pop-ups, for keyboards and the curious */
-.play-links { position: relative; z-index: 3; margin-top: 12px; text-align: center; font: 500 13px/1.6 var(--sans); color: var(--muted); }
-.play-links button { background: none; border: 0; padding: 0; color: var(--parchment); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.play-links button:hover { color: var(--brass); }
 
 /* Little labels on stickers that do something */
 .sticker-chip {
@@ -1005,7 +996,7 @@ html:has(dialog[open]) { overflow: hidden; }
   }
   .sticker-art { animation: none !important; }
   .caret { display: none; }
-  .pop[open], .ga-atlas.strain { animation: none; }
+  .pop[open] { animation: none; }
   .br-cup i { animation: none; }
   .pr-scrap, .pr-doc { transition: none; }
   .board-dialog[open] { animation: none; }
