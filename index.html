@@ -17,7 +17,7 @@
 <meta property="og:image" content="https://agent-atlas.co/assets/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="A navigator's chart with a brass route plotted from your week to hours back, next to the line: We take the late nights off your desk.">
+<meta property="og:image:alt" content="A navigator's chart with a brass route from your week to hours back, each stop handed off, under the line: We take the late nights off your desk.">
 <meta name="twitter:card" content="summary_large_image">
 
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -26,8 +26,14 @@
 
 <link rel="preload" href="/assets/fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/assets/hero-chart-table.svg" as="image" type="image/svg+xml">
+<link rel="preload" href="/assets/fonts/jetbrains-mono-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/site.css">
+<noscript><style>
+  .chart .route-draw { stroke-dashoffset: 0 !important; stroke-dasharray: none !important; }
+  .chart .stop .tag, .chart .stop .tick { opacity: 1 !important; }
+  .chart .stop .dot { fill: #E0A458 !important; }
+  .chart .stop .name { fill-opacity: .95 !important; }
+</style></noscript>
 <script src="/assets/site.js" defer></script>
 </head>
 <body>
@@ -55,41 +61,14 @@
   </a>
 </header>
 
-<!--
-  HERO IMAGE SLOT. This is an SVG stand-in drawn for the site. To use a photo,
-  replace the <img> below with:
-  <picture>
-    <source srcset="/assets/hero.avif" type="image/avif">
-    <source srcset="/assets/hero.webp" type="image/webp">
-    <img src="/assets/hero.jpg" alt="" width="1600" height="2000" fetchpriority="high">
-  </picture>
-  Keep the image portrait (about 4:5).
--->
-<div class="hero-art" aria-hidden="true">
-  <img src="/assets/hero-chart-table.svg" alt="" width="800" height="1000" fetchpriority="high">
-</div>
-
 <main id="main">
 
-  <!-- 1. Hero -->
-  <section class="hero split" id="top" aria-labelledby="hero-title">
+  <!-- 1. Hero: headline on top, the chart below -->
+  <section class="hero" id="top" aria-labelledby="hero-title">
     <p class="mono-label">AI partners for owner-run businesses.</p>
     <h1 class="hero-title" id="hero-title">
-      <span class="sr-only">We take the late nights off your desk.</span>
-      <span aria-hidden="true">
-        <span class="line">We take the</span>
-        <span class="reel"><span class="reel-track" data-reel>
-          <span>weekly report</span>
-          <span>follow-ups</span>
-          <span>meeting prep</span>
-          <span>scorecard</span>
-          <span>customer emails</span>
-          <span>scheduling</span>
-          <span>paperwork</span>
-          <span>late nights</span>
-        </span></span>
-        <span class="line">off your desk.</span>
-      </span>
+      <span>We take the <em>late nights</em></span>
+      <span>off your desk.</span>
     </h1>
     <p class="hero-lede">Show us your week. Within a few days we'll hand you something that runs on your own files, free, and yours to keep.</p>
     <div class="hero-cta">
@@ -98,11 +77,202 @@
       </a>
       <p class="fine">One conversation. Under two hours of your time. No logins.</p>
     </div>
-    <a class="scroll-cue mono-label" href="#how-it-works">How it works</a>
+
+    <!--
+      HERO CHART. Two drawings of the same chart: a wide one for desktop and a
+      tall one for phones. The route and stops are animated by site.js.
+    -->
+    <figure class="chart-frame">
+      <figcaption class="sr-only">A chart of an owner's week. A route runs from "your week" past the weekly report, follow-ups, meeting prep and paperwork, each marked handed off, and ends at "hours back".</figcaption>
+
+      <svg class="chart chart-wide" data-chart viewBox="0 0 1600 700" aria-hidden="true" focusable="false">
+        <defs>
+          <mask id="w-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="700">
+            <path class="route-draw" d="M190 540 C270 500 330 460 420 462 S600 560 720 524 S880 380 1010 396 S1170 476 1260 388 S1400 228 1470 176" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
+          </mask>
+        </defs>
+        <rect width="1600" height="700" fill="#142030"/>
+
+        <g stroke="#6E9A93" stroke-opacity=".13">
+          <path d="M0 140 H1600 M0 280 H1600 M0 420 H1600 M0 560 H1600"/>
+          <path d="M200 0 V700 M400 0 V700 M600 0 V700 M800 0 V700 M1000 0 V700 M1200 0 V700 M1400 0 V700"/>
+        </g>
+
+        <!-- land: bottom left -->
+        <path class="land" d="M0 560 C50 566 92 598 110 636 C122 660 140 684 162 700 L0 700 Z"/>
+        <g class="contour"><path d="M0 590 C40 596 70 620 84 650 C94 670 106 688 120 700"/><path d="M0 624 C28 630 48 650 58 672 C64 686 72 696 80 700"/></g>
+        <path class="coast" d="M0 560 C50 566 92 598 110 636 C122 660 140 684 162 700"/>
+
+        <!-- land: top right, the harbor at the end of the route -->
+        <path class="land" d="M1240 0 C1270 40 1330 62 1380 92 C1420 116 1442 142 1472 144 C1502 146 1522 122 1560 128 C1580 132 1592 150 1600 160 L1600 0 Z"/>
+        <g class="contour"><path d="M1290 0 C1316 30 1360 48 1400 70 C1436 90 1460 108 1490 106 C1520 104 1550 96 1600 120"/><path d="M1350 0 C1376 24 1410 38 1440 50 C1470 62 1500 66 1530 64 C1560 62 1580 70 1600 80"/></g>
+        <path class="coast" d="M1240 0 C1270 40 1330 62 1380 92 C1420 116 1442 142 1472 144 C1502 146 1522 122 1560 128 C1580 132 1592 150 1600 160"/>
+
+        <!-- land: top middle -->
+        <path class="land" d="M640 0 C660 30 700 46 744 50 C790 54 820 36 846 0 Z"/>
+        <path class="coast" d="M640 0 C660 30 700 46 744 50 C790 54 820 36 846 0"/>
+        <g class="contour"><path d="M680 0 C696 18 720 28 744 30 C770 32 790 22 806 0"/></g>
+
+        <!-- islands -->
+        <path class="land coast" d="M520 318 C548 296 604 300 620 326 C636 352 608 378 572 378 C536 378 506 360 510 338 C512 330 514 324 520 318 Z"/>
+        <g class="contour"><path d="M536 326 C556 312 594 316 604 334 C612 352 590 366 568 366 C544 366 526 352 530 336 Z"/><path d="M554 334 C568 326 586 330 590 340 C592 350 578 356 566 355 C554 354 546 344 554 334 Z"/></g>
+        <path class="land coast" d="M860 600 C880 584 920 588 930 608 C940 628 916 642 892 640 C868 638 850 618 860 600 Z"/>
+        <g class="contour"><path d="M874 606 C888 598 912 600 918 612 C922 624 906 632 892 630 C878 628 868 616 874 606 Z"/></g>
+        <circle class="land coast" cx="1120" cy="610" r="7"/><circle class="land coast" cx="1140" cy="626" r="4"/>
+        <path class="land coast" d="M300 230 C314 220 336 224 340 238 C344 252 328 260 314 258 C300 256 292 242 300 230 Z"/>
+
+        <g class="snd" font-size="15">
+          <text x="300" y="610">7</text><text x="380" y="560">12</text><text x="470" y="640">18</text><text x="560" y="470">21</text>
+          <text x="640" y="610">24</text><text x="780" y="640">31</text><text x="820" y="300">17</text><text x="900" y="200">22</text>
+          <text x="1060" y="560">36</text><text x="1180" y="300">27</text><text x="1320" y="520">40</text><text x="1450" y="400">33</text>
+          <text x="1060" y="130">15</text><text x="470" y="200">9</text><text x="1500" y="600">44</text><text x="200" y="420">6</text>
+        </g>
+
+        <text class="place" x="530" y="414" font-size="20">Inbox Isle</text>
+        <text class="place" x="1330" y="40" font-size="20">Free Time</text>
+        <text class="place" x="676" y="30" font-size="18">Overtime Shoals</text>
+        <text class="place" x="24" y="680" font-size="18">The Back Office</text>
+
+        <!-- compass rose -->
+        <g transform="translate(220 190) scale(.95)">
+          <circle r="96" class="ring"/><circle r="86" class="ring faint"/><circle r="40" class="ring faint"/>
+          <g class="rose">
+            <path d="M0 0 L42 -42 L8 -8 Z"/><path d="M0 0 L42 42 L8 8 Z"/><path d="M0 0 L-42 42 L-8 8 Z"/><path d="M0 0 L-42 -42 L-8 -8 Z"/>
+            <path d="M0 0 L80 0 L10 -10 Z"/><path d="M0 0 L0 80 L-10 10 Z"/><path d="M0 0 L-80 0 L-10 10 Z"/>
+            <path d="M0 0 L80 0 L10 10 Z" class="shade"/><path d="M0 0 L0 80 L10 10 Z" class="shade"/><path d="M0 0 L-80 0 L-10 -10 Z" class="shade"/>
+          </g>
+          <path d="M0 0 L0 -82 L10 -10 Z" fill="#E0A458"/><path d="M0 0 L0 -82 L-10 -10 Z" fill="#B97F3A"/>
+          <circle r="5" fill="#142030" stroke="#E0A458" stroke-width="2"/>
+          <text y="-106" text-anchor="middle" class="north" font-size="20">N</text>
+        </g>
+
+        <path class="route" d="M190 540 C270 500 330 460 420 462 S600 560 720 524 S880 380 1010 396 S1170 476 1260 388 S1400 228 1470 176" mask="url(#w-mask)"/>
+
+        <!-- stops -->
+        <g class="stop start" data-at="190,540"><g transform="translate(190 540)">
+          <circle r="11" class="ringdot"/><circle r="4.5" class="core"/>
+          <text class="name" y="40" text-anchor="middle" font-size="15">YOUR WEEK</text>
+        </g></g>
+        <g class="stop" data-at="420,462"><g transform="translate(420 462)">
+          <circle r="9" class="dot"/><path class="tick" d="M-4.5 0 l3 3.4 l6 -7"/>
+          <g class="tag" transform="translate(0 -30)"><rect x="-60" y="-12" width="120" height="24" rx="12"/><text y="4.5" text-anchor="middle" font-size="12">HANDED OFF</text></g>
+          <text class="name" y="-56" text-anchor="middle" font-size="15">WEEKLY REPORT</text>
+        </g></g>
+        <g class="stop" data-at="720,524"><g transform="translate(720 524)">
+          <circle r="9" class="dot"/><path class="tick" d="M-4.5 0 l3 3.4 l6 -7"/>
+          <g class="tag" transform="translate(0 32)"><rect x="-60" y="-12" width="120" height="24" rx="12"/><text y="4.5" text-anchor="middle" font-size="12">HANDED OFF</text></g>
+          <text class="name" y="72" text-anchor="middle" font-size="15">FOLLOW-UPS</text>
+        </g></g>
+        <g class="stop" data-at="1010,396"><g transform="translate(1010 396)">
+          <circle r="9" class="dot"/><path class="tick" d="M-4.5 0 l3 3.4 l6 -7"/>
+          <g class="tag" transform="translate(0 -30)"><rect x="-60" y="-12" width="120" height="24" rx="12"/><text y="4.5" text-anchor="middle" font-size="12">HANDED OFF</text></g>
+          <text class="name" y="-56" text-anchor="middle" font-size="15">MEETING PREP</text>
+        </g></g>
+        <g class="stop" data-at="1260,388"><g transform="translate(1260 388)">
+          <circle r="9" class="dot"/><path class="tick" d="M-4.5 0 l3 3.4 l6 -7"/>
+          <g class="tag" transform="translate(0 32)"><rect x="-60" y="-12" width="120" height="24" rx="12"/><text y="4.5" text-anchor="middle" font-size="12">HANDED OFF</text></g>
+          <text class="name" y="72" text-anchor="middle" font-size="15">PAPERWORK</text>
+        </g></g>
+        <g class="stop end" data-at="1470,176"><g transform="translate(1470 176)">
+          <circle r="17" class="ringdot"/>
+          <path class="star" d="M0 -14 L4 -4 L14 0 L4 4 L0 14 L-4 4 L-14 0 L-4 -4 Z"/>
+          <text class="name" x="-32" y="6" text-anchor="end" font-size="17">HOURS BACK</text>
+        </g></g>
+
+        <!-- border with the alternating scale bars -->
+        <rect x="18" y="18" width="1564" height="664" class="frame"/>
+        <rect x="30" y="30" width="1540" height="640" class="frame thin"/>
+        <rect x="24" y="24" width="1552" height="652" class="scale"/>
+      </svg>
+
+      <svg class="chart chart-tall" data-chart viewBox="0 0 600 900" aria-hidden="true" focusable="false">
+        <defs>
+          <mask id="t-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="600" height="900">
+            <path class="route-draw" d="M110 820 C170 770 240 740 300 700 S220 600 220 540 S300 440 350 410 S300 310 270 260 S400 150 470 112" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
+          </mask>
+        </defs>
+        <rect width="600" height="900" fill="#142030"/>
+        <g stroke="#6E9A93" stroke-opacity=".13">
+          <path d="M0 150 H600 M0 300 H600 M0 450 H600 M0 600 H600 M0 750 H600"/>
+          <path d="M150 0 V900 M300 0 V900 M450 0 V900"/>
+        </g>
+
+        <path class="land" d="M0 690 C40 692 70 730 78 780 C86 830 60 866 72 900 L0 900 Z"/>
+        <g class="contour"><path d="M0 724 C26 728 44 756 50 790 C56 826 40 860 46 900"/></g>
+        <path class="coast" d="M0 690 C40 692 70 730 78 780 C86 830 60 866 72 900"/>
+
+        <path class="land" d="M360 0 C380 36 420 58 466 66 C510 74 548 58 600 76 L600 0 Z"/>
+        <g class="contour"><path d="M420 0 C436 22 462 34 492 38 C530 42 560 34 600 46"/></g>
+        <path class="coast" d="M360 0 C380 36 420 58 466 66 C510 74 548 58 600 76"/>
+
+        <path class="land coast" d="M470 540 C488 526 520 530 528 548 C536 566 516 580 494 578 C472 576 458 558 470 540 Z"/>
+        <g class="contour"><path d="M482 546 C494 538 512 540 516 552 C520 564 506 570 494 569 C482 568 474 556 482 546 Z"/></g>
+        <path class="land coast" d="M64 400 C76 390 98 392 104 406 C110 420 94 430 80 428 C66 426 56 412 64 400 Z"/>
+        <circle class="land coast" cx="200" cy="660" r="5"/>
+
+        <g class="snd" font-size="18">
+          <text x="200" y="820">9</text><text x="420" y="800">31</text><text x="520" y="700">38</text><text x="110" y="560">12</text>
+          <text x="330" y="560">22</text><text x="520" y="420">27</text><text x="120" y="320">8</text><text x="420" y="250">19</text>
+          <text x="330" y="160">14</text><text x="520" y="200">25</text><text x="380" y="880">40</text>
+        </g>
+        <text class="place" x="472" y="610" font-size="22">Inbox Isle</text>
+        <text class="place" x="470" y="34" font-size="22">Free Time</text>
+
+        <g transform="translate(130 160) scale(.72)">
+          <circle r="96" class="ring"/><circle r="86" class="ring faint"/><circle r="40" class="ring faint"/>
+          <g class="rose">
+            <path d="M0 0 L42 -42 L8 -8 Z"/><path d="M0 0 L42 42 L8 8 Z"/><path d="M0 0 L-42 42 L-8 8 Z"/><path d="M0 0 L-42 -42 L-8 -8 Z"/>
+            <path d="M0 0 L80 0 L10 -10 Z"/><path d="M0 0 L0 80 L-10 10 Z"/><path d="M0 0 L-80 0 L-10 10 Z"/>
+            <path d="M0 0 L80 0 L10 10 Z" class="shade"/><path d="M0 0 L0 80 L10 10 Z" class="shade"/><path d="M0 0 L-80 0 L-10 -10 Z" class="shade"/>
+          </g>
+          <path d="M0 0 L0 -82 L10 -10 Z" fill="#E0A458"/><path d="M0 0 L0 -82 L-10 -10 Z" fill="#B97F3A"/>
+          <circle r="5" fill="#142030" stroke="#E0A458" stroke-width="2"/>
+          <text y="-106" text-anchor="middle" class="north" font-size="24">N</text>
+        </g>
+
+        <path class="route" d="M110 820 C170 770 240 740 300 700 S220 600 220 540 S300 440 350 410 S300 310 270 260 S400 150 470 112" mask="url(#t-mask)"/>
+
+        <g class="stop start" data-at="110,820"><g transform="translate(110 820)">
+          <circle r="13" class="ringdot"/><circle r="5.5" class="core"/>
+          <text class="name" x="28" y="8" font-size="19">YOUR WEEK</text>
+        </g></g>
+        <g class="stop" data-at="300,700"><g transform="translate(300 700)">
+          <circle r="11" class="dot"/><path class="tick" d="M-5.5 0 l3.6 4 l7.4 -8.5"/>
+          <text class="name" x="26" y="-4" font-size="19">WEEKLY REPORT</text>
+          <g class="tag" transform="translate(26 22)"><rect x="0" y="-15" width="148" height="30" rx="15"/><text x="74" y="6" text-anchor="middle" font-size="16">HANDED OFF</text></g>
+        </g></g>
+        <g class="stop" data-at="220,540"><g transform="translate(220 540)">
+          <circle r="11" class="dot"/><path class="tick" d="M-5.5 0 l3.6 4 l7.4 -8.5"/>
+          <text class="name" x="-26" y="-4" text-anchor="end" font-size="19">FOLLOW-UPS</text>
+          <g class="tag" transform="translate(-174 22)"><rect x="0" y="-15" width="148" height="30" rx="15"/><text x="74" y="6" text-anchor="middle" font-size="16">HANDED OFF</text></g>
+        </g></g>
+        <g class="stop" data-at="350,410"><g transform="translate(350 410)">
+          <circle r="11" class="dot"/><path class="tick" d="M-5.5 0 l3.6 4 l7.4 -8.5"/>
+          <text class="name" x="26" y="-4" font-size="19">MEETING PREP</text>
+          <g class="tag" transform="translate(26 22)"><rect x="0" y="-15" width="148" height="30" rx="15"/><text x="74" y="6" text-anchor="middle" font-size="16">HANDED OFF</text></g>
+        </g></g>
+        <g class="stop" data-at="270,260"><g transform="translate(270 260)">
+          <circle r="11" class="dot"/><path class="tick" d="M-5.5 0 l3.6 4 l7.4 -8.5"/>
+          <text class="name" x="-26" y="-4" text-anchor="end" font-size="19">PAPERWORK</text>
+          <g class="tag" transform="translate(-174 22)"><rect x="0" y="-15" width="148" height="30" rx="15"/><text x="74" y="6" text-anchor="middle" font-size="16">HANDED OFF</text></g>
+        </g></g>
+        <g class="stop end" data-at="470,112"><g transform="translate(470 112)">
+          <circle r="19" class="ringdot"/>
+          <path class="star" d="M0 -15 L4.5 -4.5 L15 0 L4.5 4.5 L0 15 L-4.5 4.5 L-15 0 L-4.5 -4.5 Z"/>
+          <text class="name" x="-34" y="7" text-anchor="end" font-size="22">HOURS BACK</text>
+        </g></g>
+
+        <rect x="14" y="14" width="572" height="872" class="frame"/>
+        <rect x="26" y="26" width="548" height="848" class="frame thin"/>
+        <rect x="20" y="20" width="560" height="860" class="scale"/>
+      </svg>
+    </figure>
   </section>
 
+  <div class="divider" aria-hidden="true"><span>01 · How it works</span></div>
+
   <!-- 2. How it works: the deck -->
-  <section class="how band" id="how-it-works" aria-labelledby="how-title">
+  <section class="how" id="how-it-works" aria-labelledby="how-title">
     <div class="stickers" aria-hidden="true">
       <img class="sticker keep" src="/assets/stickers/phone.svg" alt="" width="200" height="200" draggable="false" loading="lazy"
            style="--x:11%; --y:15%; --r:-9deg; --mx:2%; --my:30px">
@@ -123,7 +293,6 @@
     </div>
 
     <div class="section-head">
-      <p class="mono-label">How it works</p>
       <h2 id="how-title">From one conversation to your hours back.</h2>
     </div>
 
@@ -185,8 +354,10 @@
     <p class="deck-hint" aria-hidden="true"><span class="desk">← → keys or the arrows · drag the stickers</span><span class="touch">swipe the card</span></p>
   </section>
 
+  <div class="divider" aria-hidden="true"><span>02 · Handed off</span></div>
+
   <!-- 3. The board -->
-  <section class="board-sec band" id="handed-off" aria-labelledby="board-title">
+  <section class="board-sec" id="handed-off" aria-labelledby="board-title">
     <div class="board-wrap">
       <div class="board-housing">
         <div class="board-top">
@@ -245,9 +416,10 @@
     </div>
   </section>
 
+  <div class="divider" aria-hidden="true"><span>03 · Who we are</span></div>
+
   <!-- 4. Who we are -->
-  <section class="who split" id="who-we-are" aria-labelledby="who-title">
-    <p class="mono-label">Who we are</p>
+  <section class="who col" id="who-we-are" aria-labelledby="who-title">
     <h2 id="who-title">Two people, not a platform.</h2>
     <p class="intro">You work with the two of us from the first conversation on.</p>
     <ul class="people">
@@ -270,9 +442,10 @@
     </ul>
   </section>
 
+  <div class="divider" aria-hidden="true"><span>04 · FAQ</span></div>
+
   <!-- 5. FAQ -->
-  <section class="faq split" id="faq" aria-labelledby="faq-title">
-    <p class="mono-label">FAQ</p>
+  <section class="faq col" id="faq" aria-labelledby="faq-title">
     <h2 id="faq-title">Fair questions.</h2>
     <div class="faq-list">
       <details>
@@ -302,8 +475,10 @@
     </div>
   </section>
 
+  <div class="divider" aria-hidden="true"><span>05 · Your move</span></div>
+
   <!-- 6. Closing call to action -->
-  <section class="cta split" id="start" aria-labelledby="cta-title">
+  <section class="cta col" id="start" aria-labelledby="cta-title">
     <h2 id="cta-title">What's still on your desk at <em>9&nbsp;p.m.</em>?</h2>
     <p>Show us one thing you'd hand off tonight if you could. We'll come back with it running.</p>
     <div class="hero-cta">
@@ -315,7 +490,7 @@
   </section>
 </main>
 
-<footer class="foot band">
+<footer class="foot">
   <div class="foot-row">
     <a class="wordmark" href="#top" aria-label="Agent Atlas, back to top">
       <svg viewBox="0 0 64 64" aria-hidden="true">
