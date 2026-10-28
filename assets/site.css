@@ -136,6 +136,18 @@ section { scroll-margin-top: calc(var(--nav-h) + 8px); }
 }
 .hero-title .line { display: block; }
 .hero-title em { color: var(--brass); }
+.reel {
+  display: block; height: 1.26em; overflow: hidden;
+  color: var(--brass); font-style: italic;
+  margin: -.06em 0 -.06em;
+}
+.reel-track {
+  display: block;
+  --i: 7; /* no JS: show the last word */
+  transform: translateY(calc(var(--i) * -1.26em));
+  transition: transform .9s cubic-bezier(.65, 0, .25, 1);
+}
+.reel-track > span { display: block; height: 1.26em; line-height: 1.26em; white-space: nowrap; }
 .hero-lede {
   margin-top: 26px; max-width: 34ch;
   font-size: 18.5px; line-height: 1.55; color: var(--muted);

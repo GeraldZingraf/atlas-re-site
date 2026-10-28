@@ -1,4 +1,4 @@
-// agent-atlas.co: the hero chart, the card deck, the stickers, the split-flap board.
+// agent-atlas.co: the word reel, the hero chart, the card deck, the stickers, the split-flap board.
 // Every animation here is decoration: the real text is already in the page.
 (() => {
   "use strict";
@@ -8,6 +8,20 @@
 
   const year = document.querySelector("[data-year]");
   if (year) year.textContent = String(new Date().getFullYear());
+
+  /* ---------- Hero: the cycling word, ending on "late nights" ---------- */
+  const reel = document.querySelector("[data-reel]");
+  if (reel && !reduce) {
+    const last = reel.children.length - 1;
+    let i = 0;
+    reel.style.setProperty("--i", "0");
+    const step = () => {
+      i += 1;
+      reel.style.setProperty("--i", String(i));
+      if (i < last) setTimeout(step, i === last - 1 ? 2100 : 1700);
+    };
+    setTimeout(step, 1500);
+  }
 
   /* ---------- Hero: the route draws itself and each stop is handed off ---------- */
   const charts = Array.from(document.querySelectorAll("[data-chart]"));
