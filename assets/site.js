@@ -6,6 +6,8 @@
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const isDesktop = () => window.matchMedia("(min-width: 720px)").matches;
 
+  let openDialog = () => {};
+
   const year = document.querySelector("[data-year]");
   if (year) year.textContent = String(new Date().getFullYear());
 
@@ -188,6 +190,18 @@
   // Click or tap: the sticker does its trick and says one short line.
   const react = (el) => {
     el.classList.add("is-touched");
+    if (el.dataset.open) {
+      const art = el.querySelector(".sticker-art");
+      const fx = `fx-${el.dataset.fx || "pop"}`;
+      if (!reduce) {
+        art.classList.remove(fx);
+        void art.offsetWidth;
+        art.classList.add(fx);
+        art.addEventListener("animationend", () => art.classList.remove(fx), { once: true });
+      }
+      setTimeout(() => openDialog(el.dataset.open), reduce ? 0 : 380);
+      return;
+    }
     el.classList.remove("nudge");
     const art = el.querySelector(".sticker-art");
     const fx = `fx-${el.dataset.fx || "pop"}`;
@@ -638,9 +652,12 @@
     return { el, cells };
   });
 
+  let flipRun = 0;
   const flipTo = ({ cell, ch }, delay) => {
+    const run = flipRun;
     let steps = ch === " " ? (Math.random() < 0.4 ? 2 : 0) : 4 + Math.floor(Math.random() * 7);
     const tick = () => {
+      if (run !== flipRun) return;
       cell.textContent = steps > 0 ? CHARS[Math.floor(Math.random() * CHARS.length)] : ch;
       cell.classList.remove("tick");
       void cell.offsetWidth;
@@ -650,31 +667,34 @@
     setTimeout(tick, delay);
   };
 
+  // The example week lives in a pop-up, opened from the calendar sticker.
   const board = document.querySelector(".board-housing");
-  if (board && !reduce) {
-    const run = () => {
-      const title = groups.filter((g) => g.el.classList.contains("big"));
-      title.forEach((g) => g.cells.forEach((c, i) => flipTo(c, i * 40)));
-      const rows = Array.from(board.querySelectorAll("tbody tr"));
-      rows.forEach((row, r) => {
-        const base = 700 + r * 520;
-        let k = 0;
-        groups
-          .filter((g) => row.contains(g.el))
-          .forEach((g) => g.cells.forEach((c) => { flipTo(c, base + k * 18); k += 1; }));
-      });
-    };
-    let ran = false;
-    const runWhenSeen = () => {
-      if (ran) return;
-      const box = board.getBoundingClientRect();
-      if (box.top < window.innerHeight * 0.75 && box.bottom > 0) {
-        ran = true;
-        window.removeEventListener("scroll", runWhenSeen);
-        run();
-      }
-    };
-    window.addEventListener("scroll", runWhenSeen, { passive: true });
-    runWhenSeen();
-  }
+  const runBoard = () => {
+    if (!board || reduce) return;
+    flipRun += 1;
+    groups.forEach((g) => g.cells.forEach((c) => { c.cell.textContent = " "; }));
+    const title = groups.filter((g) => g.el.classList.contains("big"));
+    title.forEach((g) => g.cells.forEach((c, i) => flipTo(c, 150 + i * 40)));
+    const rows = Array.from(board.querySelectorAll("tbody tr")).filter((r) => r.getClientRects().length);
+    rows.forEach((row, r) => {
+      const base = 750 + r * 450;
+      let k = 0;
+      groups
+        .filter((g) => row.contains(g.el))
+        .forEach((g) => g.cells.forEach((c) => { flipTo(c, base + k * 18); k += 1; }));
+    });
+  };
+
+  document.querySelectorAll("dialog").forEach((dlg) => {
+    dlg.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => dlg.close()));
+    // The pop-up's own frame is transparent, so a click that lands on it
+    // (rather than on the board inside) is a click on the dimmed backdrop.
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+  });
+  openDialog = (id) => {
+    const dlg = document.getElementById(id);
+    if (!dlg || dlg.open) return;
+    dlg.showModal();
+    if (dlg.contains(board)) runBoard();
+  };
 })();

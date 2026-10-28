@@ -105,6 +105,7 @@
 
   <!-- 2. How it works: the deck -->
   <section class="how band" id="how-it-works" aria-labelledby="how-title">
+    <div class="how-stage">
     <div class="stickers" aria-hidden="true">
       <div class="sticker keep" data-say="Follow-up sent." data-fx="buzz"
            style="--x:11%; --y:30%; --r:-9deg; --mx:2%; --my:30px"><img class="sticker-art" src="/assets/stickers/phone.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
@@ -118,8 +119,8 @@
            style="--x:79%; --y:28%; --r:8deg"><img class="sticker-art" src="/assets/stickers/spreadsheet.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
       <div class="sticker keep" data-say="Heading: home by six." data-fx="spin"
            style="--x:89%; --y:48%; --r:-6deg; --mx:calc(100% - 78px); --my:24px"><img class="sticker-art" src="/assets/stickers/compass.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
-      <div class="sticker" data-say="Friday's clear." data-fx="flip"
-           style="--x:76%; --y:66%; --r:-7deg"><img class="sticker-art" src="/assets/stickers/calendar.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
+      <div class="sticker keep" data-say="Friday's clear." data-fx="flip" data-open="handed-off"
+           style="--x:76%; --y:66%; --r:-7deg; --mx:calc(100% - 82px); --my:calc(100% - 112px)"><img class="sticker-art" src="/assets/stickers/calendar.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
       <div class="sticker" data-say="Time back on the clock." data-fx="spin"
            style="--x:88%; --y:84%; --r:9deg"><img class="sticker-art" src="/assets/stickers/stopwatch.svg" alt="" width="200" height="200" draggable="false" loading="lazy"></div>
     </div>
@@ -184,68 +185,51 @@
       <p class="sr-only" aria-live="polite" data-live></p>
     </div>
     <p class="deck-hint" aria-hidden="true"><span class="desk">← → keys or the arrows · click or drag the stickers</span><span class="touch">swipe the card · tap the stickers</span></p>
+    </div>
+
+    <!-- The three phases, left to right -->
+    <div class="phases" aria-labelledby="phases-title">
+      <h3 class="phases-title" id="phases-title">Three steps. Stop after any of them.</h3>
+      <ol class="phase-row">
+        <li class="phase">
+          <p class="phase-step"><span>01</span>Free</p>
+          <h4>Your first win</h4>
+          <dl>
+            <div><dt>What it is</dt><dd>Show us your week. We build one agent on your own files and put it to work.</dd></div>
+            <div><dt>Your time</dt><dd>10 minutes</dd></div>
+            <div><dt>You get</dt><dd>About 3 hours a week back, plus a map of the next five things worth handing off. Yours to keep.</dd></div>
+          </dl>
+          <p class="phase-cost">Free</p>
+        </li>
+        <li class="phase">
+          <p class="phase-step"><span>02</span>4 to 6 weeks</p>
+          <h4>The blueprint</h4>
+          <dl>
+            <div><dt>What it is</dt><dd>We map how your business really runs, then put your first agents to work.</dd></div>
+            <div><dt>Your time</dt><dd>A few short interviews and the files you already have</dd></div>
+            <div><dt>You get</dt><dd>A written plan for your hours back, up to three agents live, and the results measured against where you started.</dd></div>
+          </dl>
+          <p class="phase-cost">From $5,000 <small>one fixed fee</small></p>
+        </li>
+        <li class="phase">
+          <p class="phase-step"><span>03</span>Every month</p>
+          <h4>Your AI crew</h4>
+          <dl>
+            <div><dt>What it is</dt><dd>We run your agents, fix what breaks and build what's next on your map.</dd></div>
+            <div><dt>Your time</dt><dd>A 30-minute review each month</dd></div>
+            <div><dt>You get</dt><dd>New agents every month, upgrades as AI gets better, and your team trained to use them.</dd></div>
+          </dl>
+          <p class="phase-cost">From $3,000 <small>a month</small></p>
+        </li>
+      </ol>
+      <div class="phases-cta">
+        <a class="btn" href="https://calendar.app.google/9yiSGbYBQ8tbTDGTA" target="_blank" rel="noopener">Start with your free first win <span class="arrow" aria-hidden="true">↗</span></a>
+      </div>
+    </div>
   </section>
 
 
   <!-- 3. The board -->
-  <section class="board-sec band" id="handed-off" aria-labelledby="board-title">
-    <div class="board-wrap">
-      <div class="board-housing">
-        <div class="board-top">
-          <h2 class="board-title" id="board-title">
-            <span class="sr-only">Handed off</span>
-            <span class="flaps big" aria-hidden="true" data-flaps="HANDED OFF"></span>
-          </h2>
-          <p class="mono-label">An example week</p>
-        </div>
-        <table class="board" data-board>
-          <caption class="sr-only">An example week of work handed off. Illustrative only, not client data.</caption>
-          <thead>
-            <tr><th scope="col" class="c-day">DAY</th><th scope="col" class="c-time">TIME</th><th scope="col" class="c-what">WHAT</th><th scope="col" class="c-status">STATUS</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="c-day"><span class="sr-only">Monday</span><span class="flaps" aria-hidden="true" data-flaps="MON" data-len="3"></span></td>
-              <td class="c-time"><span class="sr-only">06:00</span><span class="flaps" aria-hidden="true" data-flaps="06:00" data-len="5"></span></td>
-              <td class="c-what"><span class="sr-only">Weekly scorecard</span><span class="flaps" aria-hidden="true" data-flaps="WEEKLY SCORECARD" data-len="18"></span></td>
-              <td class="c-status"><span class="sr-only">Ready</span><span class="flaps" aria-hidden="true" data-flaps="READY" data-len="8"></span></td>
-            </tr>
-            <tr>
-              <td class="c-day"><span class="sr-only">Monday</span><span class="flaps" aria-hidden="true" data-flaps="MON" data-len="3"></span></td>
-              <td class="c-time"><span class="sr-only">07:30</span><span class="flaps" aria-hidden="true" data-flaps="07:30" data-len="5"></span></td>
-              <td class="c-what"><span class="sr-only">Meeting pre-read</span><span class="flaps" aria-hidden="true" data-flaps="MEETING PRE-READ" data-len="18"></span></td>
-              <td class="c-status"><span class="sr-only">Sent</span><span class="flaps" aria-hidden="true" data-flaps="SENT" data-len="8"></span></td>
-            </tr>
-            <tr>
-              <td class="c-day"><span class="sr-only">Tuesday</span><span class="flaps" aria-hidden="true" data-flaps="TUE" data-len="3"></span></td>
-              <td class="c-time"><span class="sr-only">09:15</span><span class="flaps" aria-hidden="true" data-flaps="09:15" data-len="5"></span></td>
-              <td class="c-what"><span class="sr-only">Follow-ups</span><span class="flaps" aria-hidden="true" data-flaps="FOLLOW-UPS" data-len="18"></span></td>
-              <td class="c-status"><span class="sr-only">4 closed</span><span class="flaps" aria-hidden="true" data-flaps="4 CLOSED" data-len="8"></span></td>
-            </tr>
-            <tr>
-              <td class="c-day"><span class="sr-only">Wednesday</span><span class="flaps" aria-hidden="true" data-flaps="WED" data-len="3"></span></td>
-              <td class="c-time"><span class="sr-only">11:00</span><span class="flaps" aria-hidden="true" data-flaps="11:00" data-len="5"></span></td>
-              <td class="c-what"><span class="sr-only">Customer replies</span><span class="flaps" aria-hidden="true" data-flaps="CUSTOMER REPLIES" data-len="18"></span></td>
-              <td class="c-status"><span class="sr-only">Drafted</span><span class="flaps" aria-hidden="true" data-flaps="DRAFTED" data-len="8"></span></td>
-            </tr>
-            <tr>
-              <td class="c-day"><span class="sr-only">Thursday</span><span class="flaps" aria-hidden="true" data-flaps="THU" data-len="3"></span></td>
-              <td class="c-time"><span class="sr-only">16:45</span><span class="flaps" aria-hidden="true" data-flaps="16:45" data-len="5"></span></td>
-              <td class="c-what"><span class="sr-only">New hire paperwork</span><span class="flaps" aria-hidden="true" data-flaps="NEW HIRE PAPERWORK" data-len="18"></span></td>
-              <td class="c-status"><span class="sr-only">Ready</span><span class="flaps" aria-hidden="true" data-flaps="READY" data-len="8"></span></td>
-            </tr>
-            <tr>
-              <td class="c-day"><span class="sr-only">Friday</span><span class="flaps" aria-hidden="true" data-flaps="FRI" data-len="3"></span></td>
-              <td class="c-time"><span class="sr-only">17:00</span><span class="flaps" aria-hidden="true" data-flaps="17:00" data-len="5"></span></td>
-              <td class="c-what"><span class="sr-only">Week in review</span><span class="flaps" aria-hidden="true" data-flaps="WEEK IN REVIEW" data-len="18"></span></td>
-              <td class="c-status"><span class="sr-only">Sent</span><span class="flaps" aria-hidden="true" data-flaps="SENT" data-len="8"></span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="board-note"><strong>This is an example, not client data.</strong> It's the kind of week we set out to build: the recurring work handled before you sit down, with a person on your team approving anything that leaves the business.</p>
-    </div>
-  </section>
 
 
   <!-- 3b. Agents at work: a bird's-eye view of the workflow, animated by site.js -->
@@ -345,6 +329,66 @@
     </div>
   </section>
 </main>
+
+<dialog class="board-dialog" id="handed-off" aria-labelledby="board-title">
+  <button type="button" class="dialog-close" data-close aria-label="Close">×</button>
+    <div class="board-wrap">
+      <div class="board-housing">
+        <div class="board-top">
+          <h2 class="board-title" id="board-title">
+            <span class="sr-only">Handed off</span>
+            <span class="flaps big" aria-hidden="true" data-flaps="HANDED OFF"></span>
+          </h2>
+          <p class="mono-label">An example week</p>
+        </div>
+        <table class="board" data-board>
+          <caption class="sr-only">An example week of work handed off. Illustrative only, not client data.</caption>
+          <thead>
+            <tr><th scope="col" class="c-day">DAY</th><th scope="col" class="c-time">TIME</th><th scope="col" class="c-what">WHAT</th><th scope="col" class="c-status">STATUS</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="c-day"><span class="sr-only">Monday</span><span class="flaps" aria-hidden="true" data-flaps="MON" data-len="3"></span></td>
+              <td class="c-time"><span class="sr-only">06:00</span><span class="flaps" aria-hidden="true" data-flaps="06:00" data-len="5"></span></td>
+              <td class="c-what"><span class="sr-only">Weekly scorecard</span><span class="flaps" aria-hidden="true" data-flaps="WEEKLY SCORECARD" data-len="18"></span></td>
+              <td class="c-status"><span class="sr-only">Ready</span><span class="flaps" aria-hidden="true" data-flaps="READY" data-len="8"></span></td>
+            </tr>
+            <tr>
+              <td class="c-day"><span class="sr-only">Monday</span><span class="flaps" aria-hidden="true" data-flaps="MON" data-len="3"></span></td>
+              <td class="c-time"><span class="sr-only">07:30</span><span class="flaps" aria-hidden="true" data-flaps="07:30" data-len="5"></span></td>
+              <td class="c-what"><span class="sr-only">Meeting pre-read</span><span class="flaps" aria-hidden="true" data-flaps="MEETING PRE-READ" data-len="18"></span></td>
+              <td class="c-status"><span class="sr-only">Sent</span><span class="flaps" aria-hidden="true" data-flaps="SENT" data-len="8"></span></td>
+            </tr>
+            <tr>
+              <td class="c-day"><span class="sr-only">Tuesday</span><span class="flaps" aria-hidden="true" data-flaps="TUE" data-len="3"></span></td>
+              <td class="c-time"><span class="sr-only">09:15</span><span class="flaps" aria-hidden="true" data-flaps="09:15" data-len="5"></span></td>
+              <td class="c-what"><span class="sr-only">Follow-ups</span><span class="flaps" aria-hidden="true" data-flaps="FOLLOW-UPS" data-len="18"></span></td>
+              <td class="c-status"><span class="sr-only">4 closed</span><span class="flaps" aria-hidden="true" data-flaps="4 CLOSED" data-len="8"></span></td>
+            </tr>
+            <tr>
+              <td class="c-day"><span class="sr-only">Wednesday</span><span class="flaps" aria-hidden="true" data-flaps="WED" data-len="3"></span></td>
+              <td class="c-time"><span class="sr-only">11:00</span><span class="flaps" aria-hidden="true" data-flaps="11:00" data-len="5"></span></td>
+              <td class="c-what"><span class="sr-only">Customer replies</span><span class="flaps" aria-hidden="true" data-flaps="CUSTOMER REPLIES" data-len="18"></span></td>
+              <td class="c-status"><span class="sr-only">Drafted</span><span class="flaps" aria-hidden="true" data-flaps="DRAFTED" data-len="8"></span></td>
+            </tr>
+            <tr>
+              <td class="c-day"><span class="sr-only">Thursday</span><span class="flaps" aria-hidden="true" data-flaps="THU" data-len="3"></span></td>
+              <td class="c-time"><span class="sr-only">16:45</span><span class="flaps" aria-hidden="true" data-flaps="16:45" data-len="5"></span></td>
+              <td class="c-what"><span class="sr-only">New hire paperwork</span><span class="flaps" aria-hidden="true" data-flaps="NEW HIRE PAPERWORK" data-len="18"></span></td>
+              <td class="c-status"><span class="sr-only">Ready</span><span class="flaps" aria-hidden="true" data-flaps="READY" data-len="8"></span></td>
+            </tr>
+            <tr>
+              <td class="c-day"><span class="sr-only">Friday</span><span class="flaps" aria-hidden="true" data-flaps="FRI" data-len="3"></span></td>
+              <td class="c-time"><span class="sr-only">17:00</span><span class="flaps" aria-hidden="true" data-flaps="17:00" data-len="5"></span></td>
+              <td class="c-what"><span class="sr-only">Week in review</span><span class="flaps" aria-hidden="true" data-flaps="WEEK IN REVIEW" data-len="18"></span></td>
+              <td class="c-status"><span class="sr-only">Sent</span><span class="flaps" aria-hidden="true" data-flaps="SENT" data-len="8"></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="board-note"><strong>This is an example, not client data.</strong> It's the kind of week we set out to build: the recurring work handled before you sit down, with a person on your team approving anything that leaves the business.</p>
+    </div>
+</dialog>
 
 <footer class="foot band">
   <div class="foot-row">
