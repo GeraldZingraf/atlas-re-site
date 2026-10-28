@@ -282,6 +282,140 @@
     }, 3200);
   }
 
+  /* ---------- An example morning: the inbox and the phone, played out ---------- */
+  const work = document.querySelector("[data-work]");
+  if (work) {
+    const rows = Array.from(work.querySelectorAll(".mail-row"));
+    const draft = work.querySelector("[data-draft]");
+    const draftText = draft.textContent;
+    const draftBox = draft.closest(".draft");
+    const thread = work.querySelector("[data-thread]");
+    const script = Array.from(thread.querySelectorAll(".msg")).map((m) => ({
+      who: m.classList.contains("you") ? "you" : "agent",
+      text: m.textContent,
+    }));
+    const ask = work.querySelector("[data-ask]");
+    const askBtns = Array.from(ask.querySelectorAll("button"));
+    const clock = work.querySelector("[data-clock]");
+    const phone = work.querySelector(".phone");
+    const phoneTime = work.querySelector(".phone-time");
+    const replay = document.querySelector("[data-replay]");
+    let timers = [];
+    const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+    const stopAll = () => { timers.forEach(clearTimeout); timers = []; };
+
+    const addMsg = (who, text) => {
+      const m = document.createElement("p");
+      m.className = `msg ${who}`;
+      m.textContent = text;
+      thread.appendChild(m);
+      thread.scrollTop = thread.scrollHeight;
+      return m;
+    };
+    const typingDots = () => {
+      const t = document.createElement("p");
+      t.className = "msg agent typing";
+      t.setAttribute("aria-hidden", "true");
+      t.append(document.createElement("i"), document.createElement("i"), document.createElement("i"));
+      thread.appendChild(t);
+      thread.scrollTop = thread.scrollHeight;
+      return t;
+    };
+
+    // Everything waits off-stage, then arrives in order.
+    const setStage = () => {
+      stopAll();
+      work.classList.add("playing");
+      replay.hidden = true;
+      clock.textContent = "5:58 a.m.";
+      phoneTime.textContent = "5:58";
+      rows.forEach((r) => {
+        r.classList.add("is-waiting");
+        const s = r.querySelector(".mail-status");
+        s.textContent = "Reading…";
+        s.classList.add("reading");
+      });
+      draftBox.classList.add("is-waiting");
+      draft.textContent = "";
+      thread.textContent = "";
+      ask.classList.add("is-waiting");
+      askBtns.forEach((b) => { b.disabled = true; });
+    };
+
+    const play = () => {
+      setStage();
+      rows.forEach((r, i) => {
+        at(400 + i * 1300, () => r.classList.remove("is-waiting"));
+        at(1150 + i * 1300, () => {
+          const s = r.querySelector(".mail-status");
+          s.textContent = s.dataset.done;
+          s.classList.remove("reading");
+        });
+      });
+      at(1500, () => {
+        draftBox.classList.remove("is-waiting");
+        let n = 0;
+        const type = () => {
+          n += 2;
+          draft.textContent = draftText.slice(0, n);
+          if (n < draftText.length) at(20, type);
+        };
+        type();
+      });
+      at(5900, () => {
+        clock.textContent = "6:02 a.m.";
+        phoneTime.textContent = "6:02";
+        phone.classList.remove("buzz");
+        void phone.offsetWidth;
+        phone.classList.add("buzz");
+      });
+      let t = 6300;
+      script.forEach((m) => {
+        if (m.who === "agent") {
+          let dots = null;
+          at(t, () => { dots = typingDots(); });
+          t += 1000;
+          at(t, () => { if (dots) dots.remove(); addMsg("agent", m.text); });
+          t += 1100;
+        } else {
+          at(t, () => addMsg("you", m.text));
+          t += 800;
+        }
+      });
+      at(t, () => {
+        ask.classList.remove("is-waiting");
+        askBtns.forEach((b) => { b.disabled = false; });
+        work.classList.remove("playing");
+        replay.hidden = false;
+      });
+    };
+
+    askBtns.forEach((b) => b.addEventListener("click", () => {
+      b.disabled = true;
+      addMsg("you", b.dataset.q);
+      if (reduce) { addMsg("agent", b.dataset.a); return; }
+      const dots = typingDots();
+      setTimeout(() => { dots.remove(); addMsg("agent", b.dataset.a); }, 1000);
+    }));
+    replay.addEventListener("click", play);
+
+    if (!reduce) {
+      setStage();
+      let started = false;
+      const startWhenSeen = () => {
+        if (started) return;
+        const box = work.getBoundingClientRect();
+        if (box.top < window.innerHeight * 0.7 && box.bottom > 0) {
+          started = true;
+          window.removeEventListener("scroll", startWhenSeen);
+          play();
+        }
+      };
+      window.addEventListener("scroll", startWhenSeen, { passive: true });
+      startWhenSeen();
+    }
+  }
+
   /* ---------- The board: split flaps ---------- */
   const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:-";
   const groups = Array.from(document.querySelectorAll("[data-flaps]")).map((el) => {
