@@ -157,7 +157,7 @@ section { scroll-margin-top: calc(var(--nav-h) + 8px); }
 .hero-cta { margin-top: 34px; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
 .fine { font-size: 14px; color: var(--muted); }
 .scroll-cue {
-  display: none; position: absolute; bottom: 32px; align-items: center; gap: 12px;
+  display: none; position: absolute; bottom: 44px; align-items: center; gap: 12px;
   text-decoration: none; opacity: .8;
 }
 .scroll-cue::after { content: ""; width: 48px; height: 1px; background: var(--sea); opacity: .6; }
@@ -463,7 +463,8 @@ section { scroll-margin-top: calc(var(--nav-h) + 8px); }
 .flow-canvas svg { display: block; width: 100%; height: auto; }
 
 .flow-canvas .edge { fill: none; stroke: var(--sea); stroke-opacity: .32; stroke-width: 1.5; stroke-dasharray: 3 6; transition: stroke .3s, stroke-opacity .3s; }
-.flow-canvas .edge.exchange { stroke: var(--brass); stroke-opacity: .3; }
+.flow-canvas .edge.talk { stroke: var(--parchment); stroke-opacity: .2; stroke-dasharray: 2 4; }
+.flow-canvas .edge.ask { stroke: var(--brass); stroke-opacity: .35; }
 .flow-canvas .edge.hot { stroke: var(--brass); stroke-opacity: .85; }
 
 .flow-canvas .tile { fill: var(--chart); stroke: rgba(239, 230, 210, .28); stroke-width: 1.2; }
@@ -473,7 +474,7 @@ section { scroll-margin-top: calc(var(--nav-h) + 8px); }
 .flow-canvas .node.working .glow { opacity: .16; }
 .flow-canvas .icon { fill: none; stroke: var(--parchment); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .flow-canvas .agent .icon, .flow-canvas .hub .icon { stroke: var(--brass); }
-.flow-canvas .label { fill: var(--muted); font: 600 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+.flow-canvas .label { fill: var(--muted); font: 600 9.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
 .flow-canvas .hub .label, .flow-canvas .decision .label { fill: var(--parchment); }
 
 .flow-canvas .rose { transform-box: fill-box; transform-origin: center; }
@@ -492,10 +493,12 @@ section { scroll-margin-top: calc(var(--nav-h) + 8px); }
 .flow-canvas .output.shipped .burst { animation: burst .9s ease-out; }
 .flow-canvas .output.shipped .tile { stroke: var(--brass); }
 @keyframes burst { 0% { opacity: .9; transform: scale(.8); } 100% { opacity: 0; transform: scale(1.7); } }
-.flow-canvas .count { fill: var(--brass); font: 700 11px var(--mono); }
+.flow-canvas .count { fill: var(--brass); font: 700 10px var(--mono); }
 
 .flow-canvas .pk-info { fill: var(--brass); }
 .flow-canvas .pk-tail { fill: var(--brass); }
+.flow-canvas .pk-talk, .flow-canvas .pk-talk-tail { fill: var(--parchment); }
+.flow-canvas .edge.talk.hot { stroke: var(--parchment); stroke-opacity: .7; }
 .flow-canvas .pk-ask { fill: var(--parchment); stroke: var(--brass); stroke-width: 1.5; }
 .flow-canvas .pk-ship { fill: var(--parchment); stroke: var(--brass); stroke-width: 1.5; }
 
@@ -504,6 +507,7 @@ section { scroll-margin-top: calc(var(--nav-h) + 8px); }
 .flow-key li { display: inline-flex; align-items: center; gap: 8px; }
 .flow-key i { display: inline-block; width: 10px; height: 10px; }
 .flow-key .k-info { border-radius: 50%; background: var(--brass); }
+.flow-key .k-talk { border-radius: 50%; background: var(--parchment); width: 8px; height: 8px; }
 .flow-key .k-ask { background: var(--parchment); outline: 1.5px solid var(--brass); transform: rotate(45deg) scale(.8); }
 .flow-key .k-ship { background: var(--parchment); outline: 1.5px solid var(--brass); border-radius: 2px; }
 .work-note { font-size: 13.5px; color: var(--muted); }
@@ -611,7 +615,13 @@ section { scroll-margin-top: calc(var(--nav-h) + 8px); }
   .nav { padding: 0 40px; }
   .nav-links { display: flex; }
   .split { width: 50%; padding-left: clamp(40px, 6vw, 96px); padding-right: 32px; }
-  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding-top: calc(var(--nav-h) + 24px); }
+  /* The hero runs a little past the first screen so the "How it works" cue
+     sits just below the fold; the bottom padding keeps the content centred
+     in the first screen. */
+  .hero {
+    min-height: calc(100vh + 110px); display: flex; flex-direction: column; justify-content: center;
+    padding-top: calc(var(--nav-h) + 24px); padding-bottom: calc(72px + 110px);
+  }
   .hero-title { font-size: clamp(52px, 5vw, 78px); }
   .scroll-cue { display: inline-flex; }
   .hero-art {

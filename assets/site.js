@@ -294,188 +294,261 @@
       return n;
     };
 
-    // Small line icons, drawn around (0, 0).
+    // Small line icons, drawn around (0, 0) at roughly 22 units across.
     const ICONS = {
-      mail: "M-11 -7 H11 V7 H-11 Z M-11 -7 L0 2 L11 -7",
-      chart: "M-10 8 V-1 M-3 8 V-8 M4 8 V-4 M11 8 V2 M-12 8 H12",
-      cal: "M-10 -6 H10 V9 H-10 Z M-10 -1 H10 M-5 -10 V-4 M5 -10 V-4",
-      person: "M0 -6 m-4 0 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0 M-8 9 C-8 2 8 2 8 9",
-      send: "M-10 0 L10 -8 L4 9 L1 2 Z M1 2 L10 -8",
-      phone: "M-6 -11 H6 V11 H-6 Z M-2 8 H2",
-      calok: "M-10 -6 H10 V9 H-10 Z M-10 -1 H10 M-5 3 L-1 6 L5 0",
+      mail: "M-10 -6 H10 V6 H-10 Z M-10 -6 L0 2 L10 -6",
+      text: "M-10 -7 H10 V4 H-2 L-7 8 V4 H-10 Z",
+      star: "M0 -9 L2.6 -3 L9 -2.6 L4 1.6 L5.6 8 L0 4.6 L-5.6 8 L-4 1.6 L-9 -2.6 L-2.6 -3 Z",
+      chart: "M-9 7 V-1 M-3 7 V-7 M3 7 V-3 M9 7 V2 M-11 7 H11",
+      box: "M-9 -4 L0 -9 L9 -4 V6 L0 10 L-9 6 Z M-9 -4 L0 1 L9 -4 M0 1 V10",
+      cal: "M-9 -5 H9 V8 H-9 Z M-9 -1 H9 M-4 -9 V-3 M4 -9 V-3",
+      clock: "M0 0 m-9 0 a9 9 0 1 0 18 0 a9 9 0 1 0 -18 0 M0 -5 V0 L4 3",
+      ledger: "M-8 -9 H8 V9 H-8 Z M-4 -4 H4 M-4 0 H4 M-4 4 H1",
+      doc: "M-7 -9 H4 L8 -5 V9 H-7 Z M-3 -2 H4 M-3 2 H4 M-3 6 H1",
+      person: "M0 -5 m-4 0 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0 M-8 9 C-8 2 8 2 8 9",
+      send: "M-9 0 L9 -7 L4 8 L1 2 Z M1 2 L9 -7",
+      phone: "M-5 -10 H5 V10 H-5 Z M-2 7 H2",
+      coin: "M0 0 m-8 0 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0 M0 -4 V4 M-3 -2 H2 M-2 2 H3",
+      cart: "M-10 -7 H-6 L-3 4 H7 L9 -3 H-5 M-2 8 h0.1 M5 8 h0.1",
+      bell: "M-6 4 V-1 C-6 -6 6 -6 6 -1 V4 L8 6 H-8 Z M-2 8 H2",
+      check: "M-7 0 L-2 5 L7 -5",
     };
 
-    // Who's on the map. Positions for a wide screen and for a phone.
-    const NODES = [
-      { id: "email", kind: "source", icon: "mail", label: "Email", w: [90, 110], t: [70, 70] },
-      { id: "sales", kind: "source", icon: "chart", label: "Sales data", w: [90, 250], t: [200, 70] },
-      { id: "cal", kind: "source", icon: "cal", label: "Calendar", w: [90, 390], t: [330, 70] },
-      { id: "reply", kind: "agent", icon: "mail", label: "Reply agent", short: "Replies", w: [360, 110], t: [70, 250] },
-      { id: "score", kind: "agent", icon: "chart", label: "Scorecard agent", short: "Numbers", w: [360, 250], t: [200, 250] },
-      { id: "sched", kind: "agent", icon: "cal", label: "Scheduling agent", short: "Schedule", w: [360, 390], t: [330, 250] },
-      { id: "hub", kind: "hub", label: "Coordinator", w: [590, 250], t: [200, 430] },
-      { id: "you", kind: "decision", icon: "person", label: "You decide", w: [765, 110], t: [80, 600] },
-      { id: "sent", kind: "output", icon: "send", label: "Reply sent", w: [925, 110], t: [80, 785] },
-      { id: "report", kind: "output", icon: "phone", label: "Report to you", w: [925, 250], t: [200, 785] },
-      { id: "booked", kind: "output", icon: "calok", label: "Week booked", w: [925, 390], t: [330, 785] },
+    // The map. Each node has a wide position [x, y] and a phone position.
+    const N = [
+      // systems they already use
+      { id: "s-mail", k: "source", i: "mail", l: "Email", w: [70, 60], t: [50, 60] },
+      { id: "s-text", k: "source", i: "text", l: "Texts", w: [70, 130], t: [150, 60] },
+      { id: "s-rev", k: "source", i: "star", l: "Reviews", w: [70, 200], t: [250, 60] },
+      { id: "s-pos", k: "source", i: "chart", l: "Sales", w: [70, 270], t: [350, 60] },
+      { id: "s-inv", k: "source", i: "box", l: "Inventory", sl: "Stock", w: [70, 340], t: [50, 150] },
+      { id: "s-cal", k: "source", i: "cal", l: "Calendar", w: [70, 410], t: [150, 150] },
+      { id: "s-time", k: "source", i: "clock", l: "Timeclock", w: [70, 480], t: [250, 150] },
+      { id: "s-acct", k: "source", i: "ledger", l: "Accounting", sl: "Books", w: [70, 550], t: [350, 150] },
+      // agents
+      { id: "a-reply", k: "agent", i: "mail", l: "Reply agent", sl: "Replies", w: [290, 75], t: [50, 300] },
+      { id: "a-rev", k: "agent", i: "star", l: "Reviews agent", sl: "Reviews", w: [410, 150], t: [150, 300] },
+      { id: "a-score", k: "agent", i: "chart", l: "Scorecard agent", sl: "Numbers", w: [290, 225], t: [250, 300] },
+      { id: "a-order", k: "agent", i: "cart", l: "Ordering agent", sl: "Orders", w: [410, 300], t: [350, 300] },
+      { id: "a-prep", k: "agent", i: "doc", l: "Meeting-prep agent", sl: "Prep", w: [290, 375], t: [50, 400] },
+      { id: "a-sched", k: "agent", i: "cal", l: "Scheduling agent", sl: "Shifts", w: [410, 450], t: [150, 400] },
+      { id: "a-pay", k: "agent", i: "clock", l: "Payroll agent", sl: "Payroll", w: [290, 525], t: [250, 400] },
+      { id: "a-coll", k: "agent", i: "coin", l: "Collections agent", sl: "Collect", w: [410, 590], t: [350, 400] },
+      // coordinator and you
+      { id: "hub", k: "hub", l: "Coordinator", w: [610, 320], t: [160, 560] },
+      { id: "you", k: "decision", i: "person", l: "You decide", w: [775, 320], t: [240, 690] },
+      // work shipped
+      { id: "o-reply", k: "output", i: "send", l: "Replies sent", sl: "Replied", w: [935, 60], t: [70, 820] },
+      { id: "o-rev", k: "output", i: "star", l: "Reviews answered", sl: "Reviewed", w: [935, 130], t: [70, 890] },
+      { id: "o-refund", k: "output", i: "coin", l: "Refund issued", sl: "Refund", w: [935, 200], t: [330, 820] },
+      { id: "o-order", k: "output", i: "cart", l: "Order placed", sl: "Ordered", w: [935, 270], t: [330, 890] },
+      { id: "o-shifts", k: "output", i: "cal", l: "Shifts posted", sl: "Shifts", w: [935, 340], t: [330, 960] },
+      { id: "o-pay", k: "output", i: "check", l: "Payroll ready", sl: "Payroll", w: [935, 410], t: [330, 1030] },
+      { id: "o-remind", k: "output", i: "bell", l: "Reminders sent", sl: "Chased", w: [935, 480], t: [70, 960] },
+      { id: "o-report", k: "output", i: "phone", l: "Report to you", sl: "Report", w: [935, 550], t: [70, 1030] },
     ];
+    const FEEDS = [
+      ["s-mail", "a-reply"], ["s-text", "a-reply"], ["s-rev", "a-rev"], ["s-pos", "a-score"], ["s-pos", "a-order"],
+      ["s-inv", "a-order"], ["s-cal", "a-prep"], ["s-cal", "a-sched"], ["s-time", "a-sched"], ["s-time", "a-pay"],
+      ["s-acct", "a-coll"], ["s-acct", "a-pay"],
+    ];
+    // Agents talking to each other.
+    const TALK = [
+      ["a-rev", "a-reply"], ["a-score", "a-rev"], ["a-score", "a-order"], ["a-order", "a-prep"],
+      ["a-prep", "a-sched"], ["a-order", "a-sched"], ["a-sched", "a-pay"], ["a-coll", "a-pay"],
+    ];
+    const AGENTS = N.filter((n) => n.k === "agent").map((n) => n.id);
+    const ASKED = ["o-refund", "o-order", "o-shifts", "o-pay"]; // need your OK
+    const DIRECT = ["o-reply", "o-rev", "o-remind", "o-report"]; // routine, shipped by the coordinator
+
     const EDGES = [
-      ["e1", "email", "reply"], ["e2", "sales", "score"], ["e3", "cal", "sched"],
-      ["x1", "score", "sched", "exchange"], ["x2", "reply", "hub"], ["x3", "score", "hub"], ["x4", "sched", "hub"],
-      ["h1", "hub", "you"], ["d1", "you", "sent"], ["h2", "hub", "report"], ["h3", "hub", "booked"],
+      ...FEEDS.map(([a, b]) => ({ id: `${a}>${b}`, a, b, kind: "feed" })),
+      ...TALK.map(([a, b]) => ({ id: `${a}>${b}`, a, b, kind: "talk" })),
+      ...AGENTS.map((a) => ({ id: `${a}>hub`, a, b: "hub", kind: "report" })),
+      { id: "hub>you", a: "hub", b: "you", kind: "ask" },
+      ...ASKED.map((o) => ({ id: `you>${o}`, a: "you", b: o, kind: "ship" })),
+      ...DIRECT.map((o) => ({ id: `hub>${o}`, a: "hub", b: o, kind: "ship" })),
     ];
-    // One morning, on a loop (milliseconds).
-    const LOOP = 11000;
-    const SCRIPT = [
-      [0, "packet", "e1", "info", 1300], [250, "packet", "e2", "info", 1300], [500, "packet", "e3", "info", 1300],
-      [1300, "work", "reply", 1400], [1550, "work", "score", 1400], [1800, "work", "sched", 1100],
-      [2950, "packet", "x1", "info", 900], [3000, "packet", "x2", "info", 1200],
-      [3850, "work", "sched", 700], [3900, "packet", "x3", "info", 1200], [4550, "packet", "x4", "info", 1100],
-      [4200, "work", "hub", 2100],
-      [6300, "packet", "h1", "ask", 1000], [7300, "decide", "you"],
-      [7500, "packet", "h2", "ship", 1300], [7900, "packet", "h3", "ship", 1300], [8150, "packet", "d1", "ship", 1000],
-    ];
+
+    // One morning, on a loop: [ms, edge id, packet kind, duration].
+    const LOOP = 12500;
+    const SCRIPT = [];
+    FEEDS.forEach(([a, b], i) => SCRIPT.push([i * 130, `${a}>${b}`, "info", 1100]));
+    TALK.forEach(([a, b], i) => SCRIPT.push([2700 + i * 260, `${a}>${b}`, "talk", 1000]));
+    AGENTS.forEach((a, i) => SCRIPT.push([4300 + i * 170, `${a}>hub`, "info", 1000]));
+    SCRIPT.push([6500, "hub>you", "ask", 900], [6900, "hub>you", "ask", 900]);
+    DIRECT.forEach((o, i) => SCRIPT.push([7000 + i * 220, `hub>${o}`, "ship", 1100]));
+    SCRIPT.push([8000, "decide", "you", 0]);
+    ASKED.forEach((o, i) => SCRIPT.push([8500 + i * 200, `you>${o}`, "ship", 1000]));
+    SCRIPT.sort((x, y) => x[0] - y[0]);
 
     let layout = null;
     let svg = null;
     let paths = {};
     let nodesEl = {};
-    let counts = { sent: 0, report: 0, booked: 0 };
+    const counts = {};
 
-    const radius = (n, s) => ({ source: 26, output: 26, agent: 30, hub: 40, decision: 30 }[n.kind] * s);
+    const R = { source: 18, output: 18, agent: 21, hub: 34, decision: 25 };
+    const label = (n, wide) => (!wide && n.sl ? n.sl : n.l);
 
     const build = () => {
       const wide = canvas.clientWidth >= 640;
       const key = wide ? "w" : "t";
       if (layout === key && svg) return;
       layout = key;
-      const s = wide ? 1 : 0.92;
       canvas.textContent = "";
-      svg = mk("svg", { viewBox: wide ? "0 0 1010 470" : "0 0 400 850" }, canvas);
+      svg = mk("svg", { viewBox: wide ? "0 0 1010 640" : "0 0 400 1075" }, canvas);
       const gEdges = mk("g", {}, svg);
       const gNodes = mk("g", {}, svg);
       svg.packets = mk("g", {}, svg);
       paths = {};
       nodesEl = {};
-      const pos = Object.fromEntries(NODES.map((n) => [n.id, n[key]]));
+      const byId = Object.fromEntries(N.map((n) => [n.id, n]));
+      const below = { source: 20, output: 20, agent: 22, hub: 26, decision: 34 }; // label room under a node
 
-      EDGES.forEach(([id, a, b, style]) => {
-        const [x1, y1] = pos[a];
-        const [x2, y2] = pos[b];
-        const na = NODES.find((n) => n.id === a);
-        const nb = NODES.find((n) => n.id === b);
-        const horiz = Math.abs(x2 - x1) >= Math.abs(y2 - y1);
+      EDGES.forEach((e) => {
+        const na = byId[e.a];
+        const nb = byId[e.b];
+        const [x1, y1] = na[key];
+        const [x2, y2] = nb[key];
         let d;
-        if (horiz) {
-          const sx = x1 + Math.sign(x2 - x1) * radius(na, s);
-          const ex = x2 - Math.sign(x2 - x1) * radius(nb, s);
-          const mx = (sx + ex) / 2;
-          d = `M${sx} ${y1} C${mx} ${y1} ${mx} ${y2} ${ex} ${y2}`;
+        if (e.kind === "ship" && !wide) {
+          // Phones: run down a trunk beside the column, then turn into the tile from the side.
+          const side = Math.sign(x2 - x1) || 1;
+          const sy = y1 + R[na.k] + below[na.k];
+          const ex = x2 - side * R[nb.k] * 1.3;
+          d = `M${x1} ${sy} L${x1} ${y2 - 12} Q${x1} ${y2} ${x1 + side * 12} ${y2} L${ex} ${y2}`;
+        } else if (e.kind === "talk") {
+          // A bowed arc between two agents, so the conversation reads as its own line.
+          const dx = x2 - x1;
+          const dy = y2 - y1;
+          const len = Math.hypot(dx, dy) || 1;
+          const ux = dx / len;
+          const uy = dy / len;
+          const bow = Math.min(46, len * 0.45);
+          const cx = (x1 + x2) / 2 - uy * bow;
+          const cy = (y1 + y2) / 2 + ux * bow;
+          const ra = R.agent + 3;
+          d = `M${x1 + ux * ra} ${y1 + uy * ra} Q${cx} ${cy} ${x2 - ux * ra} ${y2 - uy * ra}`;
         } else {
-          // Going down, leave from below the node's label.
-          const sy = y1 + Math.sign(y2 - y1) * (radius(na, s) + (y2 > y1 ? (na.kind === "decision" ? 40 : 30) : 0));
-          const ey = y2 - Math.sign(y2 - y1) * radius(nb, s);
-          const my = (sy + ey) / 2;
-          d = `M${x1} ${sy} C${x1} ${my} ${x2} ${my} ${x2} ${ey}`;
+          const horiz = wide ? Math.abs(x2 - x1) >= Math.abs(y2 - y1) * 0.6 : Math.abs(x2 - x1) > Math.abs(y2 - y1) * 1.5;
+          if (horiz) {
+            const sx = x1 + Math.sign(x2 - x1) * R[na.k] * (na.k === "source" ? 1.25 : 1.05);
+            const ex = x2 - Math.sign(x2 - x1) * R[nb.k] * (nb.k === "output" ? 1.3 : 1.05);
+            const mx = (sx + ex) / 2;
+            d = `M${sx} ${y1} C${mx} ${y1} ${mx} ${y2} ${ex} ${y2}`;
+          } else {
+            const down = y2 > y1;
+            const sy = y1 + (down ? R[na.k] + below[na.k] : -R[na.k]);
+            const ey = y2 + (down ? -R[nb.k] - 2 : R[nb.k] + below[nb.k]);
+            const my = (sy + ey) / 2;
+            d = `M${x1} ${sy} C${x1} ${my} ${x2} ${my} ${x2} ${ey}`;
+          }
         }
-        paths[id] = mk("path", { d, class: `edge${style ? ` ${style}` : ""}` }, gEdges);
+        paths[e.id] = mk("path", { d, class: `edge ${e.kind}` }, gEdges);
       });
 
-      NODES.forEach((n) => {
-        const [x, y] = pos[n.id];
-        const g = mk("g", { class: `node ${n.kind}`, transform: `translate(${x} ${y})` }, gNodes);
-        const r = radius(n, s);
-        if (n.kind === "source" || n.kind === "output") {
-          if (n.kind === "output") mk("rect", { class: "burst", x: -r * 1.2, y: -r * 0.9, width: r * 2.4, height: r * 1.8, rx: 12 }, g);
-          mk("rect", { class: "tile", x: -r * 1.2, y: -r * 0.9, width: r * 2.4, height: r * 1.8, rx: 10 }, g);
-          mk("path", { class: "icon", d: ICONS[n.icon] }, g);
-          if (n.kind === "output") {
-            const c = mk("text", { class: "count", x: r * 1.2 + 6, y: -r * 0.9 + 9 }, g);
-            c.textContent = "";
-          }
-        } else if (n.kind === "agent") {
-          mk("circle", { class: "glow", r: r + 10 }, g);
+      N.forEach((n) => {
+        const [x, y] = n[key];
+        const g = mk("g", { class: `node ${n.k}`, transform: `translate(${x} ${y})` }, gNodes);
+        const r = R[n.k];
+        if (n.k === "source" || n.k === "output") {
+          const box = { x: -r * 1.25, y: -r, width: r * 2.5, height: r * 2, rx: 8 };
+          if (n.k === "output") mk("rect", { class: "burst", ...box }, g);
+          mk("rect", { class: "tile", ...box }, g);
+          mk("path", { class: "icon", d: ICONS[n.i], transform: "scale(.8)" }, g);
+          if (n.k === "output") mk("text", { class: "count", x: r * 1.25 + 5, y: -r + 7 }, g);
+        } else if (n.k === "agent") {
+          mk("circle", { class: "glow", r: r + 8 }, g);
+          mk("circle", { class: "disc", r }, g);
+          mk("circle", { class: "ring", r: r - 3, pathLength: 1, transform: "rotate(-90)" }, g);
+          mk("path", { class: "icon", d: ICONS[n.i], transform: "scale(.72)" }, g);
+        } else if (n.k === "hub") {
+          mk("circle", { class: "glow", r: r + 12 }, g);
           mk("circle", { class: "disc", r }, g);
           mk("circle", { class: "ring", r: r - 4, pathLength: 1, transform: "rotate(-90)" }, g);
-          mk("path", { class: "icon", d: ICONS[n.icon], transform: "scale(.85)" }, g);
-        } else if (n.kind === "hub") {
-          mk("circle", { class: "glow", r: r + 14 }, g);
-          mk("circle", { class: "disc", r }, g);
-          mk("circle", { class: "ring", r: r - 5, pathLength: 1, transform: "rotate(-90)" }, g);
           const rose = mk("g", { class: "rose" }, g);
-          mk("path", { class: "icon", d: "M0 -22 L5 -5 L22 0 L5 5 L0 22 L-5 5 L-22 0 L-5 -5 Z" }, rose);
-          mk("circle", { r: 3, fill: "#E0A458" }, rose);
-        } else if (n.kind === "decision") {
-          mk("path", { class: "diamond", d: `M0 ${-r * 1.15} L${r * 1.15} 0 L0 ${r * 1.15} L${-r * 1.15} 0 Z` }, g);
-          mk("path", { class: "icon", d: ICONS[n.icon] }, g);
-          mk("path", { class: "check", d: "M-10 0 L-3 7 L11 -8" }, g);
+          mk("path", { class: "icon", d: "M0 -19 L4.5 -4.5 L19 0 L4.5 4.5 L0 19 L-4.5 4.5 L-19 0 L-4.5 -4.5 Z" }, rose);
+          mk("circle", { r: 2.6, fill: "#E0A458" }, rose);
+        } else if (n.k === "decision") {
+          const q = r * 1.2;
+          mk("path", { class: "diamond", d: `M0 ${-q} L${q} 0 L0 ${q} L${-q} 0 Z` }, g);
+          mk("path", { class: "icon", d: ICONS.person, transform: "scale(.85)" }, g);
+          mk("path", { class: "check", d: "M-9 0 L-3 6 L10 -7" }, g);
         }
-        const label = mk("text", { class: "label", y: r + (n.kind === "decision" ? 30 : 22), "text-anchor": "middle" }, g);
-        label.textContent = !wide && n.short ? n.short : n.label;
+        const t = mk("text", { class: "label", y: r + (n.k === "decision" ? 22 : 15), "text-anchor": "middle" }, g);
+        t.textContent = label(n, wide);
         nodesEl[n.id] = g;
       });
-      Object.entries(counts).forEach(([id, n]) => setCount(id, n));
+      Object.keys(counts).forEach(setCount);
     };
 
-    const setCount = (id, n) => {
+    const setCount = (id) => {
       const c = nodesEl[id] && nodesEl[id].querySelector(".count");
-      if (c) c.textContent = n ? `✓${n}` : "";
+      if (c) c.textContent = counts[id] ? `✓${counts[id]}` : "";
     };
 
     // Moving pieces.
     let active = [];
-    const startPacket = (edge, kind, dur, now) => {
-      const p = paths[edge];
+    let works = [];
+    const startPacket = (edgeId, kind, dur, now) => {
+      const p = paths[edgeId];
       if (!p) return;
       const g = mk("g", {}, svg.packets);
-      const tails = kind === "info"
-        ? [0.06, 0.12].map((lag, i) => ({ lag, el: mk("circle", { class: "pk-tail", r: 3.2 - i, opacity: 0.5 - i * 0.2 }, g) }))
-        : [];
       let head;
-      if (kind === "info") head = mk("circle", { class: "pk-info", r: 5.5 }, g);
-      else if (kind === "ask") head = mk("path", { class: "pk-ask", d: "M0 -8 L8 0 L0 8 L-8 0 Z" }, g);
-      else head = mk("rect", { class: "pk-ship", x: -7, y: -7, width: 14, height: 14, rx: 2.5 }, g);
+      const tails = [];
+      if (kind === "info" || kind === "talk") {
+        [0.07, 0.14].forEach((lag, i) => tails.push({ lag, el: mk("circle", { class: kind === "talk" ? "pk-talk-tail" : "pk-tail", r: 2.8 - i * 0.9, opacity: 0.55 - i * 0.2 }, g) }));
+        head = mk("circle", { class: kind === "talk" ? "pk-talk" : "pk-info", r: kind === "talk" ? 4 : 4.5 }, g);
+      } else if (kind === "ask") {
+        head = mk("path", { class: "pk-ask", d: "M0 -7 L7 0 L0 7 L-7 0 Z" }, g);
+      } else {
+        head = mk("rect", { class: "pk-ship", x: -6, y: -6, width: 12, height: 12, rx: 2 }, g);
+      }
       p.classList.add("hot");
-      active.push({ edge, kind, p, g, head, tails, start: now, dur, len: p.getTotalLength() });
+      active.push({ edgeId, kind, p, g, head, tails, start: now, dur, len: p.getTotalLength() });
     };
     const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
-    const place = (pk, t) => {
-      const at = (f) => pk.p.getPointAtLength(pk.len * Math.max(0, Math.min(1, f)));
-      const pt = at(ease(t));
+    const place = (pk, f) => {
+      const at = (x) => pk.p.getPointAtLength(pk.len * Math.max(0, Math.min(1, x)));
+      const pt = at(ease(f));
       pk.head.setAttribute("transform", `translate(${pt.x} ${pt.y})`);
       pk.tails.forEach((tl) => {
-        const q = at(ease(Math.max(0, t - tl.lag)));
+        const q = at(ease(Math.max(0, f - tl.lag)));
         tl.el.setAttribute("cx", q.x);
         tl.el.setAttribute("cy", q.y);
       });
     };
-    const arrive = (pk) => {
-      pk.g.remove();
-      if (!active.some((o) => o !== pk && o.edge === pk.edge)) pk.p.classList.remove("hot");
-      if (pk.kind === "ship") {
-        const to = EDGES.find((e) => e[0] === pk.edge)[2];
-        const node = nodesEl[to];
-        node.classList.remove("shipped");
-        void node.getBoundingClientRect();
-        node.classList.add("shipped");
-        counts[to] += 1;
-        setCount(to, counts[to]);
-      }
-    };
-
-    let works = [];
     const startWork = (id, dur, now) => {
       const node = nodesEl[id];
       if (!node) return;
+      const existing = works.find((w) => w.id === id);
+      if (existing) { existing.start = now; existing.dur = dur; return; }
       node.classList.add("working");
       works.push({ id, node, ring: node.querySelector(".ring"), start: now, dur });
+    };
+    const arrive = (pk, now) => {
+      pk.g.remove();
+      if (!active.some((o) => o !== pk && o.edgeId === pk.edgeId)) pk.p.classList.remove("hot");
+      const to = pk.edgeId.split(">")[1];
+      const node = nodesEl[to];
+      if (!node) return;
+      if (node.classList.contains("agent")) startWork(to, pk.kind === "talk" ? 700 : 1100, now);
+      if (to === "hub") startWork("hub", 2000, now);
+      if (pk.kind === "ask") { node.classList.add("asking"); }
+      if (pk.kind === "ship") {
+        node.classList.remove("shipped");
+        void node.getBoundingClientRect();
+        node.classList.add("shipped");
+        counts[to] = (counts[to] || 0) + 1;
+        setCount(to);
+      }
     };
     const decide = (id) => {
       const node = nodesEl[id];
       node.classList.add("asking");
-      setTimeout(() => { node.classList.remove("asking"); node.classList.add("approved"); }, 800);
+      setTimeout(() => { node.classList.remove("asking"); node.classList.add("approved"); }, 600);
     };
-
     const resetLoop = () => {
       active.forEach((pk) => { pk.g.remove(); pk.p.classList.remove("hot"); });
       active = [];
@@ -490,12 +563,11 @@
     // A finished morning, for reduced motion: everything done, nothing moving.
     const drawStill = () => {
       build();
-      ["reply", "score", "sched", "hub"].forEach((id) => {
-        const ring = nodesEl[id].querySelector(".ring");
+      Object.values(nodesEl).forEach((n) => {
+        const ring = n.querySelector(".ring");
         if (ring) ring.style.strokeDashoffset = "0";
       });
       nodesEl.you.classList.add("approved");
-      Object.keys(paths).forEach((id) => paths[id].classList.add("hot"));
     };
 
     if (reduce) {
@@ -519,15 +591,14 @@
         }
         const t = now - loopStart;
         while (cursor < SCRIPT.length && SCRIPT[cursor][0] <= t) {
-          const [, type, a, b, c] = SCRIPT[cursor];
-          if (type === "packet") startPacket(a, b, c, now);
-          else if (type === "work") startWork(a, b, now);
-          else if (type === "decide") decide(a);
+          const [, edge, kind, dur] = SCRIPT[cursor];
+          if (edge === "decide") decide(kind);
+          else startPacket(edge, kind, dur, now);
           cursor += 1;
         }
         active = active.filter((pk) => {
           const f = (now - pk.start) / pk.dur;
-          if (f >= 1) { arrive(pk); return false; }
+          if (f >= 1) { arrive(pk, now); return false; }
           place(pk, f);
           return true;
         });
@@ -539,15 +610,13 @@
         });
         setTimeout(tick, 16);
       };
-      SCRIPT.sort((x, y) => x[0] - y[0]);
       tick();
       let rt = null;
       window.addEventListener("resize", () => {
         clearTimeout(rt);
         rt = setTimeout(() => {
-          const before = layout;
-          layout = canvas.clientWidth >= 640 ? "w" : "t";
-          if (before !== layout) { layout = null; build(); loopStart = null; }
+          const next = canvas.clientWidth >= 640 ? "w" : "t";
+          if (next !== layout) { layout = null; build(); loopStart = null; }
         }, 200);
       });
     }
