@@ -560,6 +560,7 @@
     // Moving pieces.
     let active = [];
     let works = [];
+    let hubStarted = false;
     const startPacket = (edgeId, kind, dur, now) => {
       const p = paths[edgeId];
       if (!p) return;
@@ -603,7 +604,9 @@
       const node = nodesEl[to];
       if (!node) return;
       if (node.classList.contains("agent")) startWork(to, pk.kind === "talk" ? 700 : 1100, now);
-      if (to === "hub") startWork("hub", 2000, now);
+      // The coordinator starts on the first report and fills once, timed to
+      // finish as the last report lands; later reports don't restart it.
+      if (to === "hub" && !hubStarted) { hubStarted = true; startWork("hub", 1300, now); }
       if (pk.kind === "ask") { node.classList.add("asking"); }
       if (pk.kind === "ship") {
         node.classList.remove("shipped");
@@ -619,6 +622,7 @@
       setTimeout(() => { node.classList.remove("asking"); node.classList.add("approved"); }, 600);
     };
     const resetLoop = () => {
+      hubStarted = false;
       active.forEach((pk) => { pk.g.remove(); pk.p.classList.remove("hot"); });
       active = [];
       works = [];
