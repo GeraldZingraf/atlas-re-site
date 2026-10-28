@@ -1,229 +1,175 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000" role="img" aria-label="An open nautical chart on a wooden table at night, lit by one warm lamp, rain on the window behind it">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000" role="img" aria-label="A navigator's chart seen from above, with a brass route plotted from your week to hours back">
   <!--
-    Hero stand-in for agent-atlas.co. Swap it for a photo by replacing the
-    <img> inside .hero-art in index.html with a <picture> (AVIF + WebP + JPG).
+    Hero stand-in for agent-atlas.co: a navigator's chart seen from above.
+    Swap it for a photo by replacing the <img> inside .hero-art in index.html
+    with a <picture> (AVIF + WebP + JPG).
   -->
   <style>
-    .rain { animation: fall 2.6s linear infinite; }
-    .flame { transform-origin: 600px 490px; animation: flicker 4.2s ease-in-out infinite; }
-    .glow { animation: breathe 6s ease-in-out infinite; }
-    @keyframes fall { from { transform: translateY(-220px); } to { transform: translateY(0); } }
-    @keyframes flicker {
-      0%, 100% { transform: scale(1, 1); }
-      30% { transform: scale(.97, 1.03); }
-      55% { transform: scale(1.02, .98); }
-      80% { transform: scale(.99, 1.02); }
-    }
-    @keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: .9; } }
+    .route-draw { stroke-dasharray: 1200; stroke-dashoffset: 1200; animation: draw 5.5s cubic-bezier(.45, 0, .2, 1) .6s forwards; }
+    .wp { opacity: 0; animation: appear .8s ease-out forwards; }
+    .wp1 { animation-delay: 1.6s; } .wp2 { animation-delay: 2.7s; } .wp3 { animation-delay: 3.8s; } .wp4 { animation-delay: 5.6s; }
+    .wp0 { animation-delay: .3s; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    @keyframes appear { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
     @media (prefers-reduced-motion: reduce) {
-      .rain, .flame, .glow { animation: none; }
+      .route-draw { animation: none; stroke-dashoffset: 0; }
+      .wp { animation: none; opacity: 1; }
     }
+    .lbl { font-family: "JetBrains Mono", Consolas, Menlo, "Courier New", monospace; font-size: 13px; letter-spacing: 1.6px; font-weight: 600; }
+    .snd { font-family: "JetBrains Mono", Consolas, Menlo, "Courier New", monospace; font-size: 11px; fill: #6E9A93; fill-opacity: .42; }
+    .name { font-family: Georgia, "Times New Roman", serif; font-style: italic; fill: #EFE6D2; fill-opacity: .42; }
   </style>
   <defs>
-    <radialGradient id="lampGlow" cx="600" cy="470" r="560" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FFC877" stop-opacity=".55"/>
-      <stop offset=".18" stop-color="#E0A458" stop-opacity=".30"/>
-      <stop offset=".5" stop-color="#E0A458" stop-opacity=".09"/>
-      <stop offset="1" stop-color="#E0A458" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="flameHalo" cx="600" cy="472" r="70" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FFE3A8" stop-opacity=".95"/>
-      <stop offset=".4" stop-color="#FFC060" stop-opacity=".45"/>
-      <stop offset="1" stop-color="#E0A458" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="pool" cx="470" cy="760" r="420" gradientUnits="userSpaceOnUse" gradientTransform="translate(0 300) scale(1 .62)">
-      <stop offset="0" stop-color="#E0A458" stop-opacity=".40"/>
-      <stop offset=".55" stop-color="#E0A458" stop-opacity=".12"/>
-      <stop offset="1" stop-color="#E0A458" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="vignette" cx="420" cy="560" r="640" gradientUnits="userSpaceOnUse">
-      <stop offset=".55" stop-color="#0B1016" stop-opacity="0"/>
-      <stop offset="1" stop-color="#0B1016" stop-opacity=".9"/>
-    </radialGradient>
-    <clipPath id="glass"><rect x="96" y="46" width="608" height="470"/></clipPath>
-    <clipPath id="leftPage"><path d="M118 650 Q250 626 380 668 L378 915 Q240 880 92 905 Z"/></clipPath>
-    <clipPath id="rightPage"><path d="M380 668 Q510 624 650 640 L674 896 Q520 878 378 915 Z"/></clipPath>
-    <pattern id="rainTile" width="160" height="220" patternUnits="userSpaceOnUse">
-      <g stroke="#9DBDB7" stroke-linecap="round" fill="none">
-        <path d="M12 8 l-5 46" stroke-opacity=".22" stroke-width="1.2"/>
-        <path d="M44 70 l-4 34" stroke-opacity=".16" stroke-width="1"/>
-        <path d="M70 18 l-6 58" stroke-opacity=".26" stroke-width="1.3"/>
-        <path d="M98 120 l-5 44" stroke-opacity=".18" stroke-width="1"/>
-        <path d="M126 40 l-4 36" stroke-opacity=".2" stroke-width="1.1"/>
-        <path d="M150 150 l-6 52" stroke-opacity=".24" stroke-width="1.2"/>
-        <path d="M24 150 l-5 40" stroke-opacity=".16" stroke-width="1"/>
-        <path d="M60 176 l-3 28" stroke-opacity=".2" stroke-width="1"/>
-        <path d="M112 196 l-4 22" stroke-opacity=".14" stroke-width="1"/>
-        <path d="M138 96 l-3 26" stroke-opacity=".14" stroke-width="1"/>
-      </g>
-    </pattern>
-    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6"/></filter>
-    <filter id="softer" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="16"/></filter>
+    <filter id="small" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4"/></filter>
+    <clipPath id="sheet"><rect x="70" y="90" width="700" height="860"/></clipPath>
+    <mask id="routeMask" maskUnits="userSpaceOnUse" x="0" y="0" width="800" height="1000">
+      <path class="route-draw" d="M168 846 C220 776 300 770 330 694 S300 566 384 522 S520 526 546 446 S600 262 640 176" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+    </mask>
   </defs>
 
-  <!-- Wall -->
+  <!-- the table -->
   <rect width="800" height="1000" fill="#0B1016"/>
 
-  <!-- Window: night outside, harbor lights, rain -->
-  <g clip-path="url(#glass)">
-    <rect x="96" y="46" width="608" height="470" fill="#0F1A26"/>
-    <path d="M96 330 Q300 318 460 326 T704 322 L704 516 L96 516 Z" fill="#0C141D"/>
-    <g fill="#6E9A93" filter="url(#soft)" opacity=".55">
-      <circle cx="170" cy="322" r="3"/><circle cx="236" cy="326" r="2.4"/><circle cx="318" cy="320" r="2.8"/>
-      <circle cx="404" cy="324" r="2"/><circle cx="676" cy="318" r="2.6"/>
+  <!-- a parchment sheet underneath, for depth -->
+  <g transform="rotate(6 420 520)">
+    <rect x="96" y="120" width="680" height="840" fill="#06090D" opacity=".7" filter="url(#shadow)"/>
+    <rect x="90" y="110" width="680" height="840" fill="#8E7F63"/>
+    <g stroke="#5E513A" stroke-opacity=".5" fill="none">
+      <path d="M90 300 H770 M90 500 H770 M90 700 H770 M300 110 V950 M520 110 V950"/>
     </g>
-    <g fill="#E0A458" filter="url(#soft)" opacity=".35">
-      <circle cx="282" cy="328" r="2.2"/><circle cx="452" cy="322" r="2.4"/>
-    </g>
-    <g class="rain"><rect x="96" y="-180" width="608" height="740" fill="url(#rainTile)"/></g>
-    <g fill="#B9D2CD" fill-opacity=".18">
-      <circle cx="150" cy="120" r="2.2"/><circle cx="214" cy="200" r="1.6"/><circle cx="262" cy="96" r="2.6"/>
-      <circle cx="330" cy="236" r="1.8"/><circle cx="388" cy="150" r="2.2"/><circle cx="452" cy="260" r="1.5"/>
-      <circle cx="506" cy="92" r="2"/><circle cx="560" cy="210" r="2.4"/><circle cx="640" cy="140" r="1.8"/>
-      <circle cx="676" cy="280" r="2.2"/><circle cx="182" cy="380" r="2"/><circle cx="246" cy="450" r="1.6"/>
-      <circle cx="356" cy="410" r="2.2"/><circle cx="470" cy="470" r="1.8"/><circle cx="660" cy="430" r="2"/>
-    </g>
-    <path d="M262 98 q-2 30 1 52" stroke="#B9D2CD" stroke-opacity=".14" stroke-width="2" fill="none"/>
-    <path d="M560 212 q2 40 -1 70" stroke="#B9D2CD" stroke-opacity=".12" stroke-width="2" fill="none"/>
   </g>
-  <!-- Window frame and mullions -->
-  <g fill="none" stroke="#18222E">
-    <rect x="90" y="40" width="620" height="482" stroke-width="12"/>
-    <path d="M400 46 V516 M96 282 H704" stroke-width="9"/>
-  </g>
-  <rect x="70" y="520" width="660" height="16" fill="#151E28"/>
-  <rect x="70" y="520" width="660" height="2" fill="#2A3644"/>
 
-  <!-- Table -->
-  <path d="M-20 572 H820 V1000 H-20 Z" fill="#1E140D"/>
-  <path d="M-20 572 H820 V580 H-20 Z" fill="#2B1D12"/>
-  <g fill="none" stroke="#33231570" stroke-width="2">
-    <path d="M-20 620 Q200 610 420 626 T820 618"/>
-    <path d="M-20 690 Q240 676 470 700 T820 686"/>
-    <path d="M-20 780 Q180 768 400 792 T820 776"/>
-    <path d="M-20 880 Q260 864 480 890 T820 872"/>
-    <path d="M-20 960 Q220 948 460 972 T820 954"/>
-  </g>
-  <rect x="-20" y="572" width="840" height="428" fill="url(#pool)"/>
+  <!-- the chart, seen from above -->
+  <g transform="rotate(-5 420 520)">
+    <rect x="80" y="104" width="700" height="860" fill="#000" opacity=".75" filter="url(#shadow)"/>
+    <rect x="70" y="90" width="700" height="860" fill="#142030"/>
 
-  <!-- Lamp shadow -->
-  <ellipse cx="540" cy="612" rx="110" ry="16" fill="#07090C" opacity=".6" filter="url(#soft)"/>
+    <g clip-path="url(#sheet)">
+      <!-- lat / long grid -->
+      <g stroke="#6E9A93" stroke-opacity=".14" stroke-width="1">
+        <path d="M70 230 H770 M70 370 H770 M70 510 H770 M70 650 H770 M70 790 H770"/>
+        <path d="M210 90 V950 M350 90 V950 M490 90 V950 M630 90 V950"/>
+      </g>
 
-  <!-- The atlas, open -->
-  <g transform="rotate(-4 380 780)">
-    <path d="M104 640 Q250 612 380 656 Q512 612 664 628 L690 906 Q520 890 380 928 Q240 892 78 916 Z" fill="#20303A"/>
-    <path d="M104 640 Q250 612 380 656 Q512 612 664 628 L690 906 Q520 890 380 928 Q240 892 78 916 Z" fill="none" stroke="#2F4450" stroke-width="2"/>
-    <!-- page edges -->
-    <path d="M90 908 Q240 884 378 921 Q522 884 682 900" fill="none" stroke="#8E7A55" stroke-width="2"/>
-    <path d="M86 912 Q240 888 378 925 Q522 888 686 903" fill="none" stroke="#7A6848" stroke-width="2"/>
+      <!-- left coast -->
+      <path d="M70 372 C120 380 150 410 176 446 C206 486 186 520 214 552 C244 586 222 628 196 660 C176 686 150 704 118 716 C98 724 82 730 70 734 Z" fill="#1B2B3D"/>
+      <g fill="none" stroke="#6E9A93" stroke-opacity=".38" stroke-width="1">
+        <path d="M70 404 C110 410 134 436 154 466 C178 502 164 528 186 556 C206 584 190 618 170 644 C150 668 120 684 70 700"/>
+        <path d="M70 440 C100 446 118 466 132 490 C150 520 140 540 156 562 C170 584 158 610 140 628 C120 646 96 656 70 664"/>
+        <path d="M70 482 C92 488 104 506 112 524 C122 548 116 566 124 584 C128 600 110 612 70 620"/>
+      </g>
+      <path d="M70 372 C120 380 150 410 176 446 C206 486 186 520 214 552 C244 586 222 628 196 660 C176 686 150 704 118 716 C98 724 82 730 70 734" fill="none" stroke="#EFE6D2" stroke-opacity=".55" stroke-width="1.6"/>
 
-    <!-- left page -->
-    <path d="M118 650 Q250 626 380 668 L378 915 Q240 880 92 905 Z" fill="#A8946E"/>
-    <g clip-path="url(#leftPage)">
-      <g stroke="#7A6644" stroke-opacity=".35" stroke-width="1" fill="none">
-        <path d="M100 700 Q250 676 390 716"/><path d="M100 760 Q250 736 390 776"/>
-        <path d="M100 820 Q250 796 390 836"/><path d="M100 880 Q250 856 390 896"/>
-        <path d="M170 620 L150 930"/><path d="M250 620 L236 930"/><path d="M330 620 L322 930"/>
+      <!-- top-right land, with the harbor -->
+      <path d="M520 90 C540 120 580 132 606 150 C624 162 632 174 652 172 C676 170 690 152 716 160 C740 168 756 196 770 214 L770 90 Z" fill="#1B2B3D"/>
+      <g fill="none" stroke="#6E9A93" stroke-opacity=".38" stroke-width="1">
+        <path d="M560 90 C574 108 600 118 620 130 C640 142 660 146 680 138 C704 130 728 146 770 180"/>
+        <path d="M610 90 C626 104 646 110 664 112 C690 114 716 120 770 146"/>
       </g>
-      <!-- coastline and sea hatching -->
-      <path d="M92 760 Q140 740 170 770 T230 800 Q262 830 240 866 T262 930 L80 930 Z" fill="#9FB3A3" fill-opacity=".55"/>
-      <path d="M92 760 Q140 740 170 770 T230 800 Q262 830 240 866 T262 930" fill="none" stroke="#5C4A30" stroke-width="1.6"/>
-      <!-- contour island -->
-      <g fill="none" stroke="#6F5A38" stroke-width="1.2">
-        <path d="M262 712 C300 690 352 702 360 736 C368 772 330 790 296 784 C258 778 236 740 262 712 Z" fill="#B49A6B" fill-opacity=".5"/>
-        <path d="M274 720 C302 704 342 712 348 738 C352 764 324 776 298 772 C270 768 254 740 274 720 Z"/>
-        <path d="M286 728 C306 718 334 724 336 740 C338 756 318 764 300 761 C282 758 272 740 286 728 Z"/>
-        <path d="M298 736 C310 730 324 734 324 742 C324 750 312 754 304 752 C294 750 290 742 298 736 Z" fill="#8C6E42" fill-opacity=".45"/>
-      </g>
-      <g fill="#5C4A30" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="13" opacity=".7">
-        <text x="150" y="700" transform="rotate(-6 150 700)">Mare Incognitum</text>
-      </g>
-      <path d="M140 860 L160 860 M150 850 L150 870" stroke="#5C4A30" stroke-width="1.4"/>
-    </g>
+      <path d="M520 90 C540 120 580 132 606 150 C624 162 632 174 652 172 C676 170 690 152 716 160 C740 168 756 196 770 214" fill="none" stroke="#EFE6D2" stroke-opacity=".55" stroke-width="1.6"/>
 
-    <!-- right page -->
-    <path d="M380 668 Q510 624 650 640 L674 896 Q520 878 378 915 Z" fill="#B09B74"/>
-    <g clip-path="url(#rightPage)">
-      <g stroke="#7A6644" stroke-opacity=".35" stroke-width="1" fill="none">
-        <path d="M370 716 Q510 676 680 694"/><path d="M370 776 Q510 736 680 754"/>
-        <path d="M370 836 Q510 796 680 814"/><path d="M370 896 Q510 856 680 874"/>
-        <path d="M450 620 L462 930"/><path d="M540 620 L556 930"/><path d="M620 620 L640 930"/>
+      <!-- islands -->
+      <g>
+        <path d="M454 604 C480 584 532 590 548 614 C564 640 538 666 504 668 C470 670 440 650 444 628 C446 618 448 610 454 604 Z" fill="#1B2B3D" stroke="#EFE6D2" stroke-opacity=".55" stroke-width="1.4"/>
+        <path d="M470 612 C490 600 526 604 536 622 C544 640 524 656 502 656 C480 656 460 642 464 626 Z" fill="none" stroke="#6E9A93" stroke-opacity=".4"/>
+        <path d="M488 622 C502 614 520 618 524 628 C526 638 512 646 500 645 C488 644 480 634 488 622 Z" fill="none" stroke="#6E9A93" stroke-opacity=".4"/>
+        <path d="M276 420 C292 406 322 410 330 428 C338 446 318 460 298 458 C278 456 266 436 276 420 Z" fill="#1B2B3D" stroke="#EFE6D2" stroke-opacity=".55" stroke-width="1.4"/>
+        <path d="M290 426 C302 418 318 422 320 432 C322 442 308 448 298 446 C288 444 282 434 290 426 Z" fill="none" stroke="#6E9A93" stroke-opacity=".4"/>
+        <path d="M640 520 C652 512 670 516 672 528 C674 540 660 546 648 544 C636 542 632 528 640 520 Z" fill="#1B2B3D" stroke="#EFE6D2" stroke-opacity=".5" stroke-width="1.2"/>
+        <circle cx="404" cy="760" r="5" fill="#1B2B3D" stroke="#EFE6D2" stroke-opacity=".5"/>
+        <circle cx="420" cy="772" r="3" fill="#1B2B3D" stroke="#EFE6D2" stroke-opacity=".5"/>
       </g>
-      <!-- second landmass with contours -->
-      <g fill="none" stroke="#6F5A38" stroke-width="1.2">
-        <path d="M560 660 C610 650 668 668 680 700 L680 760 C650 770 620 750 600 736 C572 716 540 690 560 660 Z" fill="#B49A6B" fill-opacity=".45"/>
-        <path d="M584 672 C616 666 652 680 662 702 C640 716 618 708 600 698 C584 690 572 680 584 672 Z"/>
+
+      <!-- depth soundings -->
+      <g class="snd">
+        <text x="250" y="760">12</text><text x="300" y="812">18</text><text x="236" y="880">9</text>
+        <text x="420" y="690">24</text><text x="372" y="620">21</text><text x="600" y="600">31</text>
+        <text x="680" y="660">36</text><text x="620" y="760">40</text><text x="700" y="860">44</text>
+        <text x="420" y="430">17</text><text x="466" y="370">22</text><text x="610" y="400">27</text>
+        <text x="700" y="320">19</text><text x="380" y="300">15</text><text x="470" y="210">8</text>
+        <text x="540" y="880">38</text><text x="140" y="820">7</text><text x="360" y="900">26</text>
       </g>
-      <!-- compass rose, foreshortened -->
-      <g transform="translate(486 800) scale(1 .66)">
-        <circle r="62" fill="none" stroke="#6F5A38" stroke-width="1.4"/>
-        <circle r="54" fill="none" stroke="#6F5A38" stroke-width=".8"/>
-        <g fill="#6F5A38">
-          <path d="M0 -76 L9 -9 L0 0 Z"/><path d="M0 76 L-9 9 L0 0 Z"/>
-          <path d="M76 0 L9 9 L0 0 Z"/><path d="M-76 0 L-9 -9 L0 0 Z"/>
+
+      <!-- place names -->
+      <text class="name" x="88" y="560" font-size="15" transform="rotate(-80 88 560)">The Back Office</text>
+      <text class="name" x="452" y="702" font-size="13">Inbox Isle</text>
+      <text class="name" x="600" y="124" font-size="14">Free Time</text>
+
+      <!-- compass rose -->
+      <g transform="translate(228 236)">
+        <circle r="96" fill="none" stroke="#EFE6D2" stroke-opacity=".28" stroke-width="1.2"/>
+        <circle r="86" fill="none" stroke="#EFE6D2" stroke-opacity=".18"/>
+        <circle r="40" fill="none" stroke="#EFE6D2" stroke-opacity=".18"/>
+        <g stroke="#EFE6D2" stroke-opacity=".3" stroke-width="1">
+          <path d="M0 -96 V-86 M0 86 V96 M-96 0 H-86 M86 0 H96"/>
+          <path d="M67.9 -67.9 L60.8 -60.8 M-67.9 67.9 L-60.8 60.8 M67.9 67.9 L60.8 60.8 M-67.9 -67.9 L-60.8 -60.8"/>
+          <path d="M36.7 -88.7 L32.9 -79.5 M-36.7 88.7 L-32.9 79.5 M88.7 36.7 L79.5 32.9 M-88.7 -36.7 L-79.5 -32.9 M88.7 -36.7 L79.5 -32.9 M-88.7 36.7 L-79.5 32.9 M36.7 88.7 L32.9 79.5 M-36.7 -88.7 L-32.9 -79.5"/>
         </g>
-        <g fill="#C2AD82" stroke="#6F5A38" stroke-width="1">
-          <path d="M0 -76 L-9 -9 L0 0 Z"/><path d="M0 76 L9 9 L0 0 Z"/>
-          <path d="M76 0 L9 -9 L0 0 Z"/><path d="M-76 0 L-9 9 L0 0 Z"/>
+        <g fill="#EFE6D2" fill-opacity=".14" stroke="#EFE6D2" stroke-opacity=".4" stroke-width="1">
+          <path d="M0 0 L42 -42 L8 -8 Z"/><path d="M0 0 L42 42 L8 8 Z"/><path d="M0 0 L-42 42 L-8 8 Z"/><path d="M0 0 L-42 -42 L-8 -8 Z"/>
+          <path d="M0 0 L80 0 L10 -10 Z"/><path d="M0 0 L0 80 L-10 10 Z"/><path d="M0 0 L-80 0 L-10 10 Z"/>
+          <path d="M0 0 L80 0 L10 10 Z" fill-opacity=".3"/><path d="M0 0 L0 80 L10 10 Z" fill-opacity=".3"/><path d="M0 0 L-80 0 L-10 -10 Z" fill-opacity=".3"/>
         </g>
-        <g fill="#8C6E42" opacity=".8">
-          <path d="M36 -36 L5 -2 L2 -5 Z"/><path d="M-36 36 L-5 2 L-2 5 Z"/>
-          <path d="M36 36 L2 5 L5 2 Z"/><path d="M-36 -36 L-2 -5 L-5 -2 Z"/>
-        </g>
-        <circle r="4" fill="#8C3A1E"/>
+        <path d="M0 0 L0 -82 L10 -10 Z" fill="#E0A458"/>
+        <path d="M0 0 L0 -82 L-10 -10 Z" fill="#B97F3A"/>
+        <circle r="5" fill="#142030" stroke="#E0A458" stroke-width="2"/>
+        <text x="0" y="-104" text-anchor="middle" font-family="Georgia, serif" font-size="18" fill="#E0A458">N</text>
+      </g>
+
+      <!-- the route: dashed brass, drawn in -->
+      <path d="M168 846 C220 776 300 770 330 694 S300 566 384 522 S520 526 546 446 S600 262 640 176" fill="none" stroke="#E0A458" stroke-width="3" stroke-dasharray="10 8" stroke-linecap="round" mask="url(#routeMask)"/>
+
+      <!-- waypoints -->
+      <g class="wp wp0">
+        <circle cx="168" cy="846" r="9" fill="#142030" stroke="#E0A458" stroke-width="2.5"/>
+        <circle cx="168" cy="846" r="3.5" fill="#E0A458"/>
+        <text class="lbl" x="188" y="872" fill="#EFE6D2" fill-opacity=".85">YOUR WEEK</text>
+      </g>
+      <g class="wp wp1">
+        <circle cx="330" cy="694" r="6" fill="#E0A458"/>
+        <text class="lbl" x="346" y="699" fill="#EFE6D2" fill-opacity=".7">SCORECARD</text>
+      </g>
+      <g class="wp wp2">
+        <circle cx="384" cy="522" r="6" fill="#E0A458"/>
+        <text class="lbl" x="400" y="527" fill="#EFE6D2" fill-opacity=".7">FOLLOW-UPS</text>
+      </g>
+      <g class="wp wp3">
+        <circle cx="546" cy="446" r="6" fill="#E0A458"/>
+        <text class="lbl" x="562" y="451" fill="#EFE6D2" fill-opacity=".7">PAPERWORK</text>
+      </g>
+      <g class="wp wp4">
+        <circle cx="640" cy="176" r="14" fill="none" stroke="#E0A458" stroke-width="2"/>
+        <path d="M640 162 L644 172 L654 176 L644 180 L640 190 L636 180 L626 176 L636 172 Z" fill="#E0A458"/>
+        <text class="lbl" x="622" y="150" text-anchor="end" fill="#E0A458">HOURS BACK</text>
       </g>
     </g>
 
-    <!-- spine shadow -->
-    <path d="M372 668 Q380 790 376 915 L384 915 Q388 790 388 668 Z" fill="#3A2C1A" opacity=".55" filter="url(#soft)"/>
+    <!-- chart border with the alternating scale bars -->
+    <rect x="88" y="108" width="664" height="824" fill="none" stroke="#EFE6D2" stroke-opacity=".4" stroke-width="1.2"/>
+    <rect x="98" y="118" width="644" height="804" fill="none" stroke="#EFE6D2" stroke-opacity=".4" stroke-width=".8"/>
+    <rect x="93" y="113" width="654" height="814" fill="none" stroke="#EFE6D2" stroke-opacity=".22" stroke-width="8" stroke-dasharray="20 20"/>
+  </g>
 
-    <!-- the route, across both pages -->
-    <path d="M150 872 C200 830 220 800 268 790 S352 806 396 780 S470 720 528 724 S602 708 640 676" fill="none" stroke="#8C3A1E" stroke-width="2.2" stroke-dasharray="7 6" stroke-linecap="round"/>
-    <g fill="#8C3A1E"><circle cx="150" cy="872" r="4"/><circle cx="396" cy="780" r="3"/><circle cx="640" cy="676" r="5"/></g>
-    <circle cx="640" cy="676" r="10" fill="none" stroke="#8C3A1E" stroke-width="1.4"/>
-
-    <!-- brass dividers lying on the chart -->
-    <g stroke-linecap="round">
-      <path d="M574 760 L520 878" stroke="#3B2A14" stroke-width="6"/>
-      <path d="M574 760 L612 872" stroke="#3B2A14" stroke-width="6"/>
-      <path d="M574 760 L520 878" stroke="#D49A50" stroke-width="3.4"/>
-      <path d="M574 760 L612 872" stroke="#C88C44" stroke-width="3.4"/>
-      <circle cx="574" cy="758" r="7" fill="#E0A458" stroke="#3B2A14" stroke-width="2"/>
+  <!-- brass dividers resting on the chart -->
+  <g stroke-linecap="round">
+    <g filter="url(#small)" opacity=".55" stroke="#000">
+      <path d="M612 708 L560 846" stroke-width="7"/><path d="M612 708 L668 838" stroke-width="7"/>
     </g>
+    <path d="M606 700 L554 838" stroke="#3B2A14" stroke-width="6"/>
+    <path d="M606 700 L662 830" stroke="#3B2A14" stroke-width="6"/>
+    <path d="M606 700 L554 838" stroke="#D49A50" stroke-width="3.4"/>
+    <path d="M606 700 L662 830" stroke="#C88C44" stroke-width="3.4"/>
+    <circle cx="606" cy="698" r="8" fill="#E0A458" stroke="#3B2A14" stroke-width="2"/>
   </g>
 
-  <!-- A pencil -->
-  <g transform="rotate(-18 200 958)">
-    <rect x="96" y="950" width="190" height="11" rx="2" fill="#8C3A1E"/>
-    <rect x="96" y="950" width="190" height="4" fill="#A54A2A"/>
-    <path d="M286 950 L310 955.5 L286 961 Z" fill="#D8B98A"/>
-    <path d="M304 954 L310 955.5 L304 957 Z" fill="#2A1C10"/>
-    <rect x="84" y="950" width="14" height="11" fill="#9A8C70"/>
+  <!-- a pencil on the table -->
+  <g transform="rotate(-28 120 960)">
+    <rect x="30" y="952" width="200" height="12" rx="2" fill="#000" opacity=".5" filter="url(#small)"/>
+    <rect x="24" y="944" width="200" height="12" rx="2" fill="#6E9A93"/>
+    <rect x="24" y="944" width="200" height="4" fill="#86B0A9"/>
+    <path d="M224 944 L250 950 L224 956 Z" fill="#D8B98A"/>
+    <path d="M244 948.6 L250 950 L244 951.4 Z" fill="#0B1016"/>
+    <rect x="10" y="944" width="16" height="12" fill="#B97F3A"/>
   </g>
-
-  <!-- The lamp -->
-  <g>
-    <path d="M556 352 Q600 300 644 352" fill="none" stroke="#3B2A14" stroke-width="3"/>
-    <ellipse cx="600" cy="604" rx="62" ry="12" fill="#3B2A14"/>
-    <path d="M545 602 Q538 562 576 548 L624 548 Q662 562 655 602 Z" fill="#6E4C24"/>
-    <path d="M552 590 Q548 566 578 556" fill="none" stroke="#E0A458" stroke-opacity=".7" stroke-width="3" stroke-linecap="round"/>
-    <rect x="572" y="532" width="56" height="16" rx="3" fill="#4F3519"/>
-    <rect x="572" y="532" width="56" height="3" fill="#C88C44" opacity=".7"/>
-    <!-- glass chimney -->
-    <path d="M574 532 C522 500 524 424 576 396 L582 362 L618 362 L624 396 C676 424 678 500 626 532 Z" fill="#FFD9A0" fill-opacity=".1" stroke="#FFE4BC" stroke-opacity=".38" stroke-width="2"/>
-    <path d="M548 470 C546 440 560 418 578 406" fill="none" stroke="#FFF1DA" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>
-    <rect x="574" y="346" width="52" height="16" rx="3" fill="#4F3519"/>
-    <rect x="588" y="336" width="24" height="12" rx="2" fill="#3B2A14"/>
-    <!-- wick holder -->
-    <rect x="592" y="494" width="16" height="38" fill="#4F3519"/>
-    <circle cx="600" cy="472" r="70" fill="url(#flameHalo)"/>
-    <g class="flame">
-      <path d="M600 436 C614 456 618 478 600 492 C582 478 586 456 600 436 Z" fill="#FFC060"/>
-      <path d="M600 452 C608 464 609 478 600 486 C591 478 592 464 600 452 Z" fill="#FFF0C8"/>
-    </g>
-  </g>
-
-  <!-- Warm light over everything -->
-  <rect class="glow" width="800" height="1000" fill="url(#lampGlow)" style="mix-blend-mode:screen"/>
-  <rect width="800" height="1000" fill="url(#vignette)"/>
 </svg>
